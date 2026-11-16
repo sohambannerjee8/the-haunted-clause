@@ -250,3 +250,38 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - Properties E1–E7, each at 1,000 runs. E1–E4 are the four from C5.
   - The test plan includes the four required mocked-LLM cases and a `console` spy for logging.
 - Status: waiting for the user's approval of requirements and design together (C10.1).
+
+### Push to GitHub (user request)
+- The user asked for `git push -u origin main`. PLAN.md section 8 lists pushing as the user's own step; the user's direct instruction overrides that.
+- The remote `origin` (https://github.com/sohambannerjee8/the-haunted-clause.git) had already been added by the user. The builder did not create the repository.
+- Checked before pushing: `check:secrets` (54 tracked files) and `check:history` both exit 0, and no `.env` file is tracked except `.env.example`.
+- Pushed commit `b87d89f`. `main` now tracks `origin/main`. The GitHub API returns HTTP 200 for the repository without a login, so it is public.
+- **Problem found by the pre-push check:** `npm run check:rules` failed: `kiro-not-ignored: ignored by git: .kiro/.DS_Store, .kiro/specs/.DS_Store`. macOS Finder had created `.DS_Store` files inside `.kiro`, and the scaffold's `.DS_Store` ignore line matched them. These are OS junk, not Kiro content, and none was tracked, so the push itself was unaffected.
+  - Fix, test first: two tests were added to `scripts/check-repo-rules.test.mts`. One says ignoring only `.DS_Store` inside `.kiro` passes, and it failed before the fix. The other says a real file ignored next to `.DS_Store` still fails.
+  - The check now skips `.DS_Store`, `Thumbs.db` and `desktop.ini` when walking `.kiro`. Result: 11 tests pass, and `check:rules` passes all 6 rules.
+
+### llm-explainer: approved with additions; tasks written
+- The user approved the requirements and design, including decisions 1–6, and added three things. All are recorded in PLAN_DECISIONS.md C10.10–C10.13, and the C5 `runtime` line was updated:
+  - **(a) Origin check against the request's own host.** R2.4 was rewritten: the Origin's host is compared with the `Host` header, or the URL host when `Host` is missing, and no domain is hard-coded. The design has `origin.ts` and a ten-row test table: localhost, a Vercel preview host and a production host, each matching and mismatched, plus upper case, `Origin: null`, no Origin and no Host. All ten rows were checked with Node's URL parser before writing them.
+  - **(b) Privacy wording.** New R17. One `OPT_IN_NOTICE` in `privacy.ts` says the app does not store text and that Google processes the flagged clauses under its own terms. A test bans claims that Google keeps nothing, and the README must match it word for word. DEPLOY.md will cite https://ai.google.dev/gemini-api/docs/logs-datasets for `store: false`. That page, found by web search and then fetched, says `generateContent` stores requests by default for projects created on or after 26 October 2026, and that the request-level `store` takes precedence.
+  - **Strict model check.** R16.10–R16.14. `npm run precompute:samples` makes one real `models.get` call, prints the model name, and exits 1 with a loud error if the model or key is rejected, without touching the file. `prebuild` runs with `--lenient`, which only warns and exits 0, so the build never fails (C1.3). `models.get` was confirmed in `genai.d.ts` (line 12789). The builder has no key, so the real call is the user's manual step 2. The user's earlier note asked for the precompute to "fail loudly". Strict and lenient modes reconcile that with C1.3 ("the build must never fail"); this is reported to the user.
+- `.kiro/specs/llm-explainer/tasks.md` written for Tasks 17–22. Task 21.2 is the model check.
+
+### haunted-house-ui: requirements and design written (one approval stop)
+- Research in the bundled Next.js docs:
+  - `next/font/google` downloads fonts at build time, so the font files would not be in the repository. The design uses `next/font/local` with Creepster and Atkinson Hyperlegible committed together with their OFL licence files, to keep rules item R7 true.
+  - `next/dynamic` and `React.lazy` both code-split client components.
+  - A prerendered page reads `process.env` at build time, and `connection()` defers to request time.
+- Checked `motion/react` exports (`MotionConfig`, `LazyMotion`, `m`, `domAnimation`) and the `AxeBuilder` API in `node_modules`.
+- `.kiro/specs/haunted-house-ui/requirements.md`: 19 requirements in EARS form:
+  - Page shell, input screen, browser-only analysis
+  - House and rooms, ghosts and wisps, detail panel
+  - Haunt Score, Lights on mode, roving-tabindex keyboard navigation
+  - Motion, sound, 360 px layout, "not legal advice"
+  - The opt-in, samples, edge states, loading and error states, performance, and axe checks
+- `.kiro/specs/haunted-house-ui/design.md`:
+  - Component tree, an in-memory state machine, the `llmAvailable` read at build time (with a fallback if Cache Components refuses it), roving tabindex, the native `<dialog>`, CSS-keyframe ghosts switched off by a reduced-motion media query, Web Audio tones whose pitch carries severity, and lazy loading of the house view.
+  - Properties U1–U4, each at 1,000 runs.
+  - Two Playwright projects: a no-key build, and a second build with a placeholder key so the opt-in UI can be tested with in-browser stubs.
+  - The E2E and component test plan.
+- Status: waiting for the user's approval of requirements and design together.

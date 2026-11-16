@@ -41,6 +41,19 @@ describe("checkRepo", () => {
     expect(failed(makeRepo({ gitignore: goodGitignore + ".kiro\n" }))).toContain("kiro-not-ignored");
   });
 
+  it("passes when only OS junk files inside .kiro (.DS_Store) are ignored", () => {
+    const dir = makeRepo({ gitignore: goodGitignore + ".DS_Store\n" });
+    writeFileSync(join(dir, ".kiro/.DS_Store"), "x");
+    writeFileSync(join(dir, ".kiro/steering/.DS_Store"), "x");
+    expect(failed(dir)).toEqual([]);
+  });
+
+  it("still fails when a real file inside .kiro is ignored next to .DS_Store", () => {
+    const dir = makeRepo({ gitignore: goodGitignore + ".DS_Store\n*.md\n" });
+    writeFileSync(join(dir, ".kiro/.DS_Store"), "x");
+    expect(failed(dir)).toContain("kiro-not-ignored");
+  });
+
   it("fails when .gitignore ignores a folder inside .kiro", () => {
     expect(failed(makeRepo({ gitignore: goodGitignore + ".kiro/specs/\n" }))).toContain(
       "kiro-not-ignored",

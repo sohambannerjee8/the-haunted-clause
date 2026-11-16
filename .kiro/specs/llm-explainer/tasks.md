@@ -1,0 +1,124 @@
+# Implementation Plan: llm-explainer
+
+Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. No test makes a real network call. Commit after each task.
+
+- [ ] 17. Schemas, parsing, merge and the request builder
+- [ ] 17.1 Write `schema.test.ts`, then `src/lib/llm/schema.ts`
+  - Add the `ExplainRequest`, `LlmFinding`, `LlmOutput`, `ExplainResponse` and sample-explanations file schemas, `ROOM_IDS` and `REASONS`.
+  - Add the looser Gemini output JSON Schema, built with `z.toJSONSchema` with `$schema` removed.
+  - Tests:
+    - 0, 1, 40 and 41 clauses; text of 1,500 and 1,501 characters; a bad ID; a duplicate ID; an extra property.
+    - The response schema rules (`reason` present only for `rules`).
+    - The Gemini JSON Schema uses only supported keywords.
+  - _Requirements: 2.3, 6.1, 8.1, 16.6_
+- [ ] 17.2 Write `parse.test.ts` and `parse.property.test.ts`, then `parse.ts`
+  - Unit tests: good output; not JSON; schema mismatch; text over 400 characters; trimming; unknown IDs dropped; the first duplicate kept; nothing left gives invalid.
+  - Property E4 (parser part): `fc.anything()`, `fc.jsonValue()` and `fc.string({ unit: "binary" })` never throw.
+  - _Requirements: 6.1–6.3, 6.5_
+- [ ] 17.3 Write `merge.test.ts` and `merge.property.test.ts`, then `merge.ts`
+  - Unit tests: a raise from 1 to 3; an LLM trying to lower 3 to 1 keeps 3; an unknown ID is ignored; no LLM finding keeps the rule texts with `source: "rules"`.
+  - Properties: E1 (never lowers a severity), E2 (never changes `quote`, `start`, `end`, `room` or `id`), E3 (same IDs in the same order).
+  - _Requirements: 12.1–12.5_
+- [ ] 17.4 Write `request.test.ts` and `request.property.test.ts`, then `request.ts`
+  - Unit tests: no findings gives `null`; 41 findings keep the top 40 by severity in input order; a 1,600-character quote is cut to 1,500; a cut that would split a surrogate pair backs off by one.
+  - Property E6, on `analyze()` output from the analyzer's `policyLike` generator.
+  - _Requirements: 13.1–13.4_
+- [ ] 17.5 Write `privacy.test.ts`, then `privacy.ts`
+  - Add `OPT_IN_NOTICE` and `GEMINI_TERMS_URL`.
+  - Test the required phrases ("does not store", "flagged clauses", "Google", "terms") and the banned claims.
+  - The README word-for-word check is added in Task 34.
+  - _Requirements: 17.1, 17.2, 17.4_
+
+- [ ] 18. Gemini provider and timeout
+- [ ] 18.1 Write `provider.test.ts` (fake timers), then `provider.ts`
+  - Add the `Provider` interface and `withTimeout(provider, ms)`.
+  - Tests: a call resolving at 14.9 s succeeds; one at 15.1 s times out and its signal is aborted; a provider that ignores the signal still settles by 15.5 s; the timer is cleared after success.
+  - _Requirements: 5.1, 5.2_
+- [ ] 18.2 Write `prompt.test.ts`, then `prompt.ts`
+  - Add the system instruction text and `renderClauses`.
+  - Tests: the instruction says clause texts are untrusted data, defines severities 0–3 and the 400-character limits; the rendered user content holds only `id`, `room`, `clauseType`, `ruleSeverity` and `text`.
+  - _Requirements: 4.3, 4.4_
+- [ ] 18.3 Write `gemini.test.ts` and `availability.test.ts` (with `@google/genai` mocked), then `gemini.ts` and `availability.ts`
+  - Both files import `server-only`.
+  - Add the `server-only` alias to the empty module in `vitest.config.mts`.
+  - Tests:
+    - The config has `store: false`, `responseMimeType: "application/json"`, `responseJsonSchema`, the system instruction, thinking level low, and the model (default `gemini-4-hydrogen` and the `GEMINI_MODEL` override).
+    - The key is read at call time.
+    - An empty `res.text` returns `""`.
+    - `isLlmAvailable` treats unset, empty and whitespace as `false`.
+  - Before writing the code, re-check the `generateContent` and `models.get` signatures in `node_modules/@google/genai/dist/genai.d.ts` (or through Context7 if it is connected), and log which source was used.
+  - _Requirements: 3.2, 4.2, 4.5, 11.2, 15.1_
+
+- [ ] 19. Rate limiter
+- [ ] 19.1 Write `rateLimit.test.ts` (fake clock) and `rateLimit.property.test.ts`, then `rateLimit.ts`
+  - Re-read https://vercel.com/docs/headers/request-headers and cite it in the code comment.
+  - Unit tests:
+    - The 11th request in 60 s is refused, and the window slides.
+    - `Retry-After` is at least 1 and correct.
+    - Rejected requests are not counted, and stale timestamps are removed.
+    - Least-recently-used eviction at `maxKeys`.
+    - Header order: `x-vercel-forwarded-for`, then the first value of a comma-separated `x-forwarded-for` (trimmed), then `x-real-ip`, then `"unknown"`, with empty values skipped.
+  - Property E5: never more than 10 allowed from one IP in any 60-second window.
+  - _Requirements: 9.1–9.5_
+
+- [ ] 20. The `/api/explain` route
+- [ ] 20.1 Write `origin.test.ts`, then `origin.ts`
+  - Write the ten cases from the design's "Origin check" table: localhost, a Vercel preview host and a production host, each matching and mismatched; upper case; `Origin: null`; no Origin; no Host header.
+  - _Requirements: 2.4_
+- [ ] 20.2 Write `handler.test.ts` and `handler.property.test.ts` (mocked provider and clock), then `handler.ts`
+  - The four required cases: good output → `llm`; malformed output → `invalid`; timeout → `timeout`; no key → `no-key` with the provider not called.
+  - Also: provider error → `error`; the 11th request → 429 `rate-limited` with `Retry-After`; a body over 256,000 bytes → 400; bad JSON → 400; schema mismatch → 400; Origin mismatch → 403.
+  - Every response has `Cache-Control: no-store`, and the provider is not called on any rejected path.
+  - Logging: exactly one log line per request. A `console` spy shows no clause text, model text, IP or key appears in any output.
+  - Properties: E4 (handler part) and E7.
+  - _Requirements: 1.4, 2.1–2.5, 3.1, 4.1, 5.1, 6.1–6.4, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2, 10.1, 10.2, 11.1_
+- [ ] 20.3 Write `route.test.ts`, then `src/app/api/explain/route.ts`
+  - Tests: `route.ts` exports `POST` and `maxDuration === 30`, and does not export `runtime`.
+  - Wire the real provider, one module-level rate limiter, `Date.now` and `console.info`.
+  - Add `e2e/explain-route.spec.ts`: with no key, `POST` returns 200 `rules/no-key` and `GET` returns 405.
+  - Demo: `curl -X POST localhost:3100/api/explain -d '{"clauses":[…]}'` against `next start` with no key returns `{"source":"rules","reason":"no-key","findings":[]}`.
+  - _Requirements: 1.1–1.3, 3.1_
+- [ ] 20.4 Write `client.test.ts` (mocked fetch), then `client.ts`
+  - Tests: success; 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; a network error gives `error`; the 20 s timeout gives `error`; no findings makes no fetch.
+  - _Requirements: 14.1–14.3_
+
+- [ ] 21. Precompute sample explanations
+- [ ] 21.1 Write `scripts/precompute-samples.test.mts`, then `scripts/precompute-samples.mts`
+  - Pure `precompute()` core, plus `main()` with the `--lenient` flag and `loadEnvConfig` from `@next/env`.
+  - Tests:
+    - A mocked provider writes LLM entries with `model`.
+    - No key writes rules entries and exits 0 in both modes.
+    - A provider failure keeps a consistent existing entry; an inconsistent entry is replaced by rules.
+    - `HC_SKIP_PRECOMPUTE=1` makes no call.
+    - A second run gives byte-identical output.
+  - _Requirements: 16.1–16.9_
+- [ ] 21.2 Add the strict model check (user request, PLAN_DECISIONS.md C10.13)
+  - In strict mode with a key, call `models.get` once before any sample call and print `precompute: model=<id> source=<GEMINI_MODEL|default>`.
+  - Tests with a mocked `models.get`:
+    - A 404 for an unknown model prints the ERROR block naming the model and the fix, exits 1 and leaves the file byte-for-byte unchanged.
+    - A 403 for a refused key prints the key message and exits 1.
+    - Success prints the model line, and the LLM entries carry that model.
+    - Lenient mode with the same 404 prints `WARNING precompute:`, exits 0 and writes rules entries.
+    - Strict mode with a failed sample call (after a passing check) names the sample and reason, and exits 1.
+  - The real call needs the user's key. It is not run by the builder. It is listed in COMPLETION_REPORT.md as manual step 2, and the user records the printed model name in BUILD_LOG.md.
+  - _Requirements: 16.10–16.14_
+- [ ] 21.3 Wire the npm scripts and commit the rule-based file
+  - `"prebuild": "tsx --conditions=react-server scripts/precompute-samples.mts --lenient"` and `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"`.
+  - Run `npm run precompute:samples` with no key, commit `src/lib/samples/sample-explanations.json`, and write `src/lib/samples/explanations.ts` with Zod validation.
+  - Tests in `explanations.test.ts`: the committed file passes Zod, and every entry is consistent with the current analyzer output.
+  - Demo: `npm run build` with no key succeeds, and the file is unchanged afterwards (`git diff --exit-code`).
+  - _Requirements: 16.1, 16.4–16.8_
+
+- [ ] 22. Bundle check, audit and Gate 3
+- [ ] 22.1 Write `scripts/check-bundle.mjs`
+  - Build with a runtime-generated canary key and `HC_SKIP_PRECOMPUTE=1`, then search `.next/static/**` for the canary and for `GEMINI_API_KEY`, and exit 0 or 1.
+  - Test it by running it, and once with a deliberately planted file under a temporary copy of `.next/static` to see it fail. Then remove the planted file.
+  - _Requirements: 15.2, 15.3_
+- [ ] 22.2 Run the checks
+  - `npm run check:bundle`, `npm audit --omit=dev --audit-level=high`, `npm run test:coverage` (lines ≥ 90% for `src/lib/llm/**`), `npm run typecheck` and `npm run lint`, all with zero errors.
+  - Draft the privacy, rate-limit and `store: false` paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R9.5, R17.3).
+  - _Requirements: 9.5, 15.3, 17.3_
+- [ ] 22.3 Run Gate 3
+  - Run the `security-reviewer` and `test-verifier` sub-agents in parallel.
+  - Save each report unchanged to `docs/gate-reports/phase-3-<agent>-attempt-N.md`, and append the results to BUILD_LOG.md.
+  - Pass when the key never reaches the browser bundle, pasted text is not logged or stored, and the app works with no key.

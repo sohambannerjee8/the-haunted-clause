@@ -45,7 +45,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 1. WHEN the request body is larger than 256,000 bytes, THE handler SHALL respond with HTTP 400 and `{ source: "rules", reason: "bad-request", findings: [] }` without parsing it further. (40 clauses of 1,500 characters need at most 180,000 bytes of UTF-8 text, plus JSON overhead.)
 2. WHEN the body is not valid JSON, THE handler SHALL respond as in criterion 1.
 3. WHEN the body does not match the explain-request schema, THE handler SHALL respond as in criterion 1. The schema is: `clauses` is an array of 1 to 40 items; each item has `id` matching `^c-\d+$`, `room` one of the eight room IDs, `severity` an integer from 0 to 3, and `text` a string of 1 to 1,500 characters; IDs are unique; no other properties are allowed.
-4. WHEN the request has an `Origin` header whose host differs from the request's `Host` header, THE handler SHALL respond with HTTP 403 and `{ source: "rules", reason: "bad-request", findings: [] }`, and SHALL NOT call the provider.
+4. WHEN the request has an `Origin` header, THE handler SHALL compare the Origin's host (hostname and port, lowercased) with the request's own host, taken from the `Host` header or, when that is missing, from the request URL. No domain SHALL be hard-coded. WHEN the two differ, or the Origin is `null` or not a valid URL, THE handler SHALL respond with HTTP 403 and `{ source: "rules", reason: "bad-request", findings: [] }`, and SHALL NOT call the provider. WHEN there is no `Origin` header, the check SHALL pass. Separate tests SHALL show a matching Origin is accepted on `localhost:3000`, on a Vercel preview host (`the-haunted-clause-git-main-example.vercel.app`) and on a production host (`haunted-clause.example`), and that a mismatched Origin is refused on each.
 5. THE handler SHALL NOT call the provider for any request that fails criteria 1–4.
 
 ### Requirement 3: Work with no key
@@ -188,12 +188,31 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 
 #### Acceptance Criteria
 
-1. THE script `scripts/precompute-samples.mts` SHALL run as the npm `prebuild` step and as `npm run precompute:samples`.
+1. THE script `scripts/precompute-samples.mts` SHALL run as the npm `prebuild` step in lenient mode (`--lenient`) and as `npm run precompute:samples` in strict mode (the default).
 2. WHEN a key is set, THE script SHALL, for each of the three samples, run the analyzer, build the explain request with Requirement 13, call the Gemini provider with the 15-second timeout, validate the output with Requirement 6, and write that sample's entry with `source: "llm"`, the model ID and the validated LLM findings.
 3. WHEN a key is set and the call for a sample fails in any way, THE script SHALL keep that sample's existing entry if it is valid and consistent (criterion 6), and otherwise write the sample's rule-based entry.
 4. WHEN there is no key, or the environment variable `HC_SKIP_PRECOMPUTE=1` is set, THE script SHALL make no network call; it SHALL keep each existing entry that is valid and consistent and write the rule-based entry for any other sample.
-5. THE script SHALL exit with code 0 in every case, and SHALL print one summary line per sample with the sample ID, source and number of findings, and no clause text.
+5. WHEN run as the `prebuild` step (lenient mode), THE script SHALL exit with code 0 in every case, so that the build never fails because of it. It SHALL print one summary line per sample with the sample ID, source and number of findings, and no clause text.
 6. EACH entry in the sample explanations file SHALL hold `source`, `model` (`null` for rules), `findingIds` (the analyzer's finding IDs for that sample, in order) and `llmFindings` (empty for rules). An entry is "consistent" when its `findingIds` equal the analyzer's current finding IDs for that sample and every `llmFindings` ID is in `findingIds`. THE file SHALL be validated with Zod when the app imports it, and a test SHALL fail when any entry is not consistent, so that changing a sample or a rule without regenerating the file fails the tests.
 7. THE rule-based entry for a sample SHALL have `source: "rules"`, `model: null`, the analyzer's finding IDs and `llmFindings: []`; the UI then shows the analyzer's own texts.
 8. THE committed sample explanations file SHALL contain rule-based entries until the user regenerates it with a key (PLAN_DECISIONS.md C9 step 2).
 9. THE script output SHALL be deterministic for the same model output: no timestamps, findings in analyzer order, keys in a fixed order and a trailing newline.
+10. WHEN run as `npm run precompute:samples` (strict mode) with a key set, THE script SHALL first make one real call, `models.get` for the configured model, before any sample call, and SHALL print the line `precompute: model=<model ID> source=<GEMINI_MODEL or default>`.
+11. WHEN, in strict mode, that call is rejected (for example HTTP 400 or 404 because the model name is unknown, or 401 or 403 because the key is refused), THE script SHALL print a loud error naming the model, the HTTP status and the fix (set `GEMINI_MODEL` to a current model ID), SHALL NOT change the sample explanations file, and SHALL exit with code 1.
+12. WHEN, in strict mode, any sample call fails after the model check passed, THE script SHALL report which sample failed and why (reason code only), keep or write that sample's entry as in criterion 3, and exit with code 1, so that a manual run never silently commits rule-based readings.
+13. WHEN, in lenient mode, the model check or a sample call fails, THE script SHALL print a warning line that starts with `WARNING precompute:` and names the model, and continue as in criteria 3 and 5.
+14. THE model ID used SHALL be stored in each LLM entry's `model` field, so that the committed file records which model wrote it.
+
+### Requirement 17: Honest privacy wording
+
+**User Story:** As a user deciding whether to opt in, I want an accurate statement of what happens to my text, so that I am not told more than the app can promise.
+
+#### Acceptance Criteria
+
+1. THE opt-in notice (shown by the haunted-house-ui spec next to the opt-in control) and the README privacy section SHALL say all of the following:
+   - This app does not store the text.
+   - Only the flagged clauses are sent, to Google Gemini.
+   - Google processes them under its own terms, with a link to https://ai.google.dev/gemini-api/terms.
+2. THE opt-in notice, the README and docs/DEPLOY.md SHALL NOT claim that Google keeps nothing, deletes the clauses or never uses them.
+3. docs/DEPLOY.md SHALL explain that every Gemini call sets `store: false`, and SHALL cite https://ai.google.dev/gemini-api/docs/logs-datasets (Google's page on request-level `store`, which says `generateContent` stores requests by default for projects created on or after 26 October 2026). It SHALL also say that this setting controls Google's request logging only, and that Google's terms for free and paid tiers still apply.
+4. THE notice text SHALL be defined once, in `src/lib/llm/privacy.ts`, and the README text SHALL match it; a test SHALL check that the notice contains "does not store", "flagged clauses", "Google" and "terms", and contains none of "Google does not store", "Google keeps nothing", "deleted" or "never used".

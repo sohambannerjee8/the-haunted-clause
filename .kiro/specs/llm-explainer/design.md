@@ -8,7 +8,7 @@ The explainer adds an optional plain-English reading to the analyzer's findings:
 - A small client module builds the request and handles every failure quietly.
 - A build-time script precomputes the samples' readings with the same code, so samples never call the route.
 
-Requirements: `.kiro/specs/llm-explainer/requirements.md` ("R4.2" means Requirement 4, criterion 2). Decisions: PLAN_DECISIONS.md C1.1–C1.4, C3, C5, C8 and C9.
+Requirements: `.kiro/specs/llm-explainer/requirements.md` ("R4.2" means Requirement 4, criterion 2). Decisions: PLAN_DECISIONS.md C1.1–C1.4, C3, C5, C8, C9 and C10.10–C10.13. Status: requirements and design approved on 16 November 2026, with additions (a) Origin check against the request's own host, (b) privacy wording, and the strict model check.
 
 ## Research behind the choices (16 November 2026)
 
@@ -19,6 +19,8 @@ Context7 was not reachable through Kiro's MCP tools in this session (BUILD_LOG.m
 | `@google/genai` 3.3.0 has `models.generateContent` with `config.responseMimeType`, `config.responseJsonSchema` (JSON Schema), `config.systemInstruction`, `config.abortSignal`, `config.thinkingConfig` and `config.store` | `node_modules/@google/genai/dist/genai.d.ts`, `GenerateContentConfig` |
 | `store` "configures the logging behavior for a given request … takes precedence over the project-level logging config" | Same file |
 | AI Studio logs, on by default for billing-enabled projects, keep requests and responses up to 55 days | aistudio.google.com/docs/logs-policy |
+| The `generateContent` API stores requests by default (`store=true`) for projects created on or after 26 October 2026. The request-level `store` property takes precedence over the project setting. It needs `@google/genai` 2.31.0 or later (we have 3.3.0) | ai.google.dev/gemini-api/docs/logs-datasets, "Request-level logging" (fetched 16 Nov 2026) |
+| `models.get({ model })` exists and returns `Promise<Model>` | `genai.d.ts`, line 12789 |
 | The newer `interactions.create` API stores interactions by default (`store` defaults to true), so it is not used | `genai.d.ts`, `ContinuationInterruptedError` docs |
 | Aborting a request is client-side only. The service may still finish and bill it | `GenerateContentConfig.abortSignal` docs |
 | `gemini-4-hydrogen` is the current fast, efficient model (stable, November 2026). It supports structured outputs and thinking levels low to xhigh | aistudio.google.com/docs/models/gemini-4-hydrogen |
@@ -78,6 +80,8 @@ sequenceDiagram
 | `src/lib/llm/parse.ts` | no | `parseLlmOutput(text, requestIds)` | R6 |
 | `src/lib/llm/client.ts` | no | `requestExplanations(findings, { fetch, timeoutMs })` | R14 |
 | `src/lib/llm/prompt.ts` | no | System instruction text and `renderClauses(clauses)` | R4.3, R4.4 |
+| `src/lib/llm/privacy.ts` | no | `OPT_IN_NOTICE` text and `GEMINI_TERMS_URL` | R17 |
+| `src/lib/llm/origin.ts` | no | `sameOrigin(request)` | R2.4 |
 | `src/lib/llm/provider.ts` | no | `Provider` interface and `withTimeout(provider, ms)` | R5 |
 | `src/lib/llm/gemini.ts` | **yes** | `createGeminiProvider()` and `defaultModel()` | R4, R11.2, R15.1 |
 | `src/lib/llm/availability.ts` | **yes** | `isLlmAvailable()` | R3.2, R15.1 |
@@ -172,7 +176,7 @@ export function createGeminiProvider(): Provider {
 
 | Step | Check | Response on failure | Requirements |
 | --- | --- | --- | --- |
-| 1 | `Origin` present and its host ≠ `Host` | 403 `bad-request` | R2.4 |
+| 1 | `sameOrigin(request)` is false (see "Origin check") | 403 `bad-request` | R2.4 |
 | 2 | Read the body as bytes with a 256,000-byte cap (stream reader, stops early). `Content-Length` over the cap fails at once | 400 `bad-request` | R2.1 |
 | 3 | `rateLimiter.check(clientIp(request.headers))` | 429 `rate-limited` + `Retry-After` | R9.1, R9.2 |
 | 4 | `JSON.parse` the body, then `ExplainRequest.safeParse` | 400 `bad-request` | R2.2, R2.3 |
@@ -196,6 +200,54 @@ export const POST = createExplainHandler({ ... });
 ```
 
 Next.js answers other methods on this route with 405 automatically, because only `POST` is exported (R1.3). An E2E check confirms it.
+
+## Origin check (`origin.ts`)
+
+```ts
+export function sameOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (origin === null) return true;                       // curl and server-to-server: rate limit still applies
+  let originHost: string;
+  try { originHost = new URL(origin).host.toLowerCase(); } catch { return false; }  // "null" or garbage
+  const ownHost = (request.headers.get("host") ?? new URL(request.url).host).toLowerCase();
+  return originHost === ownHost;
+}
+```
+
+- The check compares the Origin with the request's own host, so no domain is configured anywhere. It works unchanged on `localhost:3000`, on every Vercel preview URL and on the production domain.
+- `URL.host` includes the port and drops default ports, so `http://localhost:3000` matches `Host: localhost:3000`, and `https://x.vercel.app` matches `Host: x.vercel.app`.
+- On Vercel the `Host` header is the public hostname the browser used.
+- Tests in `origin.test.ts`, one per case (addition a):
+
+| Case | Origin | Host | Result |
+| --- | --- | --- | --- |
+| localhost, match | `http://localhost:3000` | `localhost:3000` | allowed |
+| localhost, mismatch | `http://localhost:4000` | `localhost:3000` | 403 |
+| Vercel preview, match | `https://the-haunted-clause-git-main-example.vercel.app` | same host | allowed |
+| Vercel preview, mismatch | `https://other-app.vercel.app` | `the-haunted-clause-git-main-example.vercel.app` | 403 |
+| Production, match | `https://haunted-clause.example` | `haunted-clause.example` | allowed |
+| Production, mismatch | `https://evil.example` | `haunted-clause.example` | 403 |
+| Upper-case host | `https://Haunted-Clause.example` | `haunted-clause.example` | allowed |
+| `Origin: null` | `null` | any | 403 |
+| No Origin header | (absent) | any | allowed |
+| No Host header | `http://localhost:3000` | (absent; URL `http://localhost:3000/api/explain`) | allowed |
+
+## Privacy wording (`privacy.ts`, addition b)
+
+```ts
+export const GEMINI_TERMS_URL = "https://ai.google.dev/gemini-api/terms";
+export const OPT_IN_NOTICE =
+  "This app does not store your text. If you continue, only the flagged clauses " +
+  "are sent to Google Gemini for a plain-English reading. Google processes them " +
+  "under its own terms.";
+```
+
+- The UI shows `OPT_IN_NOTICE` beside the opt-in button, followed by a link "Google's Gemini API terms" to `GEMINI_TERMS_URL`.
+- The README "Privacy" section repeats the same sentence. `privacy.test.ts` checks the required phrases and the banned claims (R17.4).
+- A second test reads README.md and checks that it contains `OPT_IN_NOTICE` word for word, so the two cannot drift apart.
+- docs/DEPLOY.md gets this paragraph, citing Google's page:
+
+  > Every Gemini call sets `store: false`. Google's [Logs and datasets](https://ai.google.dev/gemini-api/docs/logs-datasets) page says the `generateContent` API stores requests by default for projects created on or after 26 October 2026, and that the request-level `store` property takes precedence over the project setting. This controls Google's request logging only. Google's [Gemini API terms](https://ai.google.dev/gemini-api/terms) still apply, including the free-tier terms on how Google may use content. A billing-enabled key is recommended.
 
 ## Output parsing (`parse.ts`)
 
@@ -278,13 +330,31 @@ The Cache Components setting means a static page reads it at build time. On Verc
 
 ## Precompute script (`scripts/precompute-samples.mts`)
 
-- **How it runs:** `"prebuild": "tsx --conditions=react-server scripts/precompute-samples.mts"` and `"precompute:samples"` with the same command. The `react-server` condition lets it import `gemini.ts` (`server-only` resolves to an empty module). It loads `.env.local` with `loadEnvConfig` from `@next/env`, which ships with Next.js, so `npm run precompute:samples` sees the key in `.env.local`.
-- **Pure core:** the script exports `precompute({ samples, analyze, provider | null, existing })`. It returns `{ file, lines }` and does no I/O, which keeps it testable. `main()` reads the existing file, calls `precompute`, writes the file only if the content changed, prints the lines and exits 0 (R16.5).
+- **Commands:**
+  - `"prebuild": "tsx --conditions=react-server scripts/precompute-samples.mts --lenient"`
+  - `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"` (strict, the default)
+  - The `react-server` condition lets the script import `gemini.ts`: `server-only` resolves to an empty module.
+  - It loads `.env.local` with `loadEnvConfig` from `@next/env` (ships with Next.js), so `npm run precompute:samples` sees the key there.
+- **Pure core:** the script exports `precompute({ samples, analyze, provider | null, existing, mode })`. It returns `{ file, lines, exitCode, wrote }` and does no I/O. `main()` does the I/O: it reads the existing file, runs the model check, calls `precompute`, writes the file only when `wrote` is true and the content changed, prints the lines and exits with `exitCode`.
+- **Model check (strict mode, key set; R16.10–R16.11):**
+  1. Print `precompute: model=<id> source=<GEMINI_MODEL|default>`.
+  2. Call `ai.models.get({ model: id })` once, through `withTimeout` with 15 s.
+  3. If it rejects, print this block and exit 1 without touching the file:
+
+     ```
+     ERROR precompute: Gemini rejected model "<id>" (HTTP <status>).
+     Set GEMINI_MODEL in .env.local to a current model ID (see https://ai.google.dev/gemini-api/docs/models) and run npm run precompute:samples again.
+     ```
+
+     A 401 or 403 says the key was refused instead.
+  - In lenient mode the same failure prints `WARNING precompute: …` and the script continues with rule-based or existing entries (R16.13).
 - **Per sample:**
   1. Analyze the sample.
   2. `findingIds` = the analyzer's IDs.
-  3. If there is a provider and no `HC_SKIP_PRECOMPUTE`: build the request, call the provider through `withTimeout` with 15 s, and parse the output. On success the entry is `{ source: "llm", model, findingIds, llmFindings }`. On failure, keep the existing entry if it is consistent, or else use the rule-based entry.
+  3. If there is a provider and no `HC_SKIP_PRECOMPUTE`: build the request, call the provider through `withTimeout` with 15 s, and parse. On success the entry is `{ source: "llm", model: id, findingIds, llmFindings }` (R16.14). On failure, keep the existing entry if it is consistent, or else use the rule-based entry. In strict mode, set `exitCode = 1` and print `ERROR precompute: sample <id> failed (<reason>)` (R16.12).
   4. If there is no provider: keep the existing entry if it is consistent, or else use the rule-based entry.
+- **Summary lines** (no clause text): `precompute: mild source=llm findings=9 model=gemini-4-hydrogen`.
+- **No key in strict mode:** print `precompute: no GEMINI_API_KEY; writing rule-based readings` and exit 0. There is nothing to check, and this is the builder's normal case.
 - **File shape** (R16.6, R16.9):
 
 ```json
@@ -300,7 +370,8 @@ The Cache Components setting means a static page reads it at build time. On Verc
 
   Keys are always written in this order, findings follow analyzer order, there are no timestamps, and it is written with `JSON.stringify(file, null, 2) + "\n"`.
 - **At runtime** (`explanations.ts`): `sampleReading(id)` validates the JSON once with Zod. If an entry is valid and its source is `llm`, it returns the LLM findings for the UI to merge. Otherwise it returns no LLM findings, and the UI shows the rule texts. It never fetches (C1.3).
-- **Why the build cannot break:** every failure path keeps or writes a valid file and exits 0 (R16.5). The consistency test runs in `npm test`, not in the build, so a stale file fails the tests and never the deploy.
+- **Why the build cannot break:** `prebuild` uses lenient mode, which always exits 0 (R16.5). Strict mode is only for the manual run, where failing loudly is wanted. The consistency test runs in `npm test`, not in the build.
+- **The real model check runs only when the user has a key.** The builder has none, so tests cover it with a mocked `models.get` (HTTP 404 → exit 1 and file untouched; success → model line printed). The user runs the real check as manual step 2 (PLAN_DECISIONS.md C9), and the printed model name goes into BUILD_LOG.md.
 
 ## Bundle check (`scripts/check-bundle.mjs`)
 
@@ -343,7 +414,9 @@ All LLM tests use mock providers. No test makes a real network call (testing.md)
 | `handler.test.ts` | Unit, mocked provider | The four required cases (good output, malformed output, timeout, no key), plus provider error, rate limit, oversized body, bad JSON, schema mismatch, Origin mismatch; `Cache-Control: no-store`; status codes; the provider is not called on every rejected path; one log line; **a `console` spy proves no clause text, model text, IP or key is logged** (R10) |
 | `client.test.ts` | Unit, mocked fetch | Success; HTTP 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; network error gives `error`; the 20 s timeout gives `error`; no findings gives no fetch |
 | `route.test.ts` | Unit | `route.ts` exports `POST` and `maxDuration === 30` and no `runtime` |
-| `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries; no key writes rules entries and exits 0; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; `HC_SKIP_PRECOMPUTE` makes no call; output is byte-identical on a second run |
+| `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries with `model`; no key writes rules entries and exits 0 in both modes; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; `HC_SKIP_PRECOMPUTE` makes no call; output is byte-identical on a second run; strict mode with a model check rejected (404, and 403) prints the ERROR block naming the model, exits 1 and leaves the file untouched; lenient mode with the same rejection prints `WARNING precompute:` and exits 0; strict mode with a failed sample call exits 1; the model line is printed |
+| `origin.test.ts` | Unit | The ten Origin and Host cases in the "Origin check" table |
+| `privacy.test.ts` | Unit | Required phrases and banned claims in `OPT_IN_NOTICE`; README.md contains it word for word (from Task 34, when the README is finished) |
 | `src/lib/samples/explanations.test.ts` | Unit | The committed JSON passes Zod; every entry is consistent with the current analyzer output (R16.6) |
 | `e2e/explain-route.spec.ts` | E2E | With no key: `POST /api/explain` returns `rules/no-key`; `GET` returns 405 |
 

@@ -22,6 +22,8 @@ function git(dir, args, input) {
   }
 }
 
+const OS_JUNK = new Set([".DS_Store", "Thumbs.db", "desktop.ini"]);
+
 /** Every path under .kiro, plus each folder (with a trailing slash), plus representative paths. */
 function kiroCandidates(dir) {
   const out = new Set([
@@ -42,6 +44,8 @@ function kiroCandidates(dir) {
     const abs = join(dir, rel);
     if (!existsSync(abs)) return;
     for (const entry of readdirSync(abs, { withFileTypes: true })) {
+      // Operating-system junk files are not Kiro content; ignoring them is fine.
+      if (entry.isFile() && OS_JUNK.has(entry.name)) continue;
       const child = `${rel}/${entry.name}`;
       if (entry.isDirectory()) {
         out.add(`${child}/`);

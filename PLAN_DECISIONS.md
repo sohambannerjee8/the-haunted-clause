@@ -110,7 +110,7 @@ flowchart LR
 - **Prompt injection:** Clause text is treated as data in the system instruction, and explanations are rendered as plain text, never as HTML.
 - **Server-only code:** `import "server-only"` keeps the provider code out of the browser bundle. The route handler is built by a factory (`createExplainHandler({ provider, rateLimiter, now })`) so tests can pass in mocks.
 - **Logging:** Only reason codes are logged, never request bodies or clause text.
-- **Route settings:** `runtime = "nodejs"`. Set `maxDuration` after checking the current Vercel free-plan limit in the docs; it must allow 15 seconds plus overhead.
+- **Route settings:** no `runtime` export (C10.10: Next.js 16 with Cache Components rejects it; the route runs on Node.js). `maxDuration = 30` (Vercel Hobby allows up to 300 s).
 - **Precompute:** The sample precompute script (C1.3) reuses the provider, schema and merge code.
 - **Properties:**
   - Merging never lowers a severity.
@@ -178,7 +178,7 @@ These are fixtures, checked in both unit and E2E tests.
 ## C9. User's manual steps (do not do these; prepare for them)
 
 1. Get a Gemini API key (paid tier recommended) and put it in `.env.local`.
-2. Run `npm run precompute:samples`, check `src/lib/samples/sample-explanations.json`, and commit it.
+2. Run `npm run precompute:samples`. It first makes one real `models.get` call and prints `precompute: model=<id>`; if Google rejects the model name or the key, it stops with an ERROR and exit code 1 and leaves the file alone (set `GEMINI_MODEL` and rerun). Then check `src/lib/samples/sample-explanations.json` (each entry should say `"source": "llm"` and name the model), record the model name in BUILD_LOG.md, and commit the file.
 3. Create the public GitHub repository and push.
 4. Deploy to Vercel and set `GEMINI_API_KEY` (and `GEMINI_MODEL` if wanted), following docs/DEPLOY.md.
 5. Record the demo video from docs/VIDEO_SCRIPT.md and upload it to YouTube.
@@ -209,6 +209,24 @@ These are fixtures, checked in both unit and E2E tests.
      - "We do not sell your data, but we may share it with advertising partners." ≥ 2 (gives 3).
      - "We do not sell your data except to our partners." ≥ 1 (gives 1).
 9. **clause-analyzer requirements and design approved** on 16 November 2026, with changes 2–8 above.
+10. **llm-explainer requirements and design approved** on 16 November 2026, including these decisions:
+    1. `store: false` on every Gemini call, using `models.generateContent` (not the Interactions API, which stores by default).
+    2. Default model `gemini-4-hydrogen` with thinking level low, overridable with `GEMINI_MODEL`.
+    3. No `runtime` export on the route (replaces "runtime = nodejs" in C5), and `maxDuration = 30`.
+    4. An Origin check (see 11).
+    5. Limits: a 256,000-byte body cap, 10,000 rate-limit keys with least-recently-used eviction, a 20-second browser timeout, and no-key requests counted by the rate limiter.
+    6. DEPLOY.md notes that a timed-out call may still be billed.
+11. **Origin check against the request's own host (addition a).** The Origin's host is compared with the `Host` header, or the request URL's host when `Host` is missing. No domain is hard-coded, so it works on localhost, Vercel preview URLs and the production URL. Each case has a test, plus `Origin: null` and no Origin.
+12. **Privacy wording (addition b).**
+    - The opt-in notice and README say the app does not store text and that Google processes the flagged clauses under its own terms. They never claim Google keeps nothing.
+    - One source string lives in `src/lib/llm/privacy.ts`, and a test checks the README matches it.
+    - DEPLOY.md cites https://ai.google.dev/gemini-api/docs/logs-datasets for `store: false`. That page says `generateContent` stores requests by default for projects created on or after 26 October 2026, and that the request-level `store` takes precedence.
+13. **Strict model check.**
+    - `npm run precompute:samples` (strict mode) makes one real `models.get` call before the sample calls and prints the model name.
+    - If Google rejects the model name or the key, it fails loudly with exit code 1 and leaves the file unchanged. A failed sample call in strict mode also exits 1.
+    - The `prebuild` step uses `--lenient`, which only warns and always exits 0, so the build never fails (C1.3).
+    - The model name is stored in each LLM entry and recorded in BUILD_LOG.md by the user (C9 step 2).
+    - The builder has no key, so the real call cannot be made during the build. It is covered by mocked tests and run by the user.
 
 ## D. Task map (spec tasks.md files must match these ranges)
 
