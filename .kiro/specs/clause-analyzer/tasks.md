@@ -2,13 +2,13 @@
 
 Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
 
-- [ ] 11. Types, rooms and the clause splitter
-- [ ] 11.1 Write `src/lib/analyzer/types.ts` and `rooms.ts`
+- [x] 11. Types, rooms and the clause splitter
+- [x] 11.1 Write `src/lib/analyzer/types.ts` and `rooms.ts`
   - Add the types from the design (`RoomId`, `Severity`, `Room`, `Clause`, `Finding` with `mitigationId` and `cancelledMitigationId`, `AnalyzeResult`).
   - Add `ROOMS`, the eight rooms in order with ID, name and clause type exactly as in the requirements glossary.
   - Test `rooms.test.ts`: eight rooms, in order, with names and clause types matching the glossary and unique IDs.
   - _Requirements: 10.1, 10.2_
-- [ ] 11.2 Write the splitter unit tests, then `splitter.ts`
+- [x] 11.2 Write the splitter unit tests, then `splitter.ts`
   - Tests in `splitter.test.ts`:
     - One test for each of the 11 abbreviations used mid-sentence, plus the capitalised forms.
     - `etc.` followed by a paragraph break.
@@ -21,7 +21,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The four rows of the "Boundary resolution" table in the design, including an indented list item after a paragraph break (R1.8 wins).
   - Implement `splitClauses` with candidate collection, snapping to the end of each whitespace run, and IDs `c-<start>`.
   - _Requirements: 1.3–1.11, 1.13_
-- [ ] 11.3 Write the shared generators and the splitter properties
+- [x] 11.3 Write the shared generators and the splitter properties
   - `src/lib/analyzer/arbitraries.test-util.ts` exports `anyString`, `utf16String`, `policyLike`, `bigString` and `overCapString`, for all three specs. Exclude `src/**/*.test-util.ts` from coverage and from the purity scan.
   - `splitter.property.test.ts`:
     - P6: joining the clauses gives the input; spans are contiguous; no whitespace-only clause when the input has non-whitespace.

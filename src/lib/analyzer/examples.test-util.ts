@@ -1,0 +1,65 @@
+// The room example clauses from the clause-analyzer design ("Room examples"), in one place.
+// classifier.test.ts checks each one; the generators in arbitraries.test-util.ts reuse them.
+// Test support only: the app never imports this file.
+import type { RoomId, Severity } from "./types";
+
+export interface PositiveExample {
+  readonly room: RoomId;
+  readonly severity: Severity;
+  readonly ruleId: string;
+  readonly text: string;
+}
+export interface NegativeExample {
+  readonly room: RoomId;
+  readonly text: string;
+}
+
+export const POSITIVE_EXAMPLES: readonly PositiveExample[] = [
+  { room: "cellar", severity: 3, ruleId: "cellar.sell", text: "We may sell your personal information to third parties." },
+  { room: "cellar", severity: 3, ruleId: "cellar.ad-partners", text: "We share your data with our advertising partners." },
+  { room: "cellar", severity: 2, ruleId: "cellar.third-parties", text: "Your information may be disclosed to our affiliates and other third parties." },
+  { room: "cellar", severity: 3, ruleId: "cellar.broker", text: "We work with data brokers who buy and combine information about you." },
+  { room: "portraits", severity: 3, ruleId: "portraits.cross-site", text: "We track your activity across other websites and apps." },
+  { room: "portraits", severity: 2, ruleId: "portraits.profile", text: "We use your browsing history to build a profile of your interests." },
+  { room: "portraits", severity: 2, ruleId: "portraits.location", text: "We collect your precise location even when the app is closed." },
+  { room: "portraits", severity: 1, ruleId: "portraits.trackers", text: "We use cookies to remember your language setting." },
+  { room: "vault", severity: 2, ruleId: "vault.auto-renew", text: "Your subscription renews automatically each month until you cancel." },
+  { room: "vault", severity: 2, ruleId: "vault.no-refund", text: "All fees are non-refundable, including for unused months." },
+  { room: "vault", severity: 3, ruleId: "vault.charge-no-notice", text: "We may charge your card for additional fees without notice." },
+  { room: "vault", severity: 2, ruleId: "vault.price-change", text: "We may increase the subscription price when your plan renews." },
+  { room: "locked-door", severity: 2, ruleId: "locked.cancel-channel", text: "To cancel, you must call our support line by phone during business hours." },
+  { room: "locked-door", severity: 3, ruleId: "locked.cancel-fee", text: "An early termination fee of $50 applies if you cancel before the end of your term." },
+  { room: "locked-door", severity: 2, ruleId: "locked.retain-after", text: "We retain your data for five years after you delete your account." },
+  { room: "locked-door", severity: 3, ruleId: "locked.cannot-delete", text: "You cannot delete your account while a subscription is active." },
+  { room: "court", severity: 3, ruleId: "court.binding-arbitration", text: "All disputes will be resolved by binding arbitration." },
+  { room: "court", severity: 3, ruleId: "court.class-action", text: "You waive any right to bring or join a class action against us." },
+  { room: "court", severity: 3, ruleId: "court.jury", text: "You give up your right to a jury trial." },
+  { room: "mirror", severity: 3, ruleId: "mirror.broad-licence", text: "You grant us a perpetual, irrevocable, worldwide licence to use anything you upload." },
+  { room: "mirror", severity: 3, ruleId: "mirror.ownership", text: "Any photos you post become our property." },
+  { room: "mirror", severity: 2, ruleId: "mirror.ai-training", text: "We may use your content to train our AI models." },
+  { room: "trapdoor", severity: 2, ruleId: "trapdoor.as-is", text: "The service is provided as is, without warranties of any kind." },
+  { room: "trapdoor", severity: 3, ruleId: "trapdoor.not-liable", text: "We are not liable for any loss of data or damages, however caused." },
+  { room: "trapdoor", severity: 2, ruleId: "trapdoor.cap", text: "Our total liability to you shall not exceed ten dollars." },
+  { room: "stairs", severity: 2, ruleId: "stairs.any-time", text: "We may change these terms at any time." },
+  { room: "stairs", severity: 3, ruleId: "stairs.no-notice", text: "We can modify the service and these terms without notice." },
+  { room: "stairs", severity: 2, ruleId: "stairs.continued-use", text: "Your continued use of the service after changes means you accept the new terms." },
+];
+
+export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
+  { room: "cellar", text: "You can download a copy of your data at any time." },
+  { room: "cellar", text: "We store your information on servers located in Ireland." },
+  { room: "portraits", text: "You can track the status of your order on the Orders page." },
+  { room: "portraits", text: "Your profile page shows your display name and photo." },
+  { room: "vault", text: "The monthly fee is shown on the checkout page before you pay." },
+  { room: "vault", text: "You can view your billing history and download receipts in Settings." },
+  { room: "locked-door", text: "You can cancel your plan from the Account page in two clicks." },
+  { room: "locked-door", text: "Deleting your account removes your posts within 24 hours." },
+  { room: "court", text: "If you have a dispute, please contact our support team first." },
+  { room: "court", text: "You may bring a claim in small claims court in your home county." },
+  { room: "mirror", text: "You can upload photos and videos up to 2 GB each." },
+  { room: "mirror", text: "You can delete any content you have posted at any time." },
+  { room: "trapdoor", text: "We are responsible for keeping the service secure." },
+  { room: "trapdoor", text: "Our warranty covers repairs for two years." },
+  { room: "stairs", text: "These terms were last updated on 1 November 2026." },
+  { room: "stairs", text: "You can change your password at any time in Settings." },
+];

@@ -429,3 +429,4 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
 - Gate 1 history: attempt 1 FAIL, attempt 2 FAIL, attempt 3 FAIL (stopped and asked the user), attempt 4 PASS.
 
 **Phase 1 complete.** All three specs have approved requirements and designs, a task list, and full traceability.
+- **Push after Gate 1 (C10.21):** `git push` sent `2e5813c..1ea557b` to `origin/main` after `check:secrets` (65 tracked files), `check:history`, `check:rules` and `check:trace` all passed. Local `main` and `origin/main` match.
