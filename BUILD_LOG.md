@@ -530,3 +530,8 @@ The two rejected names also appeared in the clause-analyzer design ("Samples"), 
 - Problems reported: none.
 
 **Phase 2 complete.**
+- **Push after Gate 2 (C10.21):** `git push` sent `1ea557b..6c01b9f` to `origin/main` after `check:secrets` (96 tracked files), `check:history`, `check:rules` (0 FAIL) and `check:trace` all passed.
+
+---
+## Phase 3: LLM explainer (started 16 November 2026)
+PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with the llm-explainer requirements, design and tasks.
