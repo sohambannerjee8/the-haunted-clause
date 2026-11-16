@@ -139,6 +139,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 1. FOR any input, THE analyzer SHALL return results that are deeply equal when called twice on the same input, including when other inputs are analysed between the two calls.
 2. THE analyzer modules SHALL NOT read the clock (`Date`, `performance`), use randomness (`Math.random`, `crypto`), make network calls (`fetch`, `XMLHttpRequest`, `WebSocket`) or import anything from outside `src/lib/analyzer/` other than type-only imports.
 3. THE analyzer SHALL NOT keep state between calls.
+4. THE analyzer modules and the sample modules (`src/lib/samples/*.ts`) SHALL use relative imports only (no `@/` alias), and the sample modules SHALL import nothing except analyzer types, so that Playwright tests and scripts can import them directly. `purity.test.ts` SHALL check this for both folders.
 
 ### Requirement 8: Size cap
 
@@ -160,7 +161,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 2. WHEN the input contains fewer than 40 letters (characters matched by `\p{L}`), THE analyzer SHALL set `likelyNonEnglish` to `false`.
 3. WHEN the input contains at least 40 letters AND fewer than half of those letters are ASCII letters `A`–`Z` or `a`–`z`, THE analyzer SHALL set `likelyNonEnglish` to `true`.
 4. WHEN the input contains at least 40 letters, at least half are ASCII letters, AND fewer than 10% of its words (runs of ASCII letters and apostrophes, lowercased) are in the analyzer's list of common English words, THE analyzer SHALL set `likelyNonEnglish` to `true`.
-5. OTHERWISE THE analyzer SHALL set `likelyNonEnglish` to `false`.
+5. WHEN none of criteria 2–4 applies, THE analyzer SHALL set `likelyNonEnglish` to `false`.
 6. THE analyzer SHALL still split and classify the text when `likelyNonEnglish` is `true`.
 
 ### Requirement 10: Room metadata
@@ -179,10 +180,10 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 #### Acceptance Criteria
 
 1. THE project SHALL provide three sample policies, `mild`, `average` and `terrible`, each with an invented company name, a title and the policy text, written for this project.
-2. THE sample company names SHALL be checked by web search before they are committed, and the check SHALL be recorded in BUILD_LOG.md; WHEN a search shows a real company using the name, the name SHALL be replaced.
+2. THE sample company names SHALL be checked by web search before they are committed, and the check SHALL be recorded in BUILD_LOG.md under a heading "Sample name check" that names each company; WHEN a search shows a real company using the name, the name SHALL be replaced. Verified by: `samples.test.ts`, which fails unless BUILD_LOG.md has that heading and each sample's company name below it, and by rules-auditor item A4.
 3. EACH sample text SHALL be at most 50,000 characters and SHALL give `likelyNonEnglish === false`.
 4. WHEN analysed, the mild sample SHALL get a Haunt Score of at most 25.
 5. WHEN analysed, the average sample SHALL get a Haunt Score from 35 to 65 inclusive.
 6. WHEN analysed, the terrible sample SHALL get a Haunt Score of at least 80 AND SHALL have at least one risky finding in each of the eight rooms.
 7. THE mild sample SHALL contain at least one clause that gets a severity 0 finding through a mitigation, so that the "checked, looks fine" wisp appears in the demo.
-8. THE sample texts SHALL NOT contain the name, policy text or logo of any real company.
+8. THE sample texts SHALL NOT contain the name, policy text or logo of any real company. Verified by: rules-auditor item A4 (a reviewer reads the three texts), and by `samples.test.ts`, which fails if a sample text contains a URL, an email address or a `©`/`®`/`™` sign.

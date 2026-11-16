@@ -16,12 +16,14 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - The footer shows "Not legal advice".
     - The skip link is the first focusable element and moves focus to `main`.
     - The page requests no font or image from another origin (E2E request listener).
+    - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6).
     - axe finds no serious or critical issue on the empty page.
   - _Requirements: 1.1–1.6, 13.1, 19.2, 19.3_
 - [ ] 23.3 Wire `page.tsx` to `isLlmAvailable()` and pass only the boolean to `HauntedApp`
   - Confirm that the prerendered page reads the variable with Cache Components on. If Next.js refuses, use the `connection()` + `<Suspense>` fallback from the design and log which one was used.
   - Add `next.config.ts` `distDir: process.env.HC_DIST_DIR || ".next"`, and add `.next-e2e-llm` to `.gitignore`.
-  - Add the second Playwright project (`llm-ui`, port 3101, placeholder key), with the guard test that fails on any request to a host other than localhost.
+  - Add the second Playwright project (`llm-ui`, port 3101, placeholder key), with its `next start` behind a dead local proxy (`NODE_USE_ENV_PROXY=1`, `HTTPS_PROXY`/`HTTP_PROXY=http://127.0.0.1:9`, `NO_PROXY=localhost,127.0.0.1`).
+  - Write both guard tests: the browser guard (no request to a host other than localhost) and the server guard (an unstubbed explain request to port 3101 returns `rules/error` within 5 s). See it pass before any opt-in test is written (C10.18).
   - _Requirements: 14.1, 14.2, 14.8_
 
 - [ ] 24. Input screen and sample cards
@@ -38,8 +40,9 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - E2E `flow.spec.ts` (first part):
     - Opening each sample shows the house view.
     - No request goes to `/api/explain`.
-    - Pasted text is analyzed in the browser, and no request carries it.
-  - _Requirements: 3.1–3.4, 15.2, 17.1, 17.2, 17.4_
+    - Pasted text is analyzed in the browser, and no request carries it. It shows rule texts and "Rule reading" badges (llm-explainer R3.3).
+    - After the flows: both storages are empty, there is no cookie and no IndexedDB database, and no request went to another host (R1.6).
+  - _Requirements: 1.6, 3.1–3.4, 15.2, 17.1, 17.2, 17.4_
 
 - [ ] 25. House, rooms, ghosts and the Haunt Score
 - [ ] 25.1 Write `houseModel.test.ts` and `houseModel.property.test.ts`, then `src/lib/ui/houseModel.ts`
@@ -52,12 +55,14 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - Quiet rooms show "Quiet" and have no buttons.
     - The status line and the group label are right.
     - The score shows "N · band" with no "/100", and the announcement happens only on change.
-  - _Requirements: 4.1–4.6, 5.1–5.6, 7.1–7.3_
+    - `Toolbar.test.tsx`: "Sample: <company> (a fictional company)" for each sample, and no sample line for pasted text.
+  - _Requirements: 4.1–4.6, 5.1–5.6, 7.1–7.3, 15.3_
 - [ ] 25.3 E2E `flow.spec.ts` (second part), for all three samples
+  - The toolbar shows "Sample: <company> (a fictional company)".
   - 8 rooms in order.
   - Per-room ghost and wisp counts, and each `data-severity`, equal the analyzer's output.
   - The score equals `hauntScore`.
-  - _Requirements: 4, 5, 7, 15.1_
+  - _Requirements: 4, 5, 7, 15.1, 15.3_
 
 - [ ] 26. Ghost detail panel
 - [ ] 26.1 Write `DetailDialog.test.tsx`, then `DetailDialog`
@@ -132,12 +137,13 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - E2E `motion.spec.ts`:
     - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s.
     - Without it, level 3 ghosts are animated.
+    - Every `document.getAnimations()` entry on each sample's house lasts at least 1 s per cycle, with at most one opacity peak per cycle (R10.4).
     - Sound is off on load, and no `AudioContext` is constructed.
   - _Requirements: 10.1–10.4, 11.1, 11.2_
 
 - [ ] 31. Responsive layout, Gate 4 and the visual review
 - [ ] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
-  - Input screen, each sample house, an open dialog and Lights on: no horizontal scroll, and 2 or 4 grid columns.
+  - Input screen, each sample house, an open dialog and Lights on: no horizontal scroll, no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width), no intersecting controls, and 2 or 4 grid columns.
   - The dialog fits within the viewport and scrolls inside.
   - _Requirements: 4.2, 12.1–12.3_
 - [ ] 31.2 E2E `a11y.spec.ts`
@@ -154,6 +160,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 31.5 Visual review stop (C10.15)
   - After Gate 4 passes, run `npm run screenshots` and commit the 12 PNGs in `docs/screenshots/`.
   - Show them to the user as artifacts, and **stop**. Phase 5 starts only after the user has reviewed the look.
+  - Record in BUILD_LOG.md the date the screenshots were shown and the user's reply, before any Phase 5 entry.
   - _Requirements: 20.4_
 
 - [ ] 32. Edge cases, loading and error states (Phase 5)

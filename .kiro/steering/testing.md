@@ -23,9 +23,9 @@ inclusion: always
 ## Test layout
 
 - Unit and property tests sit next to the code they test: `foo.ts` and `foo.test.ts`. Property tests may use `foo.property.test.ts`.
-- End-to-end tests are in `e2e/` and run with Playwright against `next build && next start` with no LLM key.
+- End-to-end tests are in `e2e/` and run with Playwright against `next build && next start` with no LLM key. The one exception is the `llm-ui` project: it uses a placeholder key value so the opt-in UI shows, its server's outbound traffic goes to a dead local proxy, and a guard test proves it cannot reach Google (PLAN_DECISIONS.md C10.18).
 - Accessibility scans use `@axe-core/playwright`. A serious or critical issue fails the test.
-- Script tests are in `scripts/*.test.mts`.
+- Script tests are in `scripts/*.test.mts`. Shared fast-check generators live in `src/lib/analyzer/arbitraries.test-util.ts`. `*.test-util.ts` files are test support, excluded from coverage and never imported by the app.
 
 ## Commands
 

@@ -301,3 +301,29 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
 - **Redeploy note:** new haunted-house-ui R14.8. DEPLOY.md must say that adding, changing or removing the key on Vercel needs a redeploy, because `llmAvailable` is read at build time. It was added to the DEPLOY.md draft list in llm-explainer Task 22.2.
 - `.kiro/specs/haunted-house-ui/tasks.md` written for Tasks 23–33 (Phase 4: 23–31; Phase 5: 32–33).
 - All three specs now have requirements, design and tasks. Next: Gate 1 (spec-reviewer).
+
+### Gate 1: spec-reviewer, attempt 1: FAIL
+- Ran the `spec-reviewer` custom agent as a sub-agent with fresh context. Full report: `docs/gate-reports/phase-1-spec-reviewer-attempt-1.md`.
+- **Verdict: FAIL** on checklist items 3 (testable), 4 (traceable) and 15 (agrees with PLAN_DECISIONS.md). Items 1, 2, 5–14 were Yes.
+- What it found, and how each finding was fixed:
+  - llm-explainer R3.3 ("every analyzer feature SHALL still work") was not measurable and not in any task. Rewritten: the analyzer must not import `src/lib/llm/` (checked by `purity.test.ts`), and the no-key build shows rule texts and badges (checked by `flow.spec.ts`). Traced to Task 20.3.
+  - haunted-house-ui R15.3 (the "fictional company" line) had no task or test. The text is now exact, with `Toolbar.test.tsx` and a `flow.spec.ts` check in Tasks 25.2 and 25.3.
+  - haunted-house-ui R12.1 ("no clipped text, no overlapping controls") was not measured. It now defines both (element `scrollWidth` against `clientWidth`, viewport bounds, and no intersecting control boxes), and `layout.spec.ts` checks them.
+  - haunted-house-ui R1.6 (no storage) and R10.4 (flash limit) had no test. Added `no-storage.test.ts`, a storage, cookie and IndexedDB check at the end of `flow.spec.ts`, and a `document.getAnimations()` duration and opacity-peak check in `motion.spec.ts`. R10.4 now states the measurable rule (each cycle at least 1 s, at most one opacity peak).
+  - llm-explainer R15.1 still said "build-time precompute script", which contradicted C10.14. Fixed.
+  - The "a timed-out call may still be billed" DEPLOY.md note (C10.10) had no requirement. Added llm-explainer R5.3, the Task 22.2 draft item and a new `scripts/docs.test.mts`. That test also checks the rate-limit, `store: false`, redeploy and privacy statements, which were previously checked only by reading.
+  - **The `llm-ui` E2E project's placeholder key** contradicted C8 and `testing.md` ("with no key"), with no C10 record. The reviewer also showed that a missed browser stub would let the server call Google.
+    - Fix: run that server behind a dead local proxy. Tested first on Node 26.13.1 with `NODE_USE_ENV_PROXY=1 HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 NO_PROXY=localhost,127.0.0.1`: an outbound `fetch` to generativelanguage.googleapis.com failed with ECONNREFUSED after 5 ms.
+    - Added a server guard test (an unstubbed request must return `rules/error`).
+    - Recorded as C10.18 and in `testing.md`. This is the one change to an approved design made by the builder during the gate, and it is reported to the user.
+  - The README word-for-word check was put off to Task 34, outside the reviewed specs. It moved to Task 17.5, which adds the README "Privacy" section now.
+  - Cross-spec inconsistencies:
+    - Fixed: relative imports are now clause-analyzer R7.4 (covering the analyzer and sample modules) and are checked by `purity.test.ts`.
+    - Fixed: one shared generator module, `src/lib/analyzer/arbitraries.test-util.ts`, used by E6, U1 and U4.
+    - Fixed: the handler factory deps match across the Glossary, design and C5 (`{ provider, rateLimiter, now, log, isKeySet }`).
+    - Fixed: the client option is `fetchImpl` everywhere.
+    - Fixed: the duplicate test row was merged.
+    - Fixed: R16.6 references changed to R16.7 and R16.8 where they meant the file schema.
+  - Minor: the non-EARS lead words OTHERWISE, AT, BECAUSE and WITH were reworded to WHEN or WHILE.
+  - Process requirements (clause-analyzer R11.2 and R11.8, haunted-house-ui R20.4) now name their checks: `samples.test.ts` checks the BUILD_LOG "Sample name check" heading and that the samples hold no URLs, emails or ©/®/™ signs; rules-auditor A4; and a BUILD_LOG record of the screenshot review.
+- All of the above is recorded in PLAN_DECISIONS.md C10.18–C10.19.

@@ -74,11 +74,11 @@ sequenceDiagram
 
 | File | Server only | Contents | Requirements |
 | --- | --- | --- | --- |
-| `src/lib/llm/schema.ts` | no | Zod schemas: explain request, LLM output, explain response, sample-explanations file. Reason codes | R2.3, R6.1, R8.1, R16.6 |
+| `src/lib/llm/schema.ts` | no | Zod schemas: explain request, LLM output, explain response, sample-explanations file. Reason codes | R2.3, R6.1, R8.1, R16.7 |
 | `src/lib/llm/merge.ts` | no | `mergeFindings(findings, llmFindings)` | R12 |
 | `src/lib/llm/request.ts` | no | `buildExplainRequest(findings)` | R13 |
 | `src/lib/llm/parse.ts` | no | `parseLlmOutput(text, requestIds)` | R6 |
-| `src/lib/llm/client.ts` | no | `requestExplanations(findings, { fetch, timeoutMs })` | R14 |
+| `src/lib/llm/client.ts` | no | `requestExplanations(findings, { fetchImpl, timeoutMs })` | R14 |
 | `src/lib/llm/prompt.ts` | no | System instruction text and `renderClauses(clauses)` | R4.3, R4.4 |
 | `src/lib/llm/privacy.ts` | no | `OPT_IN_NOTICE` text and `GEMINI_TERMS_URL` | R17 |
 | `src/lib/llm/origin.ts` | no | `sameOrigin(request)` | R2.4 |
@@ -89,10 +89,11 @@ sequenceDiagram
 | `src/lib/llm/handler.ts` | **yes** | `createExplainHandler({ provider, rateLimiter, now, log, isKeySet })` | R1–R10 |
 | `src/app/api/explain/route.ts` | yes (route) | Wires the real provider and limiter. Exports `POST` and `maxDuration = 30` | R1 |
 | `src/lib/samples/sample-explanations.json` | no | Precomputed sample readings | R16 |
-| `src/lib/samples/explanations.ts` | no | Imports the JSON, validates it with Zod, and exposes `sampleReading(id)` | R16.6 |
+| `src/lib/samples/explanations.ts` | no | Imports the JSON, validates it with Zod, and exposes `sampleReading(id)` | R16.8 |
 | `scripts/precompute-samples.mts` | manual only | Precompute script, run by `npm run precompute:samples` | R16 |
 | `scripts/check-bundle.mjs` | check script | Canary bundle check | R15.3 |
 | `scripts/package-scripts.test.mts` | test | No npm script except `precompute:samples` runs the precompute script or uses `@google/genai` | R16.1, R16.2 |
+| `scripts/docs.test.mts` | test | docs/DEPLOY.md and README.md contain the required statements | R5.3, R9.5, R17.1, R17.3; haunted-house-ui R14.8 |
 
 The client-side modules (`schema`, `merge`, `request`, `parse`, `client`, `prompt`, `provider`) never read the environment. Only `gemini.ts` and `availability.ts` read `GEMINI_API_KEY` (R4.5, R15.1).
 
@@ -169,7 +170,7 @@ export function createGeminiProvider(): Provider {
 
 `withTimeout(provider, 15_000)` creates an `AbortController` and runs `Promise.race` between the call and a 15-second timer. When the timer fires, it aborts the signal and rejects with a `TimeoutError`, whether or not the SDK honours the signal (R5.2). The timer is always cleared afterwards. Tests drive it with `vi.useFakeTimers()`.
 
-**Cost note for DEPLOY.md:** Gemini's docs say an abort does not cancel the request on Google's side, so a timed-out call can still be billed.
+**Cost note for DEPLOY.md (R5.3):** Gemini's docs say an abort does not cancel the request on Google's side, so a timed-out call can still be billed.
 
 ## Handler (`handler.ts`)
 
@@ -393,7 +394,7 @@ All properties use `fc.assert(..., { numRuns: 1000 })`.
 | E3 | The merged result has the same IDs as the rule-based result, in the same order | R12.1, R12.5 | same | same |
 | E4 | Any JSON at all falls back to the rules result without throwing: for `fc.anything()` and `fc.jsonValue()` (stringified, and also raw strings from `fc.string()`), `parseLlmOutput` never throws, and the handler with a provider returning that text answers 200 with a body that matches `ExplainResponse` | R6.3, R6.5, R7.2, R8.1 | `parse.property.test.ts`, `handler.property.test.ts` | `fc.anything()`, `fc.jsonValue()`, `fc.string({ unit: "binary" })` |
 | E5 | The rate limiter never allows more than 10 requests from one IP in any 60-second window | R9.1 | `rateLimit.property.test.ts` | Sorted arrays of request times over up to 10 minutes, and a few IPs |
-| E6 | The request builder sends only quoted input: every `text` is a prefix of a finding's quote, at most 1,500 units, with at most 40 items, and `input.includes(text)` holds | R13.1, R13.2, R13.4 | `request.property.test.ts` | `analyze()` on the analyzer's `policyLike` generator |
+| E6 | The request builder sends only quoted input: every `text` is a prefix of a finding's quote, at most 1,500 units, with at most 40 items, and `input.includes(text)` holds | R13.1, R13.2, R13.4 | `request.property.test.ts` | `analyze()` on `policyLike` from `src/lib/analyzer/arbitraries.test-util.ts` |
 | E7 | Every handler response, for any request body and any provider behaviour (resolve with any string, reject, hang), matches `ExplainResponse` and the status table in R8.2 | R7.2, R8 | `handler.property.test.ts` | `fc.oneof` of bodies (valid requests, random JSON, random bytes) × provider behaviours |
 
 E1–E4 are the four merge and fallback properties from PLAN_DECISIONS.md C5.
@@ -417,10 +418,10 @@ All LLM tests use mock providers. No test makes a real network call (testing.md)
 | `route.test.ts` | Unit | `route.ts` exports `POST` and `maxDuration === 30` and no `runtime` |
 | `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries with `model`; no key writes rules entries, makes no call and exits 0; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; output is byte-identical on a second run; a model check rejected with 404 (and with 403) prints the ERROR block naming the model, exits 1 and leaves the file untouched; a failed sample call after a passing check exits 1; the model line is printed |
 | `scripts/package-scripts.test.mts` | Unit | No `prebuild`, `postinstall` or `build` script, nor any script other than `precompute:samples`, mentions `precompute-samples` or `@google/genai` |
-| `src/lib/samples/explanations.test.ts` (extra) | Unit | An entry whose `llmFindings` cover only some findings gives medium texts for those and rule texts for the rest; an invalid file gives rule texts everywhere |
 | `origin.test.ts` | Unit | The ten Origin and Host cases in the "Origin check" table |
-| `privacy.test.ts` | Unit | Required phrases and banned claims in `OPT_IN_NOTICE`; README.md contains it word for word (from Task 34, when the README is finished) |
-| `src/lib/samples/explanations.test.ts` | Unit | The committed JSON passes Zod; every entry is consistent with the current analyzer output (R16.6) |
+| `privacy.test.ts` | Unit | Required phrases and banned claims in `OPT_IN_NOTICE` |
+| `src/lib/samples/explanations.test.ts` | Unit | The committed JSON passes Zod; every entry is consistent with the current analyzer output (R16.7); a partial entry gives medium texts for its IDs and rule texts for the rest, and an invalid file gives rule texts everywhere (R16.8) |
+| `scripts/docs.test.mts` | Unit | DEPLOY.md: "best-effort", "cold start", `store: false`, the logs-datasets URL, the Gemini terms URL, "redeploy", "billed", the paid-tier recommendation; no claim that Google keeps nothing. README.md: a "Privacy" section containing `OPT_IN_NOTICE` word for word. The DEPLOY.md part runs from Task 22.2, when DEPLOY.md is drafted |
 | `e2e/explain-route.spec.ts` | E2E | With no key: `POST /api/explain` returns `rules/no-key`; `GET` returns 405 |
 
 Vitest resolves `server-only` to its empty module through an alias in `vitest.config.mts`, because tests are not React server code. The protection still holds where it matters: `check:bundle` proves the key is not in the browser bundle, and the security reviewer checks that no `"use client"` file imports a server-only module.

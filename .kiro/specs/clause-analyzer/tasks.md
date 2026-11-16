@@ -21,7 +21,8 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The four rows of the "Boundary resolution" table in the design, including an indented list item after a paragraph break (R1.8 wins).
   - Implement `splitClauses` with candidate collection, snapping to the end of each whitespace run, and IDs `c-<start>`.
   - _Requirements: 1.3–1.11, 1.13_
-- [ ] 11.3 Write the splitter properties
+- [ ] 11.3 Write the shared generators and the splitter properties
+  - `src/lib/analyzer/arbitraries.test-util.ts` exports `anyString`, `utf16String`, `policyLike` and `bigString`, for all three specs. Exclude `src/**/*.test-util.ts` from coverage and from the purity scan.
   - `splitter.property.test.ts`:
     - P6: joining the clauses gives the input; spans are contiguous; no whitespace-only clause when the input has non-whitespace.
     - P8: IDs are `c-<start>` and unique.
@@ -99,8 +100,9 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - P10: severity is never above the unmasked rule severity, and a cancelled mitigation gives at least 1.
   - _Requirements: 3.1, 3.11, 4.1, 4.2, 5.5, 6.1, 7.1, 7.3, 10.2_
 - [ ] 14.4 Write `purity.test.ts`
-  - Fail on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, or any non-type import from outside `src/lib/analyzer/` in the analyzer source files.
-  - _Requirements: 7.2_
+  - Fail on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import, in the analyzer source files (not test files or test utilities).
+  - Fail on any `@/` import, or any import other than analyzer types, in `src/lib/samples/*.ts`.
+  - _Requirements: 7.2, 7.4_
 
 - [ ] 15. Three fictional sample policies
 - [ ] 15.1 Check the company names
@@ -115,8 +117,10 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The average sample scores 35–65.
     - The terrible sample scores ≥ 80 with a risky finding in each of the eight rooms.
     - Every sample is at most 50,000 characters and gives `likelyNonEnglish === false`.
+    - BUILD_LOG.md has a "Sample name check" heading naming each company (R11.2).
+    - No sample contains a URL, an email address or `©`, `®` or `™` (R11.8).
   - Print each sample's score and ghosts per room in the test output.
-  - _Requirements: 11.1, 11.3–11.7_
+  - _Requirements: 11.1–11.8_
 
 - [ ] 16. Coverage thresholds and Gate 2
 - [ ] 16.1 Enforce coverage in `vitest.config.mts`

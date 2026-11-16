@@ -21,6 +21,10 @@ flowchart LR
   L --> O
 ```
 
+## Imports
+
+Every analyzer and sample module uses relative imports only (R7.4), so `e2e/*.spec.ts` and `scripts/*.mts` can import `../src/lib/analyzer` and `../src/lib/samples` without the Next.js path alias.
+
 ## Files
 
 | File | Contents | Requirements |
@@ -352,6 +356,8 @@ The generators are:
 - `policyLike`: fragments joined from a pool. The pool holds the 28 positive and 16 negative example clauses, the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
 - `bigString`: a fragment from `policyLike` repeated up to a length drawn from `fc.integer({ min: 0, max: 50_000 })`, so sizes up to the cap are covered.
 
+The four generators are exported from one shared test-support module, `src/lib/analyzer/arbitraries.test-util.ts`. The llm-explainer (E6) and haunted-house-ui (U1, U4) properties import them from there. Files ending in `.test-util.ts` are test support: the app never imports them, they are excluded from coverage like `*.test.ts` files, and `purity.test.ts` skips them, because they import `fast-check`.
+
 | # | Property (PLAN.md section 4) | Requirement | Test file | Generator |
 | --- | --- | --- | --- | --- |
 | P1 | The Haunt Score is always a whole number from 0 to 100. | R5.2 | `score.property.test.ts` | Arrays of up to 400 `{ room, severity }`, and `analyze` on `policyLike` |
@@ -381,8 +387,8 @@ Further properties that support the six (also at 1,000 runs):
 | `language.test.ts` | Unit | Under 40 letters; Spanish, French and Japanese paragraphs; an English policy paragraph |
 | `analyze.test.ts` | Unit | Cap at 50,000 and 50,001 (R8); typed error; 50,000-character inputs finish in under 1 second (R6.3), for both realistic text and one 50,000-character clause with no terminators |
 | `analyze.property.test.ts` | Property | P2, P3, P4, P5, P9, P10 |
-| `purity.test.ts` | Unit | Reads the analyzer source files and fails on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, or any non-type import from outside `src/lib/analyzer/` (R7.2) |
-| `src/lib/samples/samples.test.ts` | Unit | Score bands, a risky finding in every room for the terrible sample, a mitigated wisp in the mild sample, length cap, `likelyNonEnglish === false` (R11.3–R11.7) |
+| `purity.test.ts` | Unit | Reads the analyzer source files (not `*.test.ts` or `*.test-util.ts`) and fails on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import (R7.2, R7.4). It also reads `src/lib/samples/*.ts` and fails on any `@/` import or any import other than analyzer types (R7.4) |
+| `src/lib/samples/samples.test.ts` | Unit | Score bands, a risky finding in every room for the terrible sample, a mitigated wisp in the mild sample, length cap, `likelyNonEnglish === false` (R11.3–R11.7); BUILD_LOG.md has the "Sample name check" heading naming each company (R11.2); no URL, email address or `©`/`®`/`™` in any sample (R11.8) |
 
 Coverage target: 90% of lines in `src/lib/analyzer/**`, enforced in `vitest.config.mts`.
 

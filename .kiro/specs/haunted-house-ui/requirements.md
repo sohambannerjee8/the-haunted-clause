@@ -47,7 +47,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 3. THE app SHALL provide a "Skip to content" link as the first focusable element, which moves focus to the main content.
 4. THE app SHALL use only fonts committed to the repository under the SIL Open Font License, with their licence files, loaded through `next/font/local`: Creepster for headings, room names and the band label; Atkinson Hyperlegible for all other text. The browser SHALL request no font from any other origin.
 5. THE app SHALL use only images and art made in this project (inline SVG and CSS) and SHALL load no image, audio or font from another origin.
-6. THE app SHALL NOT use `localStorage`, `sessionStorage`, cookies, IndexedDB or any analytics script.
+6. THE app SHALL NOT use `localStorage`, `sessionStorage`, cookies, IndexedDB or any analytics script. Verified by: `no-storage.test.ts`, which scans `src/` for `localStorage`, `sessionStorage`, `document.cookie` and `indexedDB`; and by `flow.spec.ts`, which after a full sample and pasted-text flow checks that both storages are empty, `document.cookie` is empty, `indexedDB.databases()` is empty, and no request went to a host other than the app's own.
 
 ### Requirement 2: Input screen
 
@@ -158,7 +158,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 1. WHILE reduced motion is not requested, ghosts SHALL animate as in design-language.md (bob, sway and glow by level); wisps SHALL drift slowly.
 2. WHILE reduced motion is requested, ghosts and wisps SHALL NOT animate: their computed `animation-name` SHALL be `none` and their transform SHALL not change over time; size, opacity, colour and numeral SHALL still show the level.
 3. THE app SHALL wrap its animated parts in `MotionConfig reducedMotion="user"`, and every CSS animation SHALL be disabled by a `prefers-reduced-motion: reduce` media query.
-4. NOTHING in the app SHALL flash more than 3 times in any one-second period.
+4. NOTHING in the app SHALL flash more than 3 times in any one-second period. To make this measurable, every animation SHALL last at least 1 second per cycle and SHALL change opacity through at most one peak per cycle. Verified by: `motion.spec.ts`, which reads `document.getAnimations()` on each sample's house and checks each animation's duration and the opacity values of its keyframes.
 
 ### Requirement 11: Sound
 
@@ -177,8 +177,8 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 
 #### Acceptance Criteria
 
-1. AT a viewport of 360 × 740 CSS pixels, on every screen and state, THE page SHALL have no horizontal scroll (`scrollWidth <= clientWidth`), no clipped text and no overlapping controls.
-2. AT a viewport of 1440 × 900, THE house SHALL use the 4 × 2 room layout.
+1. WHILE the viewport is 360 × 740 CSS pixels, on every screen and state, THE page SHALL have: no horizontal scroll (`document.documentElement.scrollWidth <= clientWidth`); no clipped text, meaning every visible `h1`–`h3`, `p`, `li`, `label`, `button`, `blockquote` and `a` has `scrollWidth <= clientWidth + 1` and a bounding box inside the viewport's width; and no overlapping controls, meaning no two visible buttons, links or form fields have bounding boxes that intersect.
+2. WHILE the viewport is 1440 × 900, THE house SHALL use the 4 × 2 room layout.
 3. THE detail panel SHALL fit within the viewport at 360 × 740, scrolling inside itself when its content is taller.
 
 ### Requirement 13: Not legal advice
@@ -202,7 +202,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 5. WHEN the result has `source: "llm"`, THE app SHALL merge it (llm-explainer R12), update the ghosts, detail texts, badges, Lights on list and Haunt Score, announce "The medium has spoken.", and hide the button.
 6. WHEN the result has `source: "rules"`, THE app SHALL keep the rule reading and show a short message for the reason: `rate-limited` "The medium needs a rest. Try again in a minute."; `timeout` "The medium took too long. Showing the rule reading."; any other reason "The medium is silent right now. Showing the rule reading."; and SHALL re-enable the button except after `no-key`.
 7. THE request body SHALL contain only the text of flagged clauses (llm-explainer R13); THE app SHALL never send the request automatically.
-8. BECAUSE `llmAvailable` is read when the page is built, docs/DEPLOY.md SHALL state that adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy before the opt-in button appears or disappears.
+8. THE docs/DEPLOY.md file SHALL state that `llmAvailable` is read when the page is built, so adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy before the opt-in button appears or disappears. Verified by: llm-explainer `scripts/docs.test.mts`.
 
 ### Requirement 15: Samples
 
@@ -212,7 +212,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 
 1. WHEN the user opens a sample, THE house view SHALL take its medium's reading from the committed `src/lib/samples/sample-explanations.json` (llm-explainer `sampleReading`). FOR each finding, it SHALL show the medium's text when the file has an explanation for that finding's ID, and the rule text otherwise, and each finding's badge SHALL say which ("Medium's reading" or "Rule reading").
 2. WHEN a sample is open, THE app SHALL make no request to `/api/explain` at any point, and neither the app nor the build SHALL call Google for samples (PLAN_DECISIONS.md C10.14).
-3. THE house view SHALL say which sample is open, by company name, and that it is a fictional company.
+3. THE house view SHALL say which sample is open, in the form "Sample: <company> (a fictional company)".
 
 ### Requirement 16: Edge states
 
@@ -245,7 +245,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 
 #### Acceptance Criteria
 
-1. WITH the network throttled to 1.6 Mbps down, 750 kbps up and 150 ms latency, and the browser cache empty, THE textarea SHALL be visible and accept typing within 5 seconds of navigation start.
+1. WHILE the network is throttled to 1.6 Mbps down, 750 kbps up and 150 ms latency, and the browser cache is empty, THE textarea SHALL be visible and accept typing within 5 seconds of navigation start.
 2. THE JavaScript transferred for the first load of `/` (gzip-encoded bytes, before any user action) SHALL be at most 200 kB, and the measured value SHALL be recorded in tech.md and BUILD_LOG.md.
 
 ### Requirement 19: Accessibility checks
@@ -272,7 +272,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 
 #### Acceptance Criteria
 
-1. AT Gate 4, THE builder SHALL save PNG screenshots to `docs/screenshots/` of these six states, each at 1440 × 900 and at 360 × 740 (12 files): the input screen; the house for the mild, average and terrible samples; an open ghost detail panel (the first severity 3 ghost of the terrible sample); and Lights on mode (terrible sample).
+1. WHEN Gate 4 runs, THE builder SHALL save PNG screenshots to `docs/screenshots/` of these six states, each at 1440 × 900 and at 360 × 740 (12 files): the input screen; the house for the mild, average and terrible samples; an open ghost detail panel (the first severity 3 ghost of the terrible sample); and Lights on mode (terrible sample).
 2. THE files SHALL be named `<state>-<width>.png`, for example `house-terrible-1440.png` and `detail-360.png`, and SHALL be made by a Playwright spec, `e2e/screenshots.spec.ts`, that runs only through `npm run screenshots` and not as part of `npm run test:e2e`.
 3. EACH screenshot SHALL be taken with reduced motion on, so that ghosts are still and the images are repeatable, and with fonts loaded (`document.fonts.ready`).
-4. AFTER Gate 4 passes, THE builder SHALL show the screenshots to the user and SHALL NOT start Phase 5 until the user has reviewed them.
+4. WHEN Gate 4 has passed, THE builder SHALL show the screenshots to the user and SHALL NOT start Phase 5 until the user has reviewed them. Verified by: BUILD_LOG.md, which records the date the screenshots were shown and the user's reply before any Phase 5 entry.

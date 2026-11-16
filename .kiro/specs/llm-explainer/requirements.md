@@ -11,7 +11,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 ## Glossary
 
 - **Route**: the Next.js route handler at `src/app/api/explain/route.ts`, path `POST /api/explain`.
-- **Handler**: the function built by `createExplainHandler({ provider, rateLimiter, now })` that the route exports as `POST`.
+- **Handler**: the function built by `createExplainHandler({ provider, rateLimiter, now, log, isKeySet })` that the route exports as `POST`.
 - **Provider**: an object with `explain(clauses, { signal }): Promise<string>` that returns the model's raw text. The real provider is the Gemini provider; tests use mocks.
 - **Key**: the value of the `GEMINI_API_KEY` environment variable. "No key" means the variable is unset, empty or only whitespace.
 - **Flagged clause**: the text of a clause that has a finding from the analyzer (any severity, 0–3).
@@ -56,7 +56,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 
 1. WHEN there is no key, THE handler SHALL respond with HTTP 200 and `{ source: "rules", reason: "no-key", findings: [] }` and SHALL NOT make any outbound network call.
 2. THE server SHALL expose `isLlmAvailable(): boolean`, which returns `true` only when a key is set, so that the page can pass only this boolean to the browser.
-3. WHEN there is no key, every analyzer feature SHALL still work; the explainer SHALL only ever replace explanation texts and raise severities, never be required for a result.
+3. THE clause-analyzer modules SHALL NOT import any module from `src/lib/llm/` (checked by the clause-analyzer `purity.test.ts`), so that a full rule-based result exists without the explainer. WHEN the app is built with no key, the house view SHALL show every finding with its rule text and the "Rule reading" badge, and the E2E suite's no-key project SHALL pass (checked by haunted-house-ui `flow.spec.ts`).
 
 ### Requirement 4: Call Gemini safely
 
@@ -78,6 +78,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 
 1. WHEN the provider has not returned 15 seconds after the call starts, THE handler SHALL abort the call through its `AbortSignal` and respond with HTTP 200 and `{ source: "rules", reason: "timeout", findings: [] }`.
 2. THE handler SHALL respond within 15.5 seconds of the call starting, even if the provider ignores the abort signal.
+3. docs/DEPLOY.md SHALL state that Google may still process and bill a call that this app has stopped waiting for, because aborting only stops the client (PLAN_DECISIONS.md C10.10). Verified by: `scripts/docs.test.mts`.
 
 ### Requirement 6: Validate the model's output
 
@@ -119,7 +120,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 2. WHEN a request goes over the limit, THE handler SHALL respond with HTTP 429, the header `Retry-After` giving the whole seconds until the oldest counted request leaves the window (at least 1), and `{ source: "rules", reason: "rate-limited", findings: [] }`, and SHALL NOT call the provider.
 3. THE rate limiter SHALL read the client IP from the first of these that is present and non-empty: `x-vercel-forwarded-for`; the first comma-separated value of `x-forwarded-for`, trimmed; `x-real-ip`. WHEN none is present, it SHALL use the shared key `"unknown"`.
 4. THE rate limiter SHALL keep its counts in memory in the server instance, take the current time from an injected clock, remove timestamps older than the window, and hold at most 10,000 IP keys, removing the least recently used key when a new one would exceed that.
-5. THE rate limiter's code SHALL carry a comment citing https://vercel.com/docs/headers/request-headers for the header order, and docs/DEPLOY.md SHALL state that the limit is best-effort: each instance keeps its own counts, counts reset on a cold start, and instances do not share counts.
+5. THE rate limiter's code SHALL carry a comment citing https://vercel.com/docs/headers/request-headers for the header order, and docs/DEPLOY.md SHALL state that the limit is best-effort: each instance keeps its own counts, counts reset on a cold start, and instances do not share counts. Verified by: `rateLimit.test.ts` (reads the source for the URL) and `scripts/docs.test.mts`.
 
 ### Requirement 10: Log reason codes only
 
@@ -178,7 +179,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 
 #### Acceptance Criteria
 
-1. EVERY module that reads `GEMINI_API_KEY` SHALL import `server-only`, except the build-time precompute script.
+1. EVERY module that reads `GEMINI_API_KEY` SHALL import `server-only`, except `scripts/precompute-samples.mts`, which runs only by hand (Requirement 16.1) and never in the browser or the build.
 2. THE project SHALL NOT define any `NEXT_PUBLIC_` variable that holds the key or any part of it.
 3. WHEN the app is built with `GEMINI_API_KEY` set to a canary value, `npm run check:bundle` SHALL find neither the canary value nor the string `GEMINI_API_KEY` in any file under `.next/static`, and SHALL exit non-zero if it finds either.
 
@@ -195,7 +196,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 5. WHEN there is no key, THE script SHALL make no network call; it SHALL keep each existing entry that is valid and consistent, write the rule-based entry for any other sample, print `precompute: no GEMINI_API_KEY; writing rule-based readings` and exit with code 0.
 6. THE script SHALL print one summary line per sample with the sample ID, source, number of LLM findings and model, and no clause text.
 7. EACH entry in the sample explanations file SHALL hold `source`, `model` (`null` for rules), `findingIds` (the analyzer's finding IDs for that sample, in order) and `llmFindings` (empty for rules). An entry is "consistent" when its `findingIds` equal the analyzer's current finding IDs for that sample and every `llmFindings` ID is in `findingIds`. A test SHALL fail when any entry is not consistent, so that changing a sample or a rule without rerunning the script fails the tests.
-8. AT runtime, `sampleReading(id)` SHALL validate the file with Zod and return the entry's LLM findings, or none when the file or entry is invalid. FOR each finding of the sample, THE UI SHALL show the medium's text when the file has an LLM finding with that finding's ID, and the rule text otherwise (merge, Requirement 12). It SHALL never fetch.
+8. WHEN the app runs, `sampleReading(id)` SHALL validate the file with Zod and return the entry's LLM findings, or none when the file or entry is invalid. FOR each finding of the sample, THE UI SHALL show the medium's text when the file has an LLM finding with that finding's ID, and the rule text otherwise (merge, Requirement 12). It SHALL never fetch.
 9. THE rule-based entry for a sample SHALL have `source: "rules"`, `model: null`, the analyzer's finding IDs and `llmFindings: []`.
 10. THE committed sample explanations file SHALL contain rule-based entries until the user regenerates it with a key and commits it (PLAN_DECISIONS.md C9 step 2).
 11. THE script output SHALL be deterministic for the same model output: no timestamps, findings in analyzer order, keys in a fixed order and a trailing newline.
@@ -215,5 +216,5 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
    - Only the flagged clauses are sent, to Google Gemini.
    - Google processes them under its own terms, with a link to https://ai.google.dev/gemini-api/terms.
 2. THE opt-in notice, the README and docs/DEPLOY.md SHALL NOT claim that Google keeps nothing, deletes the clauses or never uses them.
-3. docs/DEPLOY.md SHALL explain that every Gemini call sets `store: false`, and SHALL cite https://ai.google.dev/gemini-api/docs/logs-datasets (Google's page on request-level `store`, which says `generateContent` stores requests by default for projects created on or after 26 October 2026). It SHALL also say that this setting controls Google's request logging only, and that Google's terms for free and paid tiers still apply.
-4. THE notice text SHALL be defined once, in `src/lib/llm/privacy.ts`, and the README text SHALL match it; a test SHALL check that the notice contains "does not store", "flagged clauses", "Google" and "terms", and contains none of "Google does not store", "Google keeps nothing", "deleted" or "never used".
+3. docs/DEPLOY.md SHALL explain that every Gemini call sets `store: false`, and SHALL cite https://ai.google.dev/gemini-api/docs/logs-datasets (Google's page on request-level `store`, which says `generateContent` stores requests by default for projects created on or after 26 October 2026). It SHALL also say that this setting controls Google's request logging only, and that Google's terms for free and paid tiers still apply. Verified by: `scripts/docs.test.mts`.
+4. THE notice text SHALL be defined once, in `src/lib/llm/privacy.ts`, and the README SHALL contain it word for word in a "Privacy" section from Task 17.5 onward; a test SHALL check that the notice contains "does not store", "flagged clauses", "Google" and "terms", and contains none of "Google does not store", "Google keeps nothing", "deleted" or "never used".

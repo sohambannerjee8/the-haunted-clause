@@ -10,7 +10,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - 0, 1, 40 and 41 clauses; text of 1,500 and 1,501 characters; a bad ID; a duplicate ID; an extra property.
     - The response schema rules (`reason` present only for `rules`).
     - The Gemini JSON Schema uses only supported keywords.
-  - _Requirements: 2.3, 6.1, 8.1, 16.6_
+  - _Requirements: 2.3, 6.1, 8.1, 16.7_
 - [ ] 17.2 Write `parse.test.ts` and `parse.property.test.ts`, then `parse.ts`
   - Unit tests: good output; not JSON; schema mismatch; text over 400 characters; trimming; unknown IDs dropped; the first duplicate kept; nothing left gives invalid.
   - Property E4 (parser part): `fc.anything()`, `fc.jsonValue()` and `fc.string({ unit: "binary" })` never throw.
@@ -23,10 +23,10 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Unit tests: no findings gives `null`; 41 findings keep the top 40 by severity in input order; a 1,600-character quote is cut to 1,500; a cut that would split a surrogate pair backs off by one.
   - Property E6, on `analyze()` output from the analyzer's `policyLike` generator.
   - _Requirements: 13.1–13.4_
-- [ ] 17.5 Write `privacy.test.ts`, then `privacy.ts`
+- [ ] 17.5 Write `privacy.test.ts` and the README part of `scripts/docs.test.mts`, then `privacy.ts` and the README "Privacy" section
   - Add `OPT_IN_NOTICE` and `GEMINI_TERMS_URL`.
   - Test the required phrases ("does not store", "flagged clauses", "Google", "terms") and the banned claims.
-  - The README word-for-word check is added in Task 34.
+  - Add a "Privacy" section to README.md now, containing `OPT_IN_NOTICE` word for word and the terms link. `docs.test.mts` checks it from this task onward.
   - _Requirements: 17.1, 17.2, 17.4_
 
 - [ ] 18. Gemini provider and timeout
@@ -77,7 +77,8 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Wire the real provider, one module-level rate limiter, `Date.now` and `console.info`.
   - Add `e2e/explain-route.spec.ts`: with no key, `POST` returns 200 `rules/no-key` and `GET` returns 405.
   - Demo: `curl -X POST localhost:3100/api/explain -d '{"clauses":[…]}'` against `next start` with no key returns `{"source":"rules","reason":"no-key","findings":[]}`.
-  - _Requirements: 1.1–1.3, 3.1_
+  - R3.3 is checked by the clause-analyzer `purity.test.ts` (no import from `src/lib/llm/`) and by haunted-house-ui `flow.spec.ts` (no-key build shows rule texts and badges).
+  - _Requirements: 1.1–1.3, 3.1, 3.3_
 - [ ] 20.4 Write `client.test.ts` (mocked fetch), then `client.ts`
   - Tests: success; 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; a network error gives `error`; the 20 s timeout gives `error`; no findings makes no fetch.
   - _Requirements: 14.1–14.3_
@@ -119,8 +120,15 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - _Requirements: 15.2, 15.3_
 - [ ] 22.2 Run the checks
   - `npm run check:bundle`, `npm audit --omit=dev --audit-level=high`, `npm run test:coverage` (lines ≥ 90% for `src/lib/llm/**`), `npm run typecheck` and `npm run lint`, all with zero errors.
-  - Draft these paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R9.5, R17.3, C10.14, C10.16): privacy; the best-effort rate limit; `store: false` with the Google citation; samples come from the committed JSON, so run `npm run precompute:samples` and commit before deploying; `llmAvailable` is read at build time, so adding or changing the key on Vercel needs a redeploy.
-  - _Requirements: 9.5, 15.3, 17.3_
+  - Draft these paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R5.3, R9.5, R17.3, C10.10, C10.14, C10.16):
+    - Privacy.
+    - The best-effort rate limit.
+    - `store: false`, with the Google citation.
+    - A timed-out call may still be processed and billed by Google.
+    - Samples come from the committed JSON, so run `npm run precompute:samples` and commit before deploying.
+    - `llmAvailable` is read at build time, so adding or changing the key on Vercel needs a redeploy.
+  - Add the DEPLOY.md part of `scripts/docs.test.mts` and see it pass.
+  - _Requirements: 5.3, 9.5, 15.3, 17.3; haunted-house-ui 14.8_
 - [ ] 22.3 Run Gate 3
   - Run the `security-reviewer` and `test-verifier` sub-agents in parallel.
   - Save each report unchanged to `docs/gate-reports/phase-3-<agent>-attempt-N.md`, and append the results to BUILD_LOG.md.

@@ -108,7 +108,7 @@ flowchart LR
   - Severity becomes `max(rule, llm)`.
   - The quote always comes from the analyzer.
 - **Prompt injection:** Clause text is treated as data in the system instruction, and explanations are rendered as plain text, never as HTML.
-- **Server-only code:** `import "server-only"` keeps the provider code out of the browser bundle. The route handler is built by a factory (`createExplainHandler({ provider, rateLimiter, now })`) so tests can pass in mocks.
+- **Server-only code:** `import "server-only"` keeps the provider code out of the browser bundle. The route handler is built by a factory (`createExplainHandler({ provider, rateLimiter, now, log, isKeySet })`) so tests can pass in mocks.
 - **Logging:** Only reason codes are logged, never request bodies or clause text.
 - **Route settings:** no `runtime` export (C10.10: Next.js 16 with Cache Components rejects it; the route runs on Node.js). `maxDuration = 30` (Vercel Hobby allows up to 300 s).
 - **Precompute:** The sample precompute script (C1.3) reuses the provider, schema and merge code.
@@ -158,7 +158,7 @@ These are fixtures, checked in both unit and E2E tests.
   - `src/lib/analyzer/**`: 90% of lines.
   - `src/lib/llm/**`: 90% of lines.
   - Everything else: 80% of lines.
-- **E2E setup:** Tests run against `next build && next start` with no key. The pasted-text LLM path is stubbed in the browser with `page.route`.
+- **E2E setup:** Tests run against `next build && next start` with no key. The pasted-text LLM path is stubbed in the browser with `page.route`. Exception (C10.18): the `llm-ui` project builds with a placeholder key value so that `llmAvailable` is true, and its server's outbound traffic goes to a dead local proxy.
 - **Scripts in `scripts/`:**
   - `secret-scan.mjs` scans files, the staged diff, or STDIN (for `git log -p --all`). It detects Google keys (`AIza…`), private key blocks, `sk-` style keys, and env assignments that look like keys.
   - `check-repo-rules.mjs` runs `git check-ignore` on paths inside `.kiro`, checks the MIT LICENSE text, and checks that `.env.example` is tracked with no value set.
@@ -239,6 +239,20 @@ These are fixtures, checked in both unit and E2E tests.
     - After Gate 4 passes, show them to the user and stop before Phase 5. The agents check function and accessibility; the user judges the look.
 16. **Redeploy note.** `llmAvailable` is read when the page is built, so docs/DEPLOY.md must say that adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy.
 17. **haunted-house-ui requirements and design approved** on 16 November 2026, with additions 14–16.
+18. **Placeholder key in one E2E project (builder fix after Gate 1 attempt 1).**
+    - The approved haunted-house-ui design builds the `llm-ui` Playwright project with `GEMINI_API_KEY=placeholder-e2e-not-a-real-key`, only so that `llmAvailable` is true and the opt-in UI can be tested.
+    - The spec-reviewer pointed out that this contradicts C8 ("with no key") and that a missed browser stub would let the server call Google.
+    - Fix: that project's `next start` runs behind a dead local proxy (`NODE_USE_ENV_PROXY=1`, `HTTPS_PROXY`/`HTTP_PROXY=http://127.0.0.1:9`, `NO_PROXY=localhost,127.0.0.1`). A server guard test proves an unstubbed explain request returns `rules/error` within 5 s, and a browser guard proves no request leaves localhost.
+    - Every other E2E project runs with no key.
+19. **Spec traceability fixes from Gate 1 attempt 1** (no change to approved behaviour):
+    - Measurable wording for llm-explainer R3.3 and haunted-house-ui R10.4 and R12.1.
+    - Named checks for haunted-house-ui R1.6 and R15.3.
+    - New llm-explainer R5.3 for the "may still be billed" DEPLOY.md note (C10.10).
+    - `scripts/docs.test.mts` for the DEPLOY.md and README statements.
+    - The README privacy section moves to Task 17.5.
+    - Relative imports for analyzer and sample modules (clause-analyzer R7.4).
+    - One shared generator module, `src/lib/analyzer/arbitraries.test-util.ts`.
+    - Requirement-number fixes, and EARS lead words corrected.
 
 ## D. Task map (spec tasks.md files must match these ranges)
 

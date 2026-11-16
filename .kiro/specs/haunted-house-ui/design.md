@@ -211,7 +211,7 @@ All properties use `fc.assert(..., { numRuns: 1000 })`.
 | U3 | For any `count` ≥ 1, any start index in range and any sequence of keys, `nextIndex` keeps the index in `[0, count)`. Each arrow key followed by its opposite returns to the start, and Home and End give 0 and `count − 1` | R9.3 | `roving.property.test.ts` |
 | U4 | For any findings, every `ghostLabel` names the finding's own room and severity, and the labels within a room are in the same order as the buttons | R5.2 | `houseModel.property.test.ts` |
 
-Findings for U1 and U4 come from `analyze()` on the analyzer's `policyLike` generator, plus arbitrary `{ room, severity }` lists.
+Findings for U1 and U4 come from `analyze()` on `policyLike` from `src/lib/analyzer/arbitraries.test-util.ts`, plus arbitrary `{ room, severity }` lists.
 
 ## E2E setup
 
@@ -220,14 +220,17 @@ Playwright runs two production servers:
 | Project | Port | Build | Purpose |
 | --- | --- | --- | --- |
 | `no-key` | 3100 | `.next`, `GEMINI_API_KEY` empty | Every flow, samples, keyboard, motion, layout, axe, edge states, performance, the no-key route |
-| `llm-ui` | 3101 | `HC_DIST_DIR=.next-e2e-llm`, `GEMINI_API_KEY=placeholder-e2e-not-a-real-key` (the build never calls Google, C10.14) | The opt-in UI with `llmAvailable` true. Every `/api/explain` call is answered by `page.route` stubs in the browser, so the server never contacts Google |
+| `llm-ui` | 3101 | `HC_DIST_DIR=.next-e2e-llm`, `GEMINI_API_KEY=placeholder-e2e-not-a-real-key` (the build never calls Google, C10.14); `next start` runs with `NODE_USE_ENV_PROXY=1`, `HTTPS_PROXY=http://127.0.0.1:9`, `HTTP_PROXY=http://127.0.0.1:9` and `NO_PROXY=localhost,127.0.0.1` | The opt-in UI with `llmAvailable` true. Every `/api/explain` call from the browser is answered by `page.route` stubs. The server's outbound HTTP and HTTPS go to a dead local port, so even a missed stub cannot reach Google (PLAN_DECISIONS.md C10.18) |
 
 - `next.config.ts` gets `distDir: process.env.HC_DIST_DIR || ".next"`, so the second build does not overwrite the first.
 - The placeholder value starts with "placeholder", so the secret scanner's placeholder rule ignores it, and it is not key-shaped.
-- The `llm-ui` project also runs a guard test: it fails if any request leaves the browser for a host other than `localhost`.
+- The `llm-ui` project runs two guard tests:
+  - **Browser guard:** it fails if any request leaves the browser for a host other than `localhost`.
+  - **Server guard:** it sends a valid explain request straight to the server with Playwright's `request` fixture (no stub). It must get `200 { source: "rules", reason: "error" }` within 5 s, which proves the server cannot reach Google. A check run on 16 November 2026 showed Node 26 with these proxy variables refuses an outbound HTTPS `fetch` in about 5 ms.
+  - If the server guard gets anything else, the whole `llm-ui` project is treated as unsafe and fails.
 - `.next-e2e-llm` is added to `.gitignore`. Folders under `.kiro` are not affected.
 
-E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to compute the expected rooms, severities and score, so the browser result is compared with the pure function's result. This needs the analyzer and sample modules to use relative imports only, which the clause-analyzer design already requires for its purity rule.
+E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to compute the expected rooms, severities and score, so the browser result is compared with the pure function's result. This works because the analyzer and sample modules use relative imports only (clause-analyzer R7.4, checked by `purity.test.ts`). The generators for U1 and U4 come from `src/lib/analyzer/arbitraries.test-util.ts`.
 
 ## Testing
 
@@ -244,6 +247,8 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 | `LightsOnList.test.tsx` | Same findings as the model; Quiet rooms; no SVG; the notice at the top |
 | `OptInPanel.test.tsx` | Hidden when `llmAvailable` is false (the "no medium" line shown); hidden for samples; listening state; the success merge; each failure message; no call without a press |
 | `Footer.test.tsx` | "Not legal advice" |
+| `no-storage.test.ts` | Scans `src/` (not tests) for `localStorage`, `sessionStorage`, `document.cookie` and `indexedDB`, and fails on any match (R1.6) |
+| `Toolbar.test.tsx` | Sample name line "Sample: <company> (a fictional company)" for each sample; no sample line for pasted text (R15.3) |
 | `sound.test.ts` | No `AudioContext` before `enable()`; pitch per severity; duration ≤ 600 ms (mocked `AudioContext`) |
 | `houseModel.test.ts`, `roving.test.ts` | Examples, plus properties U1–U4 |
 
@@ -251,13 +256,13 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 
 | Spec | Project | Covers | Requirements |
 | --- | --- | --- | --- |
-| `flow.spec.ts` | no-key | For each sample: open it; 8 rooms in order; per-room counts, `data-severity` and score equal the analyzer's; open a ghost, and the quote equals `text.slice(start, end)` with the right badge; no request to `/api/explain` (request listener); Read another policy. Pasted text: type a short policy, Analyze, and see the house | R3, R4, R5, R6, R7, R15 |
+| `flow.spec.ts` | no-key | For each sample: open it; the toolbar reads "Sample: <company> (a fictional company)"; 8 rooms in order; per-room counts, `data-severity` and score equal the analyzer's; open a ghost, and the quote equals `text.slice(start, end)` with the right badge; no request to `/api/explain` (request listener); Read another policy. Pasted text: type a short policy, Analyze, see the house with rule texts and "Rule reading" badges (llm-explainer R3.3). After all flows: both storages empty, no cookie, no IndexedDB database, and no request to any host other than the app's own (R1.6) | R3, R4, R5, R6, R7, R15 |
 | `keyboard.spec.ts` | no-key | Terrible sample: Tab visits the 8 rooms in order (one stop each); arrows, Home and End reach every ghost in each room; Enter opens, Escape closes, and focus returns to the same ghost; Tab after a ghost goes to the next room | R9 |
 | `lights.spec.ts` | no-key | Same findings as the house for all samples; Quiet rooms; focus stays on the toggle | R8 |
 | `optin.spec.ts` | llm-ui | Button and notice shown for pasted text; hidden for samples; stub success updates the badges and the score; stub failures (`rate-limited`, `timeout`, network abort) keep the rules and show the messages; the request body holds only flagged-clause text (every `text` is a substring of a finding quote, and the unflagged sentences are absent); no request before the press | R14 |
 | `optin-hidden.spec.ts` | no-key | The button is absent; the "no medium" line is shown | R14.2 |
-| `motion.spec.ts` | no-key | With `reducedMotion: "reduce"`, every `.hc-ghost` has `animation-name: none`; without it, level 3 ghosts have a running animation; sound off on load and no `AudioContext` constructed (an init script counts constructor calls) | R10, R11 |
-| `layout.spec.ts` | no-key | 360 × 740 and 1440 × 900 on the input screen, each sample house, an open dialog and Lights on: no horizontal scroll; 2 or 4 grid columns | R12 |
+| `motion.spec.ts` | no-key | With `reducedMotion: "reduce"`, every `.hc-ghost` has `animation-name: none`; without it, level 3 ghosts have a running animation; on each sample's house, every entry of `document.getAnimations()` lasts at least 1 s per cycle and has at most one opacity peak in its keyframes (R10.4); sound off on load and no `AudioContext` constructed (an init script counts constructor calls) | R10, R11 |
+| `layout.spec.ts` | no-key | 360 × 740 and 1440 × 900 on the input screen, each sample house, an open dialog and Lights on: no horizontal scroll; no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width); no two visible controls' bounding boxes intersect; 2 or 4 grid columns | R12 |
 | `a11y.spec.ts` | both | The axe scan of every state in R19.1, with `withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa","wcag22aa"])`, failing on serious or critical | R19 |
 | `edge.spec.ts` (Phase 5) | no-key | Empty input; exactly 50,000 characters; the 50,001st blocked; a 60,000-character paste cut with the notice; a Spanish and a Japanese paragraph show the notice; a policy with no risky clauses shows "No ghosts here"; a wisps-only policy | R2, R16 |
 | `loading.spec.ts` (Phase 5) | no-key | Block the house chunk with `page.route`, see the error and "Try again", unblock, retry, and the house opens with the text kept | R17 |
