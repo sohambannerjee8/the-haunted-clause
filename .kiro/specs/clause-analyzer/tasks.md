@@ -29,8 +29,8 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Generators: `anyString`, `utf16String`, `policyLike`, and `overCapString` for inputs over the cap (R1.12).
   - _Requirements: 1.1, 1.2, 1.5, 1.6, 1.12, 1.13_
 
-- [ ] 12. Rule table and classifier
-- [ ] 12.1 Write `rules.test.ts`, then `rules.ts`
+- [x] 12. Rule table and classifier
+- [x] 12.1 Write `rules.test.ts`, then `rules.ts`
   - Add the 40 rules and 11 mitigations from the design, and `EXCEPTION_MARKER` with all eight markers.
   - Tests:
     - Each room has at least 3 rules.
@@ -39,7 +39,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - Explanation and "why it matters" texts are 1–400 characters.
     - No pattern has the `g` or `y` flag.
   - _Requirements: 2.6, 2.8, 3.8, 4.5_
-- [ ] 12.2 Write `classifier.test.ts` with the 44 room examples, then `classifier.ts`
+- [x] 12.2 Write `classifier.test.ts` with the 44 room examples, then `classifier.ts`
   - Write one test per row of the "Room examples" table (28 positive with expected room, severity and rule; 16 negative).
   - Add tests for:
     - The room tie-break (room order).
@@ -50,7 +50,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - Each finding's `explanation` and `whyItMatters` equal the texts of the rule named by `ruleId` (R4.5).
   - Implement `classifyClause`, steps 1–5 of the design's classifier algorithm.
   - _Requirements: 2.1–2.5, 2.7, 2.8, 4.1–4.3, 4.5_
-- [ ] 12.3 Write `mitigation.test.ts`, then the mitigation logic
+- [x] 12.3 Write `mitigation.test.ts`, then the mitigation logic
   - Write one test per row of the 19-row "Mitigation and exception-marker tests" table, including:
     - The three R3.10 cases.
     - The eight marker rows, each asserting `mitigationId === null` and `cancelledMitigationId !== null`.
