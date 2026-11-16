@@ -430,3 +430,25 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
 
 **Phase 1 complete.** All three specs have approved requirements and designs, a task list, and full traceability.
 - **Push after Gate 1 (C10.21):** `git push` sent `2e5813c..1ea557b` to `origin/main` after `check:secrets` (65 tracked files), `check:history`, `check:rules` and `check:trace` all passed. Local `main` and `origin/main` match.
+
+---
+
+## Phase 2: Analyzer core (started 16 November 2026)
+
+PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
+
+### Task 11: types, rooms, clause splitter (clause-analyzer spec)
+- **11.1:** `src/lib/analyzer/rooms.test.ts` (4 tests) failed with "Failed to resolve import ./rooms". Then `types.ts` and `rooms.ts` were written, and the 4 tests passed. Kiro's Test on save hook ran the related tests on its own when `rooms.ts` was saved (`.hook-runs/hook-runs.log`: `test-on-save exit=0 src/lib/analyzer/rooms.ts`).
+- **11.2:** `splitter.test.ts` (45 tests) was written first and failed (no module), then `splitter.ts`. All 45 passed on the first run. The tests cover:
+  - every abbreviation, in both forms;
+  - `etc.` before a paragraph break, and `zinc. Then`;
+  - closers, CRLF and emoji;
+  - seven list-marker styles;
+  - the four boundary-resolution rows from the design.
+  One always-true condition left in the paragraph-break check was removed afterwards, and the tests still passed.
+- **11.3:** shared generators in `src/lib/analyzer/arbitraries.test-util.ts`: `anyString`, `utf16String`, `policyLike`, `bigString`, `overCapString` and `riskyClause`. The 44 room example clauses moved into one fixture, `examples.test-util.ts`, which both the generators and the classifier tests use. `vitest.config.mts` now excludes `*.test-util.ts` from coverage.
+- **Property-based testing caught a bug the unit tests missed.**
+  - P6 (no whitespace-only clause when the input has text, R1.5) failed after 70 runs, with the counterexample `"\r\n\nWe may sell your personal information to third parties."`. A second P6 run over the cap failed with `"\n\n!\n\n!…"`.
+  - Cause: a paragraph break at the very start of the input put a boundary at the end of the leading blank line, which left a first clause made only of whitespace. None of the 45 unit tests started with a blank line.
+  - Fix, test first: a regression test with three such inputs was added and failed, then the splitter merged a whitespace-only first clause into the next. Result: 54 analyzer tests pass, including P6 and P8 at 1,000 runs each, on normal and over-cap inputs.
+- Spec task status: Tasks 11, 11.1, 11.2 and 11.3 were marked `[x]` by editing `tasks.md`. Kiro's Spec sync hook is a `PostTaskExec` trigger, which fires when a task is run from Kiro's spec task interface, not when the checkbox is edited by hand. So it did not fire, and this entry was written by the builder.
