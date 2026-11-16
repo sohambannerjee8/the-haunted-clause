@@ -77,14 +77,14 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Generator: arrays of up to 400 `{ room, severity }`.
   - _Requirements: 5.2, 5.6_
 
-- [ ] 14. `analyze()` and the non-English flag
-- [ ] 14.1 Write `language.test.ts`, then `language.ts`
+- [x] 14. `analyze()` and the non-English flag
+- [x] 14.1 Write `language.test.ts`, then `language.ts`
   - Tests:
     - Under 40 letters gives `false`.
     - Spanish, French and Japanese paragraphs give `true`.
     - An English policy paragraph gives `false`.
   - _Requirements: 9.1–9.5_
-- [ ] 14.2 Write `analyze.test.ts`, then `analyze.ts` and `index.ts`
+- [x] 14.2 Write `analyze.test.ts`, then `analyze.ts` and `index.ts`
   - Tests:
     - Exactly 50,000 characters gives `ok: true`.
     - 50,001 characters gives the typed `too-long` error, with no splitting.
@@ -92,7 +92,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - Findings come in input order.
     - 50,000-character inputs finish in under 1 second, both realistic text and one long clause with no terminators.
   - _Requirements: 4.4, 6.2, 6.3, 8.1–8.3, 9.6_
-- [ ] 14.3 Write `analyze.property.test.ts`
+- [x] 14.3 Write `analyze.property.test.ts`
   - P2: appending one of the 28 positive examples at a clause boundary never lowers the score.
   - P3: quotes equal `input.slice(start, end)`, are non-empty and have no edge whitespace.
   - P4: never throws, for `anyString`, `utf16String`, `policyLike` and `bigString` up to the cap; `overCapString` gives the typed `too-long` result.
@@ -101,7 +101,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - P9: every room is one of the eight IDs.
   - P10: severity is never above the unmasked rule severity, and a cancelled mitigation gives at least 1.
   - _Requirements: 2.1, 3.1, 3.11, 4.1–4.3, 5.5, 6.1, 6.2, 7.1, 7.3, 10.2_
-- [ ] 14.4 Write `purity.test.ts`
+- [x] 14.4 Write `purity.test.ts`
   - Fail on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import, in the analyzer source files (not test files or test utilities).
   - Fail on any `@/` import in `src/lib/samples/*.ts` (not test files). Also fail when `mild.ts`, `average.ts` or `terrible.ts` imports anything other than analyzer types, when `meta.ts` imports anything, or when `index.ts` imports anything other than the three text modules and `meta.ts`. `explanations.ts` is bound only by the relative-import rule. Files that do not exist yet are skipped.
   - _Requirements: 7.2, 7.4_
