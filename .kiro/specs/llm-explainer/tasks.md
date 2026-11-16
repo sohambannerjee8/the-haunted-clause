@@ -117,7 +117,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Demo: `npm run build` with no key succeeds, the file is unchanged afterwards (`git diff --exit-code`), and the build log shows no precompute step.
   - _Requirements: 16.1, 16.2, 16.7–16.10_
 
-- [ ] 22. Bundle check, audit and Gate 3
+- [x] 22. Bundle check, audit and Gate 3
 - [x] 22.1 Write `scripts/check-bundle.mjs`
   - Build with a runtime-generated canary key (the build makes no call to Google), then search `.next/static/**` for the canary and for `GEMINI_API_KEY`, and exit 0 or 1.
   - Test it by running it, and once with a deliberately planted file under a temporary copy of `.next/static` to see it fail. Then remove the planted file.
@@ -133,7 +133,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - `llmAvailable` is read at build time, so adding or changing the key on Vercel needs a redeploy.
   - Add the DEPLOY.md part of `scripts/docs.test.mts` and see it pass.
   - _Requirements: 5.3, 9.5, 15.3, 17.3; haunted-house-ui 14.8_
-- [ ] 22.3 Run Gate 3
+- [x] 22.3 Run Gate 3
   - Run the `security-reviewer` and `test-verifier` sub-agents in parallel.
   - Save each report unchanged to `docs/gate-reports/phase-3-<agent>-attempt-N.md`, and append the results to BUILD_LOG.md.
   - Pass when the key never reaches the browser bundle, pasted text is not logged or stored, and the app works with no key.

@@ -31,7 +31,7 @@ inclusion: always
 
 - Env vars: `GEMINI_API_KEY` (optional; without it the app uses rule-based readings) and `GEMINI_MODEL` (optional override).
 - The key is read only in server code marked `import "server-only"`. It must never appear in `.next/static` or any client component.
-- One server route: `POST /api/explain`. Runtime `nodejs`. 15-second timeout via AbortController. Response validated with Zod.
+- One server route: `POST /api/explain`. It runs on the Node.js runtime with no `runtime` export, because Cache Components rejects that export (PLAN_DECISIONS.md C10.10); `maxDuration = 30`. 15-second timeout via AbortController. Response validated with Zod.
 - Only clauses the classifier flagged are sent. Pasted text is sent only after the user opts in. Samples never call the route, and the build never calls Google; sample explanations are precomputed by hand with `npm run precompute:samples` into the committed `src/lib/samples/sample-explanations.json`. `llmAvailable` is read at build time, so a key change on Vercel needs a redeploy.
 - Log only reason codes, never request bodies or clause text.
 

@@ -598,3 +598,14 @@ Each sub-task was test first: the test file was written and run, it failed becau
   - `npm audit --omit=dev --audit-level=high`: found 0 vulnerabilities.
   - `npm run test:coverage`: 46 files, 547 tests pass; lines 99.72% overall, 99.47% for `src/lib/llm`.
   - Type-check 0 errors, lint 0 problems, `check:secrets` clean (140 tracked files), `check:rules` 0 FAIL, `check:trace` 236 rows.
+
+### Gate 3 (Task 22.3)
+- Task 22.3 says to run the two agents in parallel. I ran them one after the other instead: both run `next build` in the same folder (`check:bundle` builds twice, and test-verifier builds and runs E2E), and two builds at once would write the same `.next` folder.
+- **security-reviewer, attempt 1: PASS.** Report saved unchanged to `docs/gate-reports/phase-3-security-reviewer-attempt-1.md`. All 17 items Yes; items 8, 15 and the UI halves of 12 and 16 were "not due until Phase 4". Its evidence: `check:secrets` (141 files), `check:history` and `check:rules` clean; `check:bundle` PASS (11 files); only `gemini.ts` and `availability.ts` read the key, both `import "server-only"`; the only `console` call logs the reason line; `npm audit --omit=dev --audit-level=high` found 0 vulnerabilities. Problems: none found.
+  - Observations, which did not fail the gate:
+    - The 41-clause and 1,501-character limits are tested at the schema level, and the handler's schema-mismatch test shows any schema failure gives 400.
+    - The full `npm audit` reports 7 moderate advisories, all dev-only (minimatch under `@typescript-eslint`), none high or critical.
+    - `.kiro/steering/tech.md` still said "Runtime `nodejs`", while the route has no `runtime` export as approved in C10.10. **Fixed:** the steering line now says the route runs on Node.js with no `runtime` export, because Cache Components rejects it (bundled docs `route-segment-config/runtime.md`).
+- **test-verifier, attempt 1: PASS.** Report saved unchanged to `docs/gate-reports/phase-3-test-verifier-attempt-1.md`. All 12 items Yes. Typecheck, lint, `test:coverage` (46 files, 547 tests), build, `test:e2e` (7 tests, fresh server on a free port 3100) and `check:trace` all exited 0. 30 `fc.assert` calls (32 property tests), all at 1,000 runs. Line coverage: analyzer 100%, llm 99.47%, other 100%. No weakened test or threshold since 6c01b9f. The Gate 1 open items LE-R4.5, LE-R11.1 (rate limiter half) and LE-R9.5 are met. Problems: none found.
+
+**Phase 3 complete.** The key never reaches the browser bundle (`check:bundle`), pasted text is neither logged nor stored, and the app works with no key (`rules/no-key` in unit and production E2E tests).
