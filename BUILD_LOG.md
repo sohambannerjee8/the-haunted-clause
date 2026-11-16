@@ -218,3 +218,35 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
 - **Correction found while writing tasks:** the design, tasks and this log said the room examples were 24 positive and 20 negative. A `grep` count of the design table showed 28 positive and 16 negative (44 in total, so the total was right). All three files were corrected.
 - `tasks.md` written for Tasks 11–16 (splitter, rules and classifier, mitigations, score, `analyze()` and the language flag, samples, coverage and Gate 2). Each sub-task lists its requirement IDs.
 - **clause-analyzer spec complete.** Next: llm-explainer, with one approval stop for requirements and design together.
+
+### llm-explainer: requirements and design written (one approval stop)
+- Context7 was still unavailable through Kiro (`tool_load context7::*` not found), so research used the installed packages and vendor docs:
+  - `node_modules/@google/genai/dist/genai.d.ts` (3.3.0): `models.generateContent` config has `responseJsonSchema`, `systemInstruction`, `abortSignal`, `thinkingConfig` and `store`. The newer `interactions.create` stores interactions by default. The `abortSignal` docs say an abort does not cancel the request on Google's side.
+  - aistudio.google.com/docs/logs-policy: AI Studio logs requests and responses for billing-enabled projects for up to 55 days. Because of this the design sets `store: false` on every call.
+  - aistudio.google.com/docs/models: `gemini-4-hydrogen` is the current fast, stable model (November 2026), with structured output and thinking levels low to xhigh. It is the proposed default model.
+  - vercel.com/docs/headers/request-headers: re-read, and it confirms the C1.4 header order.
+  - vercel.com/docs/functions/configuring-functions/duration: Hobby default and maximum are 300 s. `maxDuration = 30` is proposed.
+  - Bundled Next.js docs (`route-segment-config/runtime.md`): with Cache Components on, a route must not export `runtime`, not even `'nodejs'`. This changes PLAN_DECISIONS.md C5 ("`runtime = "nodejs"`"); the requirement drops it.
+  - Ran `z.toJSONSchema` (Zod 4.6.7) on the planned output schema. Gemini's `responseJsonSchema` does not support `minLength`, `maxLength` or `pattern`, so a looser schema goes to Gemini and the strict Zod schema validates on the server.
+  - Ran `server-only` under Node: it throws by default and loads under `--conditions=react-server`, which `tsx` accepts. The precompute script uses this.
+- `.kiro/specs/llm-explainer/requirements.md`: 16 requirements in EARS form:
+  - Route
+  - Request validation (with a 256,000-byte cap and an Origin check)
+  - No key
+  - Gemini call (`store: false`)
+  - 15 s timeout
+  - Output validation
+  - Fallback on errors
+  - Response contract
+  - Rate limit
+  - Logging
+  - Storing nothing
+  - Merge
+  - Request builder (flagged clauses only)
+  - Client fallback
+  - Key kept out of the bundle
+  - Sample precompute
+- `.kiro/specs/llm-explainer/design.md`: architecture sequence diagram, file map with server-only marks, Zod schemas, the prompt text, the provider and timeout, the handler step table, merge, request builder, client, rate limiter, precompute script and bundle check.
+  - Properties E1–E7, each at 1,000 runs. E1–E4 are the four from C5.
+  - The test plan includes the four required mocked-LLM cases and a `console` spy for logging.
+- Status: waiting for the user's approval of requirements and design together (C10.1).
