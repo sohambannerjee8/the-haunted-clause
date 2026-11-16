@@ -9,7 +9,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Download Creepster Regular and Atkinson Hyperlegible Regular and Bold, with their `OFL.txt` files, from the official `google/fonts` repository (`ofl/creepster`, `ofl/atkinsonhyperlegible`) into `src/app/fonts/`.
   - Record the source URLs and licence in BUILD_LOG.md.
   - _Requirements: 1.4_
-- [ ] 23.2 Write `Footer.test.tsx` and a shell E2E with axe, then the layout
+- [x] 23.2 Write `Footer.test.tsx` and a shell E2E with axe, then the layout
   - `layout.tsx`: `next/font/local` for both fonts, `<html lang="en">`, title, the "Skip to content" link, `<main id="content">` and `<Footer>`.
   - `globals.css`: the Tailwind v4 `@theme` tokens for the design-language palette, the ghost level custom properties, the focus ring and the reduced-motion rule.
   - Tests:

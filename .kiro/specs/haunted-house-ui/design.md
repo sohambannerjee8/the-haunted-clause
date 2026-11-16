@@ -25,8 +25,9 @@ Decision from the font research: use **`next/font/local` with the font files com
 ## Component tree and files
 
 ```
-src/app/layout.tsx            fonts, <html lang="en">, skip link, <main id="content">, <Footer/>
-src/app/page.tsx              server: llmAvailable = isLlmAvailable(); <HauntedApp llmAvailable={…}/>
+src/app/layout.tsx            fonts, <html lang="en">, title; <body> holds only the page
+src/app/page.tsx              server: skip link, header with the h1, <Footer/>;
+                              llmAvailable = isLlmAvailable(); <HauntedApp llmAvailable={…}/> renders <main id="content">
 src/app/fonts/                Creepster-Regular.ttf, AtkinsonHyperlegible-{Regular,Bold}.ttf, OFL-*.txt
 src/components/
   HauntedApp.tsx              "use client". State machine; MotionConfig; lazy HouseView; error boundary
