@@ -50,8 +50,8 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Before writing the code, re-check the `generateContent` and `models.get` signatures in `node_modules/@google/genai/dist/genai.d.ts` (or through Context7 if it is connected), and log which source was used.
   - _Requirements: 3.2, 4.2, 4.5, 11.2, 15.1, 15.2_
 
-- [ ] 19. Rate limiter
-- [ ] 19.1 Write `rateLimit.test.ts` (fake clock) and `rateLimit.property.test.ts`, then `rateLimit.ts`
+- [x] 19. Rate limiter
+- [x] 19.1 Write `rateLimit.test.ts` (fake clock) and `rateLimit.property.test.ts`, then `rateLimit.ts`
   - Re-read https://vercel.com/docs/headers/request-headers and cite it in the code comment. A unit test reads `rateLimit.ts` and checks the URL is in it (R9.5).
   - Unit tests:
     - The 11th request in 60 s is refused, and the window slides.
