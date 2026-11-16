@@ -2,7 +2,7 @@
 
 Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. No test makes a real network call. Commit after each task.
 
-- [ ] 17. Schemas, parsing, merge and the request builder
+- [x] 17. Schemas, parsing, merge and the request builder
 - [x] 17.1 Write `schema.test.ts`, then `src/lib/llm/schema.ts`
   - Add the `ExplainRequest`, `LlmFinding`, `LlmOutput`, `ExplainResponse` and sample-explanations file schemas, `ROOM_IDS` and `REASONS`.
   - Add the looser Gemini output JSON Schema, built with `z.toJSONSchema` with `$schema` removed.
