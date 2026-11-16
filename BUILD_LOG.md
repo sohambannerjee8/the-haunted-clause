@@ -117,3 +117,22 @@ The user created `.kiro/settings/mcp.json` by hand with the planned content and 
 - Hooks: four hooks created with `createHook`. Test on save, Secret guard and Rules guard were confirmed firing on agent saves in the second session. Spec sync is not yet triggered.
 - MCP: Playwright MCP used through Kiro to open and snapshot the app. Context7 verified from the shell after repairing a broken npx cache entry.
 - Custom agents: five created. First use is Gate 0 below.
+
+### Gate 0: rules-auditor, attempt 1: PASS
+- Ran the `rules-auditor` custom agent (`.kiro/agents/rules-auditor.md`) as a Kiro sub-agent with fresh context. This was the first real use of a custom agent in the build.
+- Full report saved unchanged to `docs/gate-reports/phase-0-rules-auditor-attempt-1.md`.
+- Deciding items, all Yes:
+  - R3: 16 tracked files under `.kiro` (6 steering, 4 hooks, 5 agents, `settings/mcp.json`).
+  - R4: nothing in `.kiro` is ignored; no broad dot pattern in `.gitignore`.
+  - R5: unmodified MIT text, "Copyright (c) 2026 Soham Banerjee", `"license": "MIT"`.
+  - R8: `check:secrets`, `check:history` and `check:rules` all exit 0.
+- Information items the auditor reported:
+  - R1: 3 commits, 07:22–07:40 PST on 16 November 2026, inside the submission period.
+  - Agent wording: all five agents use "no write tool; shell limited to build/test commands", and none has a write tool.
+- Problems it found: none affecting Gate 0. It flagged three items for later gates:
+  - `scripts/check-bundle.mjs` does not exist yet (Phase 3).
+  - The README needs "Pre-existing work" and a licences list covering the LGPL-3.0-or-later `@img/sharp-libvips-*` package and the CC-BY-4.0 `caniuse-lite` package (Phase 6).
+  - Spec sync has not fired, and Context7 has not yet been used through Kiro's MCP tools (needed for K2 by Gate 5).
+- It also noted one extra blank line between the copied checklist and the clarifications block in `hackathon-rules.md`; the checklist text itself is identical.
+
+**Phase 0 complete.**
