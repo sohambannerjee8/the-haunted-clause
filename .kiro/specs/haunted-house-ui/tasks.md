@@ -5,7 +5,7 @@ Tasks 23–33 of the build plan (PLAN_DECISIONS.md section D). Tasks 23–31 are
 Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
 
 - [ ] 23. Design tokens, fonts, page shell
-- [ ] 23.1 Commit the fonts
+- [x] 23.1 Commit the fonts
   - Download Creepster Regular and Atkinson Hyperlegible Regular and Bold, with their `OFL.txt` files, from the official `google/fonts` repository (`ofl/creepster`, `ofl/atkinsonhyperlegible`) into `src/app/fonts/`.
   - Record the source URLs and licence in BUILD_LOG.md.
   - _Requirements: 1.4_

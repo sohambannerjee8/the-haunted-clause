@@ -609,3 +609,14 @@ Each sub-task was test first: the test file was written and run, it failed becau
 - **test-verifier, attempt 1: PASS.** Report saved unchanged to `docs/gate-reports/phase-3-test-verifier-attempt-1.md`. All 12 items Yes. Typecheck, lint, `test:coverage` (46 files, 547 tests), build, `test:e2e` (7 tests, fresh server on a free port 3100) and `check:trace` all exited 0. 30 `fc.assert` calls (32 property tests), all at 1,000 runs. Line coverage: analyzer 100%, llm 99.47%, other 100%. No weakened test or threshold since 6c01b9f. The Gate 1 open items LE-R4.5, LE-R11.1 (rate limiter half) and LE-R9.5 are met. Problems: none found.
 
 **Phase 3 complete.** The key never reaches the browser bundle (`check:bundle`), pasted text is neither logged nor stored, and the app works with no key (`rules/no-key` in unit and production E2E tests).
+- **Push after Gate 3 (C10.21):** `git push` sent `6c01b9f..85258e7` to `origin/main` after `check:secrets` (143 tracked files), `check:history`, `check:rules` (0 FAIL) and `check:trace` all passed.
+
+---
+## Phase 4: Haunted house UI (started 16 November 2026)
+PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with the haunted-house-ui requirements, design and tasks, and the design-language steering.
+
+### Task 23.1: fonts committed
+- Downloaded from the official `google/fonts` repository on GitHub (branch `main`), listed first through the GitHub contents API, into `src/app/fonts/`. Byte sizes match the API listing.
+  - https://raw.githubusercontent.com/google/fonts/main/ofl/creepster/Creepster-Regular.ttf (62,724 bytes) and `ofl/creepster/OFL.txt`, saved as `OFL-Creepster.txt`. Copyright (c) 2011 Font Diner, Inc, with the Reserved Font Name "Creepster".
+  - https://raw.githubusercontent.com/google/fonts/main/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Regular.ttf (54,348 bytes), `AtkinsonHyperlegible-Bold.ttf` (55,256 bytes) and `ofl/atkinsonhyperlegible/OFL.txt`, saved as `OFL-AtkinsonHyperlegible.txt`. Copyright 2020 Braille Institute of America, Inc.
+- Licence: SIL Open Font License, Version 1.1, for both (each OFL file contains that title). The files are used unmodified, so the Reserved Font Name clause is respected. Licences are listed in the README in Phase 6.
