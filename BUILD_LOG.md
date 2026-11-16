@@ -30,7 +30,8 @@ Kiro app used: Kiro IDE.
 - **Type-check, attempt 1:** `tsc --noEmit` failed with `Cannot find name 'LayoutProps'`. Next.js 16 generates route types (`LayoutProps`) during `next dev`/`next build` only. The bundled doc `06-cli/next.md` documents `next typegen`. Fixed by changing the script to `next typegen && tsc --noEmit`.
 - **Playwright Chromium install, interrupted:** the first `npx playwright install chromium` was interrupted by the user mid-download while they asked about specs. The download process kept running as an orphan and held a lock directory (`~/Library/Caches/ms-playwright/__dirlock`). On restart the orphaned processes were stopped, the empty lock directory was removed, and the install was started again as a background process.
 
-- **Playwright install, after restart:** Chrome for Testing 159.0.8154.6 (`chromium-1255`, 377 MB) and ffmpeg (`ffmpeg-1013`) finished installing at 20:40 (both have `INSTALLATION_COMPLETE`). The chromium headless shell (100.8 MiB) then kept downloading on a slow connection; its status is recorded below when it finishes.
+- **Playwright install, after restart:** Chrome for Testing 159.0.8154.6 (`chromium-1255`, 377 MB) and ffmpeg (`ffmpeg-1013`) finished installing at 20:40 (both have `INSTALLATION_COMPLETE`). The chromium headless shell (100.8 MiB) then downloaded on a slow connection and finished about 20:55 (`chromium_headless_shell-1255`, `INSTALLATION_COMPLETE`). The lock directory was released.
+- **Task 1 demo checks:** `npm test` passed (5 files, 28 tests). `CI=1 npm run test:e2e` built the app and passed the smoke test ("home page loads", 1 passed in 7.0 s). `git check-ignore .kiro/steering/x.md` printed nothing.
 - **Workspace MCP settings, attempt 1:** writing `.kiro/settings/mcp.json` with the file-write tool was blocked by a Kiro permission rule that protects `.kiro/settings/` from agent writes. See "MCP" below.
 
 ### Steering (Task 2)
