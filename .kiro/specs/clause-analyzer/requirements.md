@@ -139,7 +139,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 1. FOR any input, THE analyzer SHALL return results that are deeply equal when called twice on the same input, including when other inputs are analysed between the two calls.
 2. THE analyzer modules SHALL NOT read the clock (`Date`, `performance`), use randomness (`Math.random`, `crypto`), make network calls (`fetch`, `XMLHttpRequest`, `WebSocket`) or import anything from outside `src/lib/analyzer/` other than type-only imports.
 3. THE analyzer SHALL NOT keep state between calls.
-4. THE analyzer modules and the sample modules (`src/lib/samples/*.ts`) SHALL use relative imports only (no `@/` alias), and the sample modules SHALL import nothing except analyzer types, so that Playwright tests and scripts can import them directly. `purity.test.ts` SHALL check this for both folders.
+4. THE analyzer modules (`src/lib/analyzer/*.ts`) and the sample modules (`src/lib/samples/*.ts`) SHALL use relative imports only (no `@/` alias), so that Playwright tests and scripts can import them directly. THE sample text modules (`mild.ts`, `average.ts`, `terrible.ts`, `meta.ts`) and `src/lib/samples/index.ts` SHALL import nothing except analyzer types and each other; `index.ts` SHALL re-export only the text modules. Other sample modules (for example llm-explainer's `explanations.ts`, which imports Zod and the JSON file) are bound only by the relative-import rule. Test files (`*.test.ts`) and test utilities (`*.test-util.ts`) are excluded. `purity.test.ts` SHALL check all of this.
 
 ### Requirement 8: Size cap
 

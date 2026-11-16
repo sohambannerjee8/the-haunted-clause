@@ -127,7 +127,7 @@ stateDiagram-v2
 - `GhostArt` is one SVG path (a sheet ghost with eyes). Level 0 is a smaller wisp path.
 - **Animation:** CSS keyframes `hc-drift` (level 0), `hc-bob` (1), `hc-bob-sway` (2) and `hc-bob-sway-glow` (3), with the amplitudes and durations from design-language.md. The glow is a slow opacity pulse on a blurred copy, under 0.5 Hz, so far below the 3-flashes-per-second limit (R10.4).
 - **Reduced motion:** `@media (prefers-reduced-motion: reduce) { .hc-ghost, .hc-ghost * { animation: none !important; transition: none !important; } }` (R10.2, R10.3).
-- **Motion library:** used only for fade-ins of the house view and the dialog content (`m.div` with `LazyMotion features={domAnimation}`, to keep it small), under `MotionConfig reducedMotion="user"`, which drops transforms when reduced motion is on.
+- **Motion library:** used only for one-off fade-ins of the house view and the dialog content: opacity 0 → 1, 200 ms, one iteration, no transform (`m.div` with `LazyMotion features={domAnimation}`, to keep it small). It runs under `MotionConfig reducedMotion="user"`, which drops transforms when reduced motion is on. These fades meet R10.4's one-off rule (one direction, at most 300 ms).
 - **Delays:** ghost animation delays are derived from each finding's ID with a stable hash, so ghosts do not move in step and the result stays deterministic. There is no randomness.
 
 ## Detail panel (R6, R13)
@@ -239,14 +239,15 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 | File | Covers |
 | --- | --- |
 | `InputScreen.test.tsx` | Counter format; `maxLength`; paste over the cap is cut with the notice; the empty message with `aria-invalid`; the Analyze callback |
-| `SampleCards.test.tsx` | Three cards; buttons named with the company |
+| `SampleCards.test.tsx` | Three cards; each shows its company name and its one-line description from `meta.ts`; buttons named with the company (R2.5) |
 | `Ghost.test.tsx` | Each level 0–3: `data-severity`, aria-label, visible numeral, the level class; 44 px minimum |
 | `Room.test.tsx` | Quiet room text and no buttons; the status line; the group label; roving tabindex (one `tabindex=0`; arrows, Home and End move focus; wrap-around; focus memory) |
 | `DetailDialog.test.tsx` | All fields; mitigation notes; the medium-raised note; plain text (a quote holding `<b>` shows literally); Close returns focus |
 | `ScoreBadge.test.tsx` | Format "N · band"; no "/100"; the announcement only on change |
 | `LightsOnList.test.tsx` | Same findings as the model; Quiet rooms; no SVG; the notice at the top |
 | `OptInPanel.test.tsx` | Hidden when `llmAvailable` is false (the "no medium" line shown); hidden for samples; listening state; the success merge; each failure message; no call without a press |
-| `Footer.test.tsx` | "Not legal advice" |
+| `Footer.test.tsx` | "Not legal advice" and the sentence saying the readings are automated and can be wrong (R1.2) |
+| `House.test.tsx` | The frame SVG has `aria-hidden="true"` and holds no text nodes; 8 rooms in order (R4.1, R4.6) |
 | `no-storage.test.ts` | Scans `src/` (not tests) for `localStorage`, `sessionStorage`, `document.cookie` and `indexedDB`, and fails on any match (R1.6) |
 | `Toolbar.test.tsx` | Sample name line "Sample: <company> (a fictional company)" for each sample; no sample line for pasted text (R15.3) |
 | `sound.test.ts` | No `AudioContext` before `enable()`; pitch per severity; duration ≤ 600 ms (mocked `AudioContext`) |
@@ -256,13 +257,13 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 
 | Spec | Project | Covers | Requirements |
 | --- | --- | --- | --- |
-| `flow.spec.ts` | no-key | For each sample: open it; the toolbar reads "Sample: <company> (a fictional company)"; 8 rooms in order; per-room counts, `data-severity` and score equal the analyzer's; open a ghost, and the quote equals `text.slice(start, end)` with the right badge; no request to `/api/explain` (request listener); Read another policy. Pasted text: type a short policy, Analyze, see the house with rule texts and "Rule reading" badges (llm-explainer R3.3). After all flows: both storages empty, no cookie, no IndexedDB database, and no request to any host other than the app's own (R1.6) | R3, R4, R5, R6, R7, R15 |
-| `keyboard.spec.ts` | no-key | Terrible sample: Tab visits the 8 rooms in order (one stop each); arrows, Home and End reach every ghost in each room; Enter opens, Escape closes, and focus returns to the same ghost; Tab after a ghost goes to the next room | R9 |
+| `flow.spec.ts` | no-key | On load: one `h1` "The Haunted Clause", `<html lang="en">` and title "The Haunted Clause" (R1.1). For each sample: open it; the toolbar reads "Sample: <company> (a fictional company)"; 8 rooms in order; per-room counts, `data-severity` and score equal the analyzer's; open a ghost, and the quote equals `text.slice(start, end)` with the right badge; no request to `/api/explain` (request listener); Read another policy. Pasted text: type a short policy, Analyze, see the house with rule texts and "Rule reading" badges (llm-explainer R3.3). After all flows: both storages empty, no cookie, no IndexedDB database, and no request to any host other than the app's own (R1.6) | R3, R4, R5, R6, R7, R15 |
+| `keyboard.spec.ts` | no-key | Terrible sample: a focused ghost has a computed `outline-style: solid`, `outline-width: 3px`, `outline-offset: 2px` and `outline-color: rgb(242, 181, 68)` (R5.6); Tab visits the 8 rooms in order (one stop each); arrows, Home and End reach every ghost in each room; Enter opens, Escape closes, and focus returns to the same ghost; Tab after a ghost goes to the next room | R9 |
 | `lights.spec.ts` | no-key | Same findings as the house for all samples; Quiet rooms; focus stays on the toggle | R8 |
 | `optin.spec.ts` | llm-ui | Button and notice shown for pasted text; hidden for samples; stub success updates the badges and the score; stub failures (`rate-limited`, `timeout`, network abort) keep the rules and show the messages; the request body holds only flagged-clause text (every `text` is a substring of a finding quote, and the unflagged sentences are absent); no request before the press | R14 |
 | `optin-hidden.spec.ts` | no-key | The button is absent; the "no medium" line is shown | R14.2 |
-| `motion.spec.ts` | no-key | With `reducedMotion: "reduce"`, every `.hc-ghost` has `animation-name: none`; without it, level 3 ghosts have a running animation; on each sample's house, every entry of `document.getAnimations()` lasts at least 1 s per cycle and has at most one opacity peak in its keyframes (R10.4); sound off on load and no `AudioContext` constructed (an init script counts constructor calls) | R10, R11 |
-| `layout.spec.ts` | no-key | 360 × 740 and 1440 × 900 on the input screen, each sample house, an open dialog and Lights on: no horizontal scroll; no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width); no two visible controls' bounding boxes intersect; 2 or 4 grid columns | R12 |
+| `motion.spec.ts` | no-key | With `reducedMotion: "reduce"`, every `.hc-ghost` has `animation-name: none`; without it, level 3 ghosts have a running animation; on each sample's house and in an open dialog, every repeating entry of `document.getAnimations()` lasts at least 1 s per cycle with at most one opacity peak, and every one-off entry changes opacity in one direction and lasts at most 300 ms (R10.4); sound off on load and no `AudioContext` constructed (an init script counts constructor calls) | R10, R11 |
+| `layout.spec.ts` | no-key and llm-ui | 360 × 740 and 1440 × 900 in every state listed in R12.1 (input, empty-input message, paste-cut notice, loading — the house chunk is delayed with `page.route` — load error, each sample house, open dialog, Lights on, opt-in panel with listening and failure states on llm-ui, non-English, no ghosts, only wisps): no horizontal scroll; no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width); no two visible controls' bounding boxes intersect; 2 or 4 grid columns | R12 |
 | `a11y.spec.ts` | both | The axe scan of every state in R19.1, with `withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa","wcag22aa"])`, failing on serious or critical | R19 |
 | `edge.spec.ts` (Phase 5) | no-key | Empty input; exactly 50,000 characters; the 50,001st blocked; a 60,000-character paste cut with the notice; a Spanish and a Japanese paragraph show the notice; a policy with no risky clauses shows "No ghosts here"; a wisps-only policy | R2, R16 |
 | `loading.spec.ts` (Phase 5) | no-key | Block the house chunk with `page.route`, see the error and "Try again", unblock, retry, and the house opens with the text kept | R17 |

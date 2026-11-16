@@ -199,9 +199,10 @@ import { createExplainHandler } from "@/lib/llm/handler";
 // ... real provider, a module-level rate limiter (one per server instance), Date.now, console.info
 export const maxDuration = 30;   // 15 s timeout + overhead; Hobby allows up to 300 s
 export const POST = createExplainHandler({ ... });
+export const GET = methodNotAllowed, PUT = methodNotAllowed, PATCH = methodNotAllowed, DELETE = methodNotAllowed;
 ```
 
-Next.js answers other methods on this route with 405 automatically, because only `POST` is exported (R1.3). An E2E check confirms it.
+`route.ts` also exports `GET`, `PUT`, `PATCH` and `DELETE`, all bound to one `methodNotAllowed()` helper. It answers 405 with `Allow: POST`, `Cache-Control: no-store` and the `rules/bad-request` body, through the same `respond()` helper, so R1.4 holds for those responses too (R1.3). HEAD and OPTIONS are left to Next.js.
 
 ## Origin check (`origin.ts`)
 
@@ -412,17 +413,17 @@ All LLM tests use mock providers. No test makes a real network call (testing.md)
 | `provider.test.ts` | Unit, fake timers | A provider that resolves at 14.9 s succeeds; one at 15.1 s times out and its signal is aborted; a provider that ignores the signal still times out by 15.5 s |
 | `gemini.test.ts` | Unit | With `@google/genai` mocked: the config has `store: false`, `responseMimeType`, `responseJsonSchema`, the system instruction and the model (default and `GEMINI_MODEL` override); the user content holds only the clause fields; the key is read at call time |
 | `availability.test.ts` | Unit | Unset, empty and whitespace give `false`; set gives `true` |
-| `rateLimit.test.ts` | Unit, fake clock | The 11th request in 60 s is refused; the window slides; `Retry-After` value; stale entries are removed; LRU at `maxKeys`; header order including `"unknown"` and a comma-separated `x-forwarded-for` |
+| `rateLimit.test.ts` | Unit, fake clock | The 11th request in 60 s is refused; the window slides; `Retry-After` value; stale entries are removed; LRU at `maxKeys`; header order including `"unknown"` and a comma-separated `x-forwarded-for`; the source of `rateLimit.ts` contains `https://vercel.com/docs/headers/request-headers` (R9.5) |
 | `handler.test.ts` | Unit, mocked provider | The four required cases (good output, malformed output, timeout, no key), plus provider error, rate limit, oversized body, bad JSON, schema mismatch, Origin mismatch; `Cache-Control: no-store`; status codes; the provider is not called on every rejected path; one log line; **a `console` spy proves no clause text, model text, IP or key is logged** (R10) |
 | `client.test.ts` | Unit, mocked fetch | Success; HTTP 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; network error gives `error`; the 20 s timeout gives `error`; no findings gives no fetch |
-| `route.test.ts` | Unit | `route.ts` exports `POST` and `maxDuration === 30` and no `runtime` |
-| `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries with `model`; no key writes rules entries, makes no call and exits 0; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; output is byte-identical on a second run; a model check rejected with 404 (and with 403) prints the ERROR block naming the model, exits 1 and leaves the file untouched; a failed sample call after a passing check exits 1; the model line is printed |
+| `route.test.ts` | Unit | `route.ts` exports `POST`, `GET`, `PUT`, `PATCH`, `DELETE` and `maxDuration === 30`, and no `runtime`; each of GET, PUT, PATCH and DELETE returns 405 with `Allow: POST`, `Cache-Control: no-store` and a body matching `ExplainResponse` |
+| `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries with `model`; no key writes rules entries, makes no call and exits 0; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; output is byte-identical on a second run; a model check rejected with 404 (and with 403) prints the ERROR block naming the model, exits 1 and leaves the file untouched; a failed sample call after a passing check exits 1; the model line is printed; every summary line matches `^precompute: (mild|average|terrible) source=(llm|rules) llmFindings=\d+ model=\S+$`, and no line contains any finding quote of the three samples (R16.6) |
 | `scripts/package-scripts.test.mts` | Unit | No `prebuild`, `postinstall` or `build` script, nor any script other than `precompute:samples`, mentions `precompute-samples` or `@google/genai` |
 | `origin.test.ts` | Unit | The ten Origin and Host cases in the "Origin check" table |
 | `privacy.test.ts` | Unit | Required phrases and banned claims in `OPT_IN_NOTICE` |
 | `src/lib/samples/explanations.test.ts` | Unit | The committed JSON passes Zod; every entry is consistent with the current analyzer output (R16.7); a partial entry gives medium texts for its IDs and rule texts for the rest, and an invalid file gives rule texts everywhere (R16.8) |
 | `scripts/docs.test.mts` | Unit | DEPLOY.md: "best-effort", "cold start", `store: false`, the logs-datasets URL, the Gemini terms URL, "redeploy", "billed", the paid-tier recommendation; no claim that Google keeps nothing. README.md: a "Privacy" section containing `OPT_IN_NOTICE` word for word. The DEPLOY.md part runs from Task 22.2, when DEPLOY.md is drafted |
-| `e2e/explain-route.spec.ts` | E2E | With no key: `POST /api/explain` returns `rules/no-key`; `GET` returns 405 |
+| `e2e/explain-route.spec.ts` | E2E | With no key: `POST /api/explain` returns `rules/no-key`; `GET` returns 405; both carry `Cache-Control: no-store` |
 
 Vitest resolves `server-only` to its empty module through an alias in `vitest.config.mts`, because tests are not React server code. The protection still holds where it matters: `check:bundle` proves the key is not in the browser bundle, and the security reviewer checks that no `"use client"` file imports a server-only module.
 

@@ -355,17 +355,18 @@ The generators are:
 - `utf16String`: `fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((n) => String.fromCharCode(n)), maxLength: 2_000 })`. It includes unpaired surrogates and control characters.
 - `policyLike`: fragments joined from a pool. The pool holds the 28 positive and 16 negative example clauses, the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
 - `bigString`: a fragment from `policyLike` repeated up to a length drawn from `fc.integer({ min: 0, max: 50_000 })`, so sizes up to the cap are covered.
+- `overCapString`: a fragment from `policyLike` repeated to a length drawn from `fc.integer({ min: 50_001, max: 60_000 })`, for the splitter's over-cap criterion (R1.12) and the analyzer's typed error (R6.2, R8.2).
 
-The four generators are exported from one shared test-support module, `src/lib/analyzer/arbitraries.test-util.ts`. The llm-explainer (E6) and haunted-house-ui (U1, U4) properties import them from there. Files ending in `.test-util.ts` are test support: the app never imports them, they are excluded from coverage like `*.test.ts` files, and `purity.test.ts` skips them, because they import `fast-check`.
+The five generators are exported from one shared test-support module, `src/lib/analyzer/arbitraries.test-util.ts`. The llm-explainer (E6) and haunted-house-ui (U1, U4) properties import them from there. Files ending in `.test-util.ts` are test support: the app never imports them, they are excluded from coverage like `*.test.ts` files, and `purity.test.ts` skips them, because they import `fast-check`.
 
 | # | Property (PLAN.md section 4) | Requirement | Test file | Generator |
 | --- | --- | --- | --- | --- |
 | P1 | The Haunt Score is always a whole number from 0 to 100. | R5.2 | `score.property.test.ts` | Arrays of up to 400 `{ room, severity }`, and `analyze` on `policyLike` |
 | P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the 28 positive examples `r`: `score(t + "\n\n" + r) >= score(t)` |
 | P3 | Every finding quotes text that appears in the input, character for character. | R4.1, R4.2 | `analyze.property.test.ts` | `policyLike`, `utf16String`: `f.quote === input.slice(f.start, f.end)`, non-empty, no edge whitespace |
-| P4 | The analyzer never throws, for any string up to the size cap, including empty text and emoji. | R6.1, R6.2 | `analyze.property.test.ts` | `fc.oneof(anyString, utf16String, policyLike, bigString)` plus explicit `""`, whitespace and emoji cases in unit tests |
+| P4 | The analyzer never throws, for any string up to the size cap, including empty text and emoji. | R6.1, R6.2 | `analyze.property.test.ts` | `fc.oneof(anyString, utf16String, policyLike, bigString)` plus explicit `""`, whitespace and emoji cases in unit tests; `overCapString` always gives the typed `too-long` result without throwing |
 | P5 | The same input always gives the same rule-based result. | R7.1, R7.3 | `analyze.property.test.ts` | Pairs `(x, y)`: `analyze(x)` deep-equals `analyze(x)` called again after `analyze(y)` |
-| P6 | Splitting text into clauses and joining them back loses no characters. | R1.1, R1.2, R1.5, R1.13 | `splitter.property.test.ts` | `anyString`, `utf16String`, `policyLike`: join equals input, spans contiguous, no whitespace-only clause when the input has non-whitespace |
+| P6 | Splitting text into clauses and joining them back loses no characters. | R1.1, R1.2, R1.5, R1.12, R1.13 | `splitter.property.test.ts` | `anyString`, `utf16String`, `policyLike`, and `overCapString` (R1.12): join equals input, spans contiguous, no whitespace-only clause when the input has non-whitespace |
 
 Further properties that support the six (also at 1,000 runs):
 - P7 (R5.6): the score does not depend on the order of findings.
@@ -387,7 +388,7 @@ Further properties that support the six (also at 1,000 runs):
 | `language.test.ts` | Unit | Under 40 letters; Spanish, French and Japanese paragraphs; an English policy paragraph |
 | `analyze.test.ts` | Unit | Cap at 50,000 and 50,001 (R8); typed error; 50,000-character inputs finish in under 1 second (R6.3), for both realistic text and one 50,000-character clause with no terminators |
 | `analyze.property.test.ts` | Property | P2, P3, P4, P5, P9, P10 |
-| `purity.test.ts` | Unit | Reads the analyzer source files (not `*.test.ts` or `*.test-util.ts`) and fails on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import (R7.2, R7.4). It also reads `src/lib/samples/*.ts` and fails on any `@/` import or any import other than analyzer types (R7.4) |
+| `purity.test.ts` | Unit | Reads the analyzer source files (not `*.test.ts` or `*.test-util.ts`) and fails on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import (R7.2, R7.4). It also reads `src/lib/samples/*.ts` (not test files) and fails on any `@/` import; for `mild.ts`, `average.ts`, `terrible.ts`, `meta.ts` and `index.ts` it also fails on any import other than analyzer types and each other, and on `index.ts` re-exporting anything else (R7.4). `explanations.ts` may import Zod, the JSON file and `../llm/schema` |
 | `src/lib/samples/samples.test.ts` | Unit | Score bands, a risky finding in every room for the terrible sample, a mitigated wisp in the mild sample, length cap, `likelyNonEnglish === false` (R11.3–R11.7); BUILD_LOG.md has the "Sample name check" heading naming each company (R11.2); no URL, email address or `©`/`®`/`™` in any sample (R11.8) |
 
 Coverage target: 90% of lines in `src/lib/analyzer/**`, enforced in `vitest.config.mts`.

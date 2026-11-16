@@ -22,11 +22,11 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Implement `splitClauses` with candidate collection, snapping to the end of each whitespace run, and IDs `c-<start>`.
   - _Requirements: 1.3–1.11, 1.13_
 - [ ] 11.3 Write the shared generators and the splitter properties
-  - `src/lib/analyzer/arbitraries.test-util.ts` exports `anyString`, `utf16String`, `policyLike` and `bigString`, for all three specs. Exclude `src/**/*.test-util.ts` from coverage and from the purity scan.
+  - `src/lib/analyzer/arbitraries.test-util.ts` exports `anyString`, `utf16String`, `policyLike`, `bigString` and `overCapString`, for all three specs. Exclude `src/**/*.test-util.ts` from coverage and from the purity scan.
   - `splitter.property.test.ts`:
     - P6: joining the clauses gives the input; spans are contiguous; no whitespace-only clause when the input has non-whitespace.
     - P8: IDs are `c-<start>` and unique.
-  - Generators: `anyString`, `utf16String` and `policyLike` from the design, including inputs over the cap (R1.12).
+  - Generators: `anyString`, `utf16String`, `policyLike`, and `overCapString` for inputs over the cap (R1.12).
   - _Requirements: 1.1, 1.2, 1.5, 1.6, 1.12, 1.13_
 
 - [ ] 12. Rule table and classifier
@@ -94,14 +94,14 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
 - [ ] 14.3 Write `analyze.property.test.ts`
   - P2: appending one of the 28 positive examples at a clause boundary never lowers the score.
   - P3: quotes equal `input.slice(start, end)`, are non-empty and have no edge whitespace.
-  - P4: never throws, for `anyString`, `utf16String`, `policyLike` and `bigString` up to the cap.
+  - P4: never throws, for `anyString`, `utf16String`, `policyLike` and `bigString` up to the cap; `overCapString` gives the typed `too-long` result.
   - P5: the result is the same after analysing another input in between.
   - P9: every room is one of the eight IDs.
   - P10: severity is never above the unmasked rule severity, and a cancelled mitigation gives at least 1.
   - _Requirements: 3.1, 3.11, 4.1, 4.2, 5.5, 6.1, 7.1, 7.3, 10.2_
 - [ ] 14.4 Write `purity.test.ts`
   - Fail on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import, in the analyzer source files (not test files or test utilities).
-  - Fail on any `@/` import, or any import other than analyzer types, in `src/lib/samples/*.ts`.
+  - Fail on any `@/` import in `src/lib/samples/*.ts` (not test files). For `mild.ts`, `average.ts`, `terrible.ts`, `meta.ts` and `index.ts`, also fail on any import other than analyzer types and each other, and on `index.ts` re-exporting anything else. `explanations.ts` is bound only by the relative-import rule.
   - _Requirements: 7.2, 7.4_
 
 - [ ] 15. Three fictional sample policies

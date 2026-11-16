@@ -158,7 +158,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 1. WHILE reduced motion is not requested, ghosts SHALL animate as in design-language.md (bob, sway and glow by level); wisps SHALL drift slowly.
 2. WHILE reduced motion is requested, ghosts and wisps SHALL NOT animate: their computed `animation-name` SHALL be `none` and their transform SHALL not change over time; size, opacity, colour and numeral SHALL still show the level.
 3. THE app SHALL wrap its animated parts in `MotionConfig reducedMotion="user"`, and every CSS animation SHALL be disabled by a `prefers-reduced-motion: reduce` media query.
-4. NOTHING in the app SHALL flash more than 3 times in any one-second period. To make this measurable, every animation SHALL last at least 1 second per cycle and SHALL change opacity through at most one peak per cycle. Verified by: `motion.spec.ts`, which reads `document.getAnimations()` on each sample's house and checks each animation's duration and the opacity values of its keyframes.
+4. NOTHING in the app SHALL flash more than 3 times in any one-second period. To make this measurable: every repeating animation (more than one iteration) SHALL last at least 1 second per cycle and change opacity through at most one peak per cycle; every one-off animation (one iteration, such as a fade-in) SHALL change opacity in one direction only and last at most 300 ms. Verified by: `motion.spec.ts`, which reads `document.getAnimations()` on each sample's house and in an open detail panel, and checks each animation's iterations, duration and opacity keyframes.
 
 ### Requirement 11: Sound
 
@@ -177,7 +177,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 
 #### Acceptance Criteria
 
-1. WHILE the viewport is 360 × 740 CSS pixels, on every screen and state, THE page SHALL have: no horizontal scroll (`document.documentElement.scrollWidth <= clientWidth`); no clipped text, meaning every visible `h1`–`h3`, `p`, `li`, `label`, `button`, `blockquote` and `a` has `scrollWidth <= clientWidth + 1` and a bounding box inside the viewport's width; and no overlapping controls, meaning no two visible buttons, links or form fields have bounding boxes that intersect.
+1. WHILE the viewport is 360 × 740 CSS pixels, in each of these states: the input screen; the input screen with the empty-input message; the input screen with the paste-cut notice; the loading state; the load-error state; the house for each sample; an open detail panel; Lights on mode; the opt-in panel, its listening state and a failure message; the non-English notice; the no-ghosts state; and the only-wisps state, THE page SHALL have: no horizontal scroll (`document.documentElement.scrollWidth <= clientWidth`); no clipped text, meaning every visible `h1`–`h3`, `p`, `li`, `label`, `button`, `blockquote` and `a` has `scrollWidth <= clientWidth + 1` and a bounding box inside the viewport's width; and no overlapping controls, meaning no two visible buttons, links or form fields have bounding boxes that intersect.
 2. WHILE the viewport is 1440 × 900, THE house SHALL use the 4 × 2 room layout.
 3. THE detail panel SHALL fit within the viewport at 360 × 740, scrolling inside itself when its content is taller.
 

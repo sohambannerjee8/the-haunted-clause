@@ -51,7 +51,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
 
 - [ ] 19. Rate limiter
 - [ ] 19.1 Write `rateLimit.test.ts` (fake clock) and `rateLimit.property.test.ts`, then `rateLimit.ts`
-  - Re-read https://vercel.com/docs/headers/request-headers and cite it in the code comment.
+  - Re-read https://vercel.com/docs/headers/request-headers and cite it in the code comment. A unit test reads `rateLimit.ts` and checks the URL is in it (R9.5).
   - Unit tests:
     - The 11th request in 60 s is refused, and the window slides.
     - `Retry-After` is at least 1 and correct.
@@ -73,12 +73,12 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Properties: E4 (handler part) and E7.
   - _Requirements: 1.4, 2.1–2.5, 3.1, 4.1, 5.1, 6.1–6.4, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2, 10.1, 10.2, 11.1_
 - [ ] 20.3 Write `route.test.ts`, then `src/app/api/explain/route.ts`
-  - Tests: `route.ts` exports `POST` and `maxDuration === 30`, and does not export `runtime`.
+  - Tests: `route.ts` exports `POST`, `GET`, `PUT`, `PATCH`, `DELETE` and `maxDuration === 30`, and does not export `runtime`. GET, PUT, PATCH and DELETE each return 405 with `Allow: POST`, `Cache-Control: no-store` and a valid rules body.
   - Wire the real provider, one module-level rate limiter, `Date.now` and `console.info`.
-  - Add `e2e/explain-route.spec.ts`: with no key, `POST` returns 200 `rules/no-key` and `GET` returns 405.
+  - Add `e2e/explain-route.spec.ts`: with no key, `POST` returns 200 `rules/no-key` and `GET` returns 405, both with `Cache-Control: no-store`.
   - Demo: `curl -X POST localhost:3100/api/explain -d '{"clauses":[…]}'` against `next start` with no key returns `{"source":"rules","reason":"no-key","findings":[]}`.
   - R3.3 is checked by the clause-analyzer `purity.test.ts` (no import from `src/lib/llm/`) and by haunted-house-ui `flow.spec.ts` (no-key build shows rule texts and badges).
-  - _Requirements: 1.1–1.3, 3.1, 3.3_
+  - _Requirements: 1.1–1.4, 3.1, 3.3, 8.2_
 - [ ] 20.4 Write `client.test.ts` (mocked fetch), then `client.ts`
   - Tests: success; 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; a network error gives `error`; the 20 s timeout gives `error`; no findings makes no fetch.
   - _Requirements: 14.1–14.3_
@@ -91,6 +91,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - No key writes rules entries, makes no call and exits 0.
     - A provider failure keeps a consistent existing entry; an inconsistent entry is replaced by rules.
     - A second run gives byte-identical output.
+    - Each summary line matches `precompute: <sample> source=<llm|rules> llmFindings=<n> model=<id or null>` and contains no finding quote from any sample (R16.6).
   - _Requirements: 16.3–16.7, 16.9–16.11_
 - [ ] 21.2 Add the model check (user request, PLAN_DECISIONS.md C10.13)
   - With a key, call `models.get` once before any sample call and print `precompute: model=<id> source=<GEMINI_MODEL|default>`.

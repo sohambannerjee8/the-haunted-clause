@@ -13,7 +13,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - `layout.tsx`: `next/font/local` for both fonts, `<html lang="en">`, title, the "Skip to content" link, `<main id="content">` and `<Footer>`.
   - `globals.css`: the Tailwind v4 `@theme` tokens for the design-language palette, the ghost level custom properties, the focus ring and the reduced-motion rule.
   - Tests:
-    - The footer shows "Not legal advice".
+    - The footer shows "Not legal advice" and the sentence saying the readings are automated and can be wrong (R1.2).
+    - E2E shell check: one `h1` "The Haunted Clause", `<html lang="en">` and the title "The Haunted Clause" (R1.1).
     - The skip link is the first focusable element and moves focus to `main`.
     - The page requests no font or image from another origin (E2E request listener).
     - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6).
@@ -33,7 +34,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - `maxLength` 50,000.
     - A paste that would pass the cap is cut, with the notice.
     - Empty or whitespace text shows the message, with `aria-invalid` and `aria-describedby`.
-    - Three cards, with buttons named by company.
+    - Three cards, each with its company name and one-line description, and buttons named by company (R2.5).
     - `src/lib/samples/meta.ts` holds no policy text.
   - _Requirements: 2.1–2.6_
 - [ ] 24.2 Write `HauntedApp` with the state machine, the lazy `HouseView` with a retryable import, `Suspense` "Opening the house…" and the error boundary
@@ -49,11 +50,12 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Functions: `buildHouseModel`, `bandFor`, `severityLabel`, `ghostLabel`, `roomLabel`.
   - Properties U1, U2 and U4.
   - _Requirements: 4.1, 4.4, 4.5, 5.2, 7.1, 8.3_
-- [ ] 25.2 Write `Ghost.test.tsx`, `Room.test.tsx` and `ScoreBadge.test.tsx`, then `GhostArt`, `Ghost`, `Room`, `House` and `ScoreBadge`
+- [ ] 25.2 Write `Ghost.test.tsx`, `Room.test.tsx`, `House.test.tsx`, `ScoreBadge.test.tsx` and `Toolbar.test.tsx`, then `GhostArt`, `Ghost`, `Room`, `House`, `ScoreBadge` and the `Toolbar` (sample line and "Read another policy"; the Lights on and Sound toggles are added in Tasks 28.1 and 30.1)
   - Tests:
     - Each level 0–3 has `data-severity`, the aria-label, the numeral, the level class and a 44 px minimum size.
     - Quiet rooms show "Quiet" and have no buttons.
     - The status line and the group label are right.
+    - `House.test.tsx`: the frame SVG has `aria-hidden="true"` and no text nodes (R4.6).
     - The score shows "N · band" with no "/100", and the announcement happens only on change.
     - `Toolbar.test.tsx`: "Sample: <company> (a fictional company)" for each sample, and no sample line for pasted text.
   - _Requirements: 4.1–4.6, 5.1–5.6, 7.1–7.3, 15.3_
@@ -94,13 +96,14 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 27.3 E2E `keyboard.spec.ts` on the terrible sample
   - Tab visits the 8 rooms in order, with one stop each.
   - Arrows, Home and End reach every ghost in each room.
+  - A focused ghost has a computed 3 px solid candle-amber (`rgb(242, 181, 68)`) outline with a 2 px offset (R5.6).
   - Enter opens the panel; Escape closes it and returns focus to the same ghost.
   - Tab after a ghost goes to the next room.
   - The skip link and toolbar come first in tab order.
-  - _Requirements: 9.1–9.7_
+  - _Requirements: 5.6, 9.1–9.7_
 
 - [ ] 28. Lights on mode
-- [ ] 28.1 Write `LightsOnList.test.tsx`, then `LightsOnList` and the Toolbar toggle
+- [ ] 28.1 Write `LightsOnList.test.tsx` and extend `Toolbar.test.tsx`, then `LightsOnList` and the Toolbar's Lights on toggle
   - Tests:
     - Same findings as the model.
     - Quiet rooms shown.
@@ -133,17 +136,17 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 14.1–14.7, 15.2_
 
 - [ ] 30. Motion and sound settings
-- [ ] 30.1 Add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the fades. Add the Sound toggle (off by default)
+- [ ] 30.1 Add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the 200 ms one-off fades. Add the Sound toggle to the Toolbar (off by default)
   - E2E `motion.spec.ts`:
     - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s.
     - Without it, level 3 ghosts are animated.
-    - Every `document.getAnimations()` entry on each sample's house lasts at least 1 s per cycle, with at most one opacity peak per cycle (R10.4).
+    - On each sample's house and in an open dialog, every repeating `document.getAnimations()` entry lasts at least 1 s per cycle with at most one opacity peak, and every one-off entry changes opacity in one direction and lasts at most 300 ms (R10.4).
     - Sound is off on load, and no `AudioContext` is constructed.
   - _Requirements: 10.1–10.4, 11.1, 11.2_
 
 - [ ] 31. Responsive layout, Gate 4 and the visual review
 - [ ] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
-  - Input screen, each sample house, an open dialog and Lights on: no horizontal scroll, no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width), no intersecting controls, and 2 or 4 grid columns.
+  - Every state listed in R12.1, using both projects (the opt-in states on llm-ui; loading by delaying the house chunk with `page.route`): no horizontal scroll, no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width), no intersecting controls, and 2 or 4 grid columns.
   - The dialog fits within the viewport and scrolls inside.
   - _Requirements: 4.2, 12.1–12.3_
 - [ ] 31.2 E2E `a11y.spec.ts`

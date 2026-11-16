@@ -327,3 +327,26 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - Minor: the non-EARS lead words OTHERWISE, AT, BECAUSE and WITH were reworded to WHEN or WHILE.
   - Process requirements (clause-analyzer R11.2 and R11.8, haunted-house-ui R20.4) now name their checks: `samples.test.ts` checks the BUILD_LOG "Sample name check" heading and that the samples hold no URLs, emails or ©/®/™ signs; rules-auditor A4; and a BUILD_LOG record of the screenshot review.
 - All of the above is recorded in PLAN_DECISIONS.md C10.18–C10.19.
+
+### Gate 1: spec-reviewer, attempt 2: FAIL
+- Ran a fresh `spec-reviewer` sub-agent. Full report: `docs/gate-reports/phase-1-spec-reviewer-attempt-2.md`.
+- **Verdict: FAIL** on items 4 (traceable) and 15 (agrees with PLAN_DECISIONS.md). Item 3 (testable) now passed. The reviewer checked every attempt 1 problem: 12 resolved, 1 partly resolved.
+- **Three problems were introduced by my own attempt 1 fixes:**
+  - The new R7.4 said "sample modules SHALL import nothing except analyzer types". That cannot hold, because llm-explainer's `explanations.ts` must import Zod and the JSON (C1.3), and `purity.test.ts` would have failed as designed.
+  - The new R10.4 wording ("every animation ≥ 1 s per cycle") would have failed on the design's own short fade-ins.
+  - `Toolbar.test.tsx` was placed in a task that did not build the Toolbar.
+- **The remaining problems were existing gaps** where no named test checked a criterion:
+  - llm-explainer R16.6 (summary line) and R9.5 (source citation).
+  - haunted-house-ui R1.1 (`h1`, `lang`, title), R1.2 (second footer sentence), R2.5 (card description), R4.6 (frame `aria-hidden`) and R5.6 (focus ring).
+  - R12.1's "every state" was wider than the states `layout.spec.ts` tested.
+  - R1.12's over-cap inputs were not in any generator.
+  - The 405 response from Next.js would lack `Cache-Control: no-store` (R1.4).
+- **Fixes** (PLAN_DECISIONS.md C10.20):
+  - R7.4 narrowed to the sample text modules and `index.ts`.
+  - Named checks added for each gap above: `House.test.tsx`; extended `Footer`, `SampleCards`, `keyboard` and `flow` tests; a summary-line regex test; a source-URL test.
+  - R10.4 split into repeating animations and one-off fades, with fades fixed at 200 ms.
+  - R12.1 lists 15 states, and `layout.spec.ts` covers them across both projects.
+  - New `overCapString` generator.
+  - The route exports explicit 405 handlers that go through `respond()`.
+  - The Toolbar is built in Task 25.2, with its toggles added in 28.1 and 30.1.
+- These are different problems from attempt 1, not the same problem failing again, so the three-attempt stop does not apply yet.

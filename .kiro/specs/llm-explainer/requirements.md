@@ -32,9 +32,9 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 #### Acceptance Criteria
 
 1. THE app SHALL expose exactly one route that calls an LLM: `POST /api/explain`.
-2. THE route file SHALL export `POST` and `maxDuration = 30`, and SHALL NOT export `runtime` (Next.js 16 with Cache Components runs route handlers on the Node.js runtime and rejects the `runtime` export).
-3. WHEN the route receives a method other than POST, THE app SHALL respond with HTTP 405 and SHALL NOT call the provider.
-4. THE route SHALL set the header `Cache-Control: no-store` on every response.
+2. THE route file SHALL export `POST`, `GET`, `PUT`, `PATCH`, `DELETE` and `maxDuration = 30`, and SHALL NOT export `runtime` (Next.js 16 with Cache Components runs route handlers on the Node.js runtime and rejects the `runtime` export).
+3. WHEN the route receives GET, PUT, PATCH or DELETE, THE route SHALL respond with HTTP 405, the header `Allow: POST` and `{ source: "rules", reason: "bad-request", findings: [] }`, and SHALL NOT call the provider. (HEAD and OPTIONS are answered by Next.js itself.)
+4. THE route SHALL set the header `Cache-Control: no-store` on every response to POST, GET, PUT, PATCH and DELETE, including the 405 responses of criterion 3.
 
 ### Requirement 2: Validate the request
 
@@ -108,7 +108,7 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 #### Acceptance Criteria
 
 1. EVERY response SHALL be JSON matching the explain-response schema: `source` is `"llm"` or `"rules"`; `reason` is present exactly when `source` is `"rules"` and is one of the six reason codes; `findings` is an array of LLM findings, empty when `source` is `"rules"`.
-2. THE HTTP status SHALL be 200 for `llm`, `no-key`, `timeout`, `invalid` and `error`; 429 for `rate-limited`; and 400 or 403 for `bad-request`.
+2. THE HTTP status SHALL be 200 for `llm`, `no-key`, `timeout`, `invalid` and `error`; 429 for `rate-limited`; and 400, 403 or 405 for `bad-request`.
 
 ### Requirement 9: Per-IP rate limit
 

@@ -253,6 +253,13 @@ These are fixtures, checked in both unit and E2E tests.
     - Relative imports for analyzer and sample modules (clause-analyzer R7.4).
     - One shared generator module, `src/lib/analyzer/arbitraries.test-util.ts`.
     - Requirement-number fixes, and EARS lead words corrected.
+20. **Spec fixes from Gate 1 attempt 2** (no change to approved behaviour):
+    - R7.4 narrowed: only the sample text modules and `index.ts` are limited to analyzer-type imports; `explanations.ts` may import Zod and the JSON.
+    - Named tests for llm-explainer R16.6 and R9.5, and haunted-house-ui R1.1, R1.2, R2.5, R4.6 and R5.6.
+    - R10.4 split into repeating animations (≥ 1 s per cycle) and one-off fades (one direction, ≤ 300 ms; the design's fades are 200 ms).
+    - R12.1 lists every state that `layout.spec.ts` checks.
+    - An `overCapString` generator for R1.12.
+    - The route exports `GET`, `PUT`, `PATCH` and `DELETE` as explicit 405 handlers, so `Cache-Control: no-store` is on every response (R1.3, R1.4, R8.2).
 
 ## D. Task map (spec tasks.md files must match these ranges)
 
