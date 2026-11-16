@@ -63,7 +63,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Property E5: never more than 10 allowed from one IP in any 60-second window.
   - _Requirements: 9.1–9.5_
 
-- [ ] 20. The `/api/explain` route
+- [x] 20. The `/api/explain` route
 - [x] 20.1 Write `origin.test.ts`, then `origin.ts`
   - Write the ten cases from the design's "Origin check" table: localhost, a Vercel preview host and a production host, each matching and mismatched; upper case; `Origin: null`; no Origin; no Host header.
   - _Requirements: 2.4_
@@ -74,7 +74,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Logging: exactly one log line per request. A `console` spy shows no clause text, model text, IP or key appears in any output.
   - Properties: E4 (handler part) and E7.
   - _Requirements: 1.4, 2.1–2.5, 3.1, 4.1, 5.1, 6.1–6.4, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2, 10.1, 10.2, 11.1_
-- [ ] 20.3 Write `route.test.ts`, then `src/app/api/explain/route.ts`
+- [x] 20.3 Write `route.test.ts`, then `src/app/api/explain/route.ts`
   - Tests: `route.ts` exports `POST`, `GET`, `PUT`, `PATCH`, `DELETE` and `maxDuration === 30`, and does not export `runtime`. GET, PUT, PATCH and DELETE each await the mocked `connection()` and return 405 with `Allow: POST`, `Cache-Control: no-store` and a valid rules body. `src/app` holds exactly one `route.ts`, and it is the only file under `src/app` that imports `gemini.ts` (R1.1).
   - `methodNotAllowed()` calls `await connection()` first, so Cache Components cannot prerender the `GET`.
   - Wire the real provider, one module-level rate limiter, `Date.now` and `console.info`.
@@ -82,7 +82,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Demo: `curl -X POST localhost:3100/api/explain -d '{"clauses":[…]}'` against `next start` with no key returns `{"source":"rules","reason":"no-key","findings":[]}`.
   - R3.3 is checked by the clause-analyzer `purity.test.ts` (no import from `src/lib/llm/`) and by haunted-house-ui `flow.spec.ts` (no-key build shows rule texts and badges).
   - _Requirements: 1.1–1.4, 3.1, 3.3, 8.2_
-- [ ] 20.4 Write `client.test.ts` (mocked fetch), then `client.ts`
+- [x] 20.4 Write `client.test.ts` (mocked fetch), then `client.ts`
   - Tests: importing `client.ts` makes no fetch (R14.3); success; 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; a network error gives `error`; the 20 s timeout gives `error`; no findings makes no fetch.
   - _Requirements: 14.1–14.3_
 
