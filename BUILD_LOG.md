@@ -136,3 +136,45 @@ The user created `.kiro/settings/mcp.json` by hand with the planned content and 
 - It also noted one extra blank line between the copied checklist and the clarifications block in `hackathon-rules.md`; the checklist text itself is identical.
 
 **Phase 0 complete.**
+
+### Context7 through Kiro: still not connected (16 November 2026, after the user reconnected it)
+- The user reported reconnecting Context7 from the MCP Server view. Checked straight away:
+  - `tool_load context7::*` (and the tool IDs `resolve-library-id`, `query-docs`, `get-library-docs`): not found.
+  - No Context7 process was running. The Playwright MCP process started at 20:58:40 was still running.
+- Kiro's MCP log (`~/Library/Application Support/Kiro/logs/20261116T194317/window1/exthost/kiro.kiroAgent/Kiro - MCP Logs.log`) holds one Context7 attempt: `20:59:17.175 [error] [context7] Failed to connect: MCP server 'context7' connection timed out after 60000ms`. No reconnect attempt is logged after it. Playwright: `20:58:44 mcp.connect.ok`, `mcp.listTools.ok`.
+- Cause: at session start both servers were installed with `npx -y` at the same time. Context7's first download took longer than Kiro's 60-second connect timeout, which also left the half-written npx cache folder found earlier. The cache is complete now (`package.json` present), and a manual start takes about a second.
+- Result: Context7 has still not been called through Kiro's MCP tools. Every Context7 use so far was from the shell. Phase 1 continues without it, because the requirements need no library docs. The user has been asked to reconnect again and confirm the server shows as connected.
+
+---
+
+## Phase 1: Specs (started 16 November 2026)
+
+PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
+
+### Approval stops
+- PLAN_DECISIONS.md C1.12 set one approval stop per spec, after its design.
+- At the start of Phase 1 the user asked for two stops for clause-analyzer: after the requirements and again after the design (the same as PLAN.md section 6). The user's latest instruction is followed.
+
+### Spec format
+- The kiro.dev Feature Specs docs (fetched 16 November 2026) say `requirements.md` uses EARS notation ("WHEN [condition] THE SYSTEM SHALL [behaviour]"), followed by `design.md` and `tasks.md`. The Requirements-First workflow is used.
+
+### clause-analyzer: requirements written
+- `.kiro/specs/clause-analyzer/requirements.md`: introduction, glossary (rooms with IDs and order, clause, rule, mitigation, exception marker, finding, Haunt Score) and 11 requirements with EARS acceptance criteria:
+  1. Splitting with nothing lost (round trip, contiguous spans, IDs `c-<start>`, terminators, paragraph breaks, list markers, the 11 abbreviations from C1.10, `etc.` before a paragraph break)
+  2. Room classification
+  3. Severity, mitigations and the five exception markers (C1.7)
+  4. Exact quotes
+  5. Haunt Score formula and monotonicity
+  6. Never throw
+  7. Determinism and purity
+  8. The 50,000-character cap
+  9. The non-English flag
+  10. Room metadata
+  11. The three fictional samples and their score bands (C7)
+- Choices made in the requirements, for the user to review:
+  - Length is measured in UTF-16 code units, the same unit a textarea's `maxLength` uses.
+  - Findings quote the clause with surrounding whitespace trimmed.
+  - The non-English flag uses fixed thresholds: 40 letters, half ASCII, 10% common English words.
+  - A 1-second limit for analysing 50,000 characters guards against run-away regular expressions.
+  - The mild sample must show at least one mitigated severity 0 wisp.
+- Status: waiting for the user's approval of the requirements. The design is not started.
