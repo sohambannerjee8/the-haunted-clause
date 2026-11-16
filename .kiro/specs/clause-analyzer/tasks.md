@@ -106,13 +106,13 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Fail on any `@/` import in `src/lib/samples/*.ts` (not test files). Also fail when `mild.ts`, `average.ts` or `terrible.ts` imports anything other than analyzer types, when `meta.ts` imports anything, or when `index.ts` imports anything other than the three text modules and `meta.ts`. `explanations.ts` is bound only by the relative-import rule. Files that do not exist yet are skipped.
   - _Requirements: 7.2, 7.4_
 
-- [ ] 15. Three fictional sample policies
-- [ ] 15.1 Check the company names
-  - Web-search "Lanternmoth Notes", "Mirebell Streaming" and "Grimhollow Social" (and each name on its own).
+- [x] 15. Three fictional sample policies
+- [x] 15.1 Check the company names
+  - Web-search each candidate company name (the full name and the made-up word on its own). Final names: "Quillwhisper Notes", "Mirebell Streaming" and "Murkwillow Social".
   - Replace any name a real company uses.
   - Record the queries and results in BUILD_LOG.md.
   - _Requirements: 11.2, 11.8_
-- [ ] 15.2 Write `samples.test.ts`, then the three sample files
+- [x] 15.2 Write `samples.test.ts`, then the three sample files
   - `src/lib/samples/{mild,average,terrible}.ts`, each exporting `{ id, company, title, text }`, written from scratch; `meta.ts` with `{ id, company, blurb }` for each sample and no imports; and `index.ts`.
   - Test that `meta.ts` holds no policy text (none of its strings is longer than 120 characters or appears in a sample text) and agrees with the samples' IDs and company names.
   - Tests:

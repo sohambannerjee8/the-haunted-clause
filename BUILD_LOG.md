@@ -464,3 +464,55 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - trimmed spans, clause IDs, and rule texts in findings.
 - **12.3:** `mitigation.test.ts` (20 tests) was written before the mitigation logic. 19 failed and 1 passed: the "never raises a severity" case, which holds trivially with no mitigations. Then applied and cancelled mitigations and the R3.11 masking rule were added, and all 20 passed. The user's three R3.10 cases gave 1, 3 and 1, as designed.
 - Analyzer total: 157 tests pass; lint and type-check are clean.
+
+### Task 13: Haunt Score
+- `score.test.ts` (17 tests) failed (no module), then `score.ts`, and all 17 passed. The tests cover:
+  - the approved weights and caps, and `MAX_REACHABLE_SCORE = 97`;
+  - 0 for no findings and for all severity 0 findings;
+  - single findings scoring 5, 15 and 30, and room caps of 6, 15 and 35;
+  - exactly 97 for all rooms saturated, and never above 97;
+  - 39 as the ceiling for severity 1 only;
+  - the four long-policy scenarios from the design (80, 44, 31, 31);
+  - round-half-up, including the floating-point result 24.499999999999996 rounding to 25.
+- `score.property.test.ts`: P1 (whole number 0–100, at most 97), P7 (order independence, with fast-check `shuffledSubarray`, checked to really shuffle) and a monotonicity property, each at 1,000 runs. All pass. A "P1 through `analyze()`" case was first written here, but `analyze` did not exist yet, so it was moved to Task 14.3.
+
+### Task 14: analyze(), the non-English flag, properties, purity
+- **14.1:** `language.test.ts` (5 tests) failed (no module), then `language.ts`, and all 5 passed. The tests cover English, Spanish, French and Japanese paragraphs and the under-40-letters rule.
+- **14.2:** `analyze.test.ts` (9 tests) failed (no module), then `analyze.ts` and `index.ts`. One test then failed: my test text for R9.6 used an English sentence long enough to push the share of common English words over 10%, so the text was not flagged as non-English. That was a fault in the test text, not the code. I replaced it with a mostly-Spanish sentence containing the rule phrase "data brokers", and all 9 passed. The tests cover:
+  - exactly 50,000 characters accepted, and 50,001 giving the typed `too-long` error;
+  - input order, empty text and emoji;
+  - both 50,000-character speed cases finishing in under 1 second.
+- **14.3:** `analyze.property.test.ts` covers P1 (through `analyze`), P2 (adding a risky clause never lowers the score), P3, P4 (up to the cap, plus the typed error over the cap), P5, P8 (findings), P9 and P10, each at 1,000 runs. All 9 passed in about 1 second.
+  - Because that seemed fast, I measured the generators over 1,000 samples. `policyLike` has a median of 75 characters (maximum 421). `bigString` has a median of 20,808 and a 90th percentile of 49,206 (maximum 50,000). `overCapString` runs from 50,001 to 60,000. The inputs are realistic, so the speed is real.
+- **14.4:** `purity.test.ts` (21 tests) scans the analyzer sources (comments and strings stripped) for clock, randomness and network APIs. It also checks the import rules for the analyzer and for `src/lib/samples`. All pass. As a check, a temporary analyzer file calling `Date.now()` made the test fail, and the file was then deleted.
+
+### Task 15: the three sample policies
+
+#### Sample name check (R11.2)
+Each candidate company name was web-searched on 16 November 2026, both as the full name and as the made-up word on its own. A name was rejected if any real company, product or well-known project uses it.
+
+| Query | What the search found | Decision |
+| --- | --- | --- |
+| "Lanternmoth Notes", "Lanternmoth" | lanternmoth.com, a company called Lanternmoth Media, and a Substack named lanternmoth | Rejected |
+| "Grimhollow Social", "Grimhollow" | "Grim Hollow", a published Dungeons & Dragons setting, and grimhollowmc.com, a Minecraft server | Rejected |
+| "Mirebell Streaming", "Mirebell" | Only near spellings: Mirebel (a French commune) and MiRebelle (a band). No company or product named Mirebell | Kept |
+| "Quillwhisper Notes", "Quillwhisper" | No company or product. Only unrelated note apps with "Quill" in the name | Used for the mild sample |
+| "Murkwillow Social", "Murkwillow" | No company or product. The word appears only as a generated fen name on a fantasy name generator | Used for the terrible sample |
+| "Wispmere" | Wisemere, a clothing brand, is too close | Not used |
+| "Gloomtallow" | No match (glowtallow is a skincare brand, a different spelling) | Not needed, not used |
+
+Final fictional companies:
+- Mild: **Quillwhisper Notes**
+- Average: **Mirebell Streaming**
+- Terrible: **Murkwillow Social**
+
+The two rejected names also appeared in the clause-analyzer design ("Samples"), in the text of Task 15.1, and in two splitter test sentences ("Lanternmoth Inc.", "Grimhollow Ltd."). All four places were changed to the final names, so no rejected name is left outside this log.
+
+#### Sample files and tests
+- **15.2:** `samples.test.ts` (15 tests) was written first and failed (no modules). Then `mild.ts`, `average.ts`, `terrible.ts`, `meta.ts` and `index.ts` were written from scratch. 14 tests passed; the R11.2 test failed until the "Sample name check" section above was written, then all 15 passed.
+- Results printed by the test:
+  - mild (Quillwhisper Notes): score 14, 28 clauses, 5 findings, including mitigated severity 0 wisps in the Cellar and Locked Door (R11.7).
+  - average (Mirebell Streaming): score 59, 26 clauses, 8 findings.
+  - terrible (Murkwillow Social): score 97, 32 clauses, 29 findings, with a risky finding in all eight rooms.
+- **Spec change (descriptive only):** the design's "Samples" section had rough targets (about 30, 45 and 50 clauses; an average sample with three severity 1 rooms; at least two severity 3 findings in every terrible room). The written samples are shorter and differ in those details, while every acceptance criterion R11.1–R11.8 holds. The design now states the real figures. No requirement, task ID or test name changed, and `npm run check:trace` still passes (236 rows).
+- Full suite: 20 files, 287 tests pass. Type-check, lint and `check:trace` are clean.

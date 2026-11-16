@@ -341,11 +341,12 @@ export function analyze(text: string): AnalyzeResult {
 ## Samples (R11)
 
 Three files under `src/lib/samples/` export `{ id, company, title, text }`. Each is written as a short, realistic, fictional policy.
-- **Mild**: about 30 clauses. Mitigated wisps in the Cellar and Locked Door, and three severity 1 clauses in three rooms. Target 14.
-- **Average**: about 45 clauses. One severity 3 (arbitration), three severity 2 rooms and three severity 1 rooms. Target 59.
-- **Terrible**: about 50 clauses. Severity 3 in all eight rooms, at least two in each, plus several severity 2. Target 97, the highest reachable score.
+- **Mild**: 28 clauses, 5 findings. Mitigated wisps (severity 0) in the Cellar and Locked Door, and severity 1 clauses in the Watching Portraits, Coin Vault and Trapdoor. Score 14.
+- **Average**: 26 clauses, 8 findings. One severity 3 room (the Silent Court, arbitration), three rooms whose worst is severity 2 (Cellar, Watching Portraits, Coin Vault) and one severity 1 room (Shifting Stairs). Score 59.
+- **Terrible**: 32 clauses, 29 findings. Severity 3 in all eight rooms (at least two in five of them), plus several severity 2. Score 97, the highest reachable score.
+These figures are printed by `samples.test.ts` on every run. The design first gave rough targets of about 30, 45 and 50 clauses; the texts were kept shorter so the demo stays readable, and the required scores (R11.4–R11.6) hold.
 
-Candidate company names: **Lanternmoth Notes** (mild), **Mirebell Streaming** (average), **Grimhollow Social** (terrible). Each will be web-searched in Task 15, replaced if a real company uses it, and the search recorded in BUILD_LOG.md (R11.2). The texts are written from scratch for this project and copy no real policy (R11.8).
+Company names: **Quillwhisper Notes** (mild), **Mirebell Streaming** (average), **Murkwillow Social** (terrible). Each was web-searched in Task 15; two earlier candidates were replaced because real companies or products use them, and every search is recorded in BUILD_LOG.md under "Sample name check" (R11.2). The texts are written from scratch for this project and copy no real policy (R11.8).
 
 ## Correctness properties
 

@@ -107,8 +107,8 @@ describe("splitClauses: abbreviations (R1.10, R1.11)", () => {
   it.each([
     ["e.g.", "We may use data, e.g. your email, for offers."],
     ["i.e.", "We keep logs, i.e. records of visits, for a year."],
-    ["Inc.", "This service is run by Lanternmoth Inc. and its partners."],
-    ["Ltd.", "Grimhollow Ltd. may change these terms."],
+    ["Inc.", "This service is run by Quillwhisper Inc. and its partners."],
+    ["Ltd.", "Murkwillow Ltd. may change these terms."],
     ["Co.", "Mirebell Co. is the operator of the site."],
     ["Corp.", "Hollow Corp. owns the site."],
     ["U.S.", "Data may be stored in the U.S. and elsewhere."],
