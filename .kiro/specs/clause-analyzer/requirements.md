@@ -31,7 +31,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 - **Rule**: an entry in the rule table that belongs to one room and has an ID, a case-insensitive pattern, a severity from 1 to 3, a plain-English explanation and a "why it matters" text.
 - **Mitigation**: an entry in the rule table that belongs to one room and has an ID, a case-insensitive pattern and a level (0 or 1). Example: "we do not sell" in The Cellar, level 0.
 - **Exception marker**: one of the eight words or phrases `except`, `unless`, `other than`, `however`, `provided that`, `but`, `although`, `subject to`, matched case-insensitively on word boundaries.
-- **Finding**: the analyzer's output for one clause that matched a room. Fields: `id` (the clause ID), `room`, `severity` (0–3), `quote`, `start`, `end`, `ruleId`, `mitigationId` (or `null`), `explanation` and `whyItMatters`.
+- **Finding**: the analyzer's output for one clause that matched a room. Fields: `id` (the clause ID), `room`, `severity` (0–3), `quote`, `start`, `end`, `ruleId`, `mitigationId` (or `null`), `cancelledMitigationId` (or `null`), `explanation` and `whyItMatters`.
 - **Risky finding**: a finding with severity 1, 2 or 3. In the UI each risky finding is a ghost; a severity 0 finding is a faint wisp meaning "checked, looks fine".
 - **Haunt Score**: a whole number from 0 to 100 computed from the severities of all findings.
 - **Sample**: one of the three fictional policies (mild, average, terrible) written for this project.
@@ -81,14 +81,19 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 
 1. THE classifier SHALL set a room's severity to the highest severity among the rules of that room that match the clause, before mitigations are applied.
 2. WHEN a mitigation of a room matches the clause, AND no exception marker appears in the same clause after the end of that mitigation match, THE classifier SHALL lower that room's severity to the mitigation's level, unless the severity is already lower.
-3. WHEN a mitigation of a room matches the clause, AND an exception marker appears in the same clause after the end of that mitigation match, THE classifier SHALL NOT apply that mitigation.
+3. WHEN a mitigation of a room matches the clause, AND an exception marker appears in the same clause after the end of that mitigation match, THE classifier SHALL NOT apply that mitigation (the mitigation is "cancelled").
 4. WHEN an exception marker appears in the clause only before the start of the mitigation match, THE classifier SHALL apply the mitigation as in criterion 2.
 5. WHEN an exception marker appears only in a different clause, THE classifier SHALL apply the mitigation as in criterion 2.
-6. WHEN a room's severity has been lowered by a mitigation, THE classifier SHALL set the finding's `mitigationId` to that mitigation's ID; otherwise `mitigationId` SHALL be `null`.
+6. WHEN a room's severity has been lowered by a mitigation, THE classifier SHALL set the finding's `mitigationId` to that mitigation's ID; otherwise `mitigationId` SHALL be `null`. WHEN criterion 11 decided the severity, THE classifier SHALL set the finding's `cancelledMitigationId` to the ID of the first cancelled mitigation in table order; otherwise `cancelledMitigationId` SHALL be `null`.
 7. WHEN a mitigation lowers the severity to 0, THE classifier SHALL still produce the finding, with severity 0.
 8. THE exception markers SHALL be matched on word boundaries, so that, for example, `exceptional`, `butter` and `subjected to` do not count as markers.
 9. THE classifier SHALL treat each of the eight exception markers the same way; each marker SHALL have its own test showing that it cancels a mitigation that comes before it in the same clause.
-10. WHEN the clause is "We do not sell your data, but we may share it with advertising partners.", THE classifier SHALL assign it to The Cellar with a severity of at least 1, and SHALL NOT lower it to severity 0.
+10. THE classifier SHALL give these results, each checked by its own test:
+    - "We do not sell your data, but you can ask us to delete it." is assigned to The Cellar with severity 1 or lower.
+    - "We do not sell your data, but we may share it with advertising partners." is assigned to The Cellar with severity 2 or higher.
+    - "We do not sell your data except to our partners." is assigned to The Cellar with severity 1 or higher.
+11. WHEN at least one mitigation of a room is cancelled AND no mitigation of that room applies, THE classifier SHALL set that room's severity to the highest severity among the room's rules that still match after the text of every cancelled mitigation match is replaced by spaces of the same length, with a minimum of 1. THE result SHALL never be higher than the severity from criterion 1.
+    (The words of a cancelled reassurance, such as "sell" in "we do not sell", are not counted as a risk on their own; anything else risky in the clause still counts, and the clause never drops below 1, because the reassurance has a condition attached.)
 
 ### Requirement 4: Findings quote the input exactly
 
@@ -108,12 +113,12 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 
 #### Acceptance Criteria
 
-1. THE analyzer SHALL compute the Haunt Score as `round(100 × (1 − P))`, where `P` is the product of `(1 − w)` over all findings, `w` is 0, 0.05, 0.15 or 0.30 for severity 0, 1, 2 or 3 respectively, and `round` rounds half up to a whole number.
+1. THE analyzer SHALL compute, for each room with findings, `raw = 1 − Π(1 − w)` over that room's findings, with `w` = 0, 0.05, 0.15 or 0.30 for severity 0, 1, 2 or 3, and `room = min(raw, cap)`, where `cap` is 0, 0.06, 0.15 or 0.35 for the room's highest severity 0, 1, 2 or 3. THE Haunt Score SHALL be `round(100 × (1 − Π(1 − room)))` over the rooms, where `round` rounds half up to a whole number. (The highest reachable score is therefore 97; see the design.)
 2. THE Haunt Score SHALL always be a whole number from 0 to 100 inclusive.
 3. WHEN there are no findings, THE Haunt Score SHALL be 0.
 4. WHEN all findings have severity 0, THE Haunt Score SHALL be 0.
 5. WHEN a clause that produces a risky finding is added to any input at a clause boundary (joined with `"\n\n"`), AND the combined input is within the cap, THE Haunt Score of the combined input SHALL be greater than or equal to the Haunt Score of the original input.
-6. THE score function SHALL give the same score for the same multiset of severities, whatever their order.
+6. THE score function SHALL give the same score for the same multiset of (room, severity) pairs, whatever their order.
 
 ### Requirement 6: Never throw
 

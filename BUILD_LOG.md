@@ -189,7 +189,7 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - R1.7: the `.` in a list marker such as `1. ` does not end a clause.
   - R1.9 and a new R1.13: boundaries in the same whitespace run snap to the end of that run, so the clause starts at the list marker.
   - These answer the user's question about R1.8 against R1.9: R1.8 wins, with one boundary at the end of the whitespace run.
-- Before writing the design, a scratch script outside the repo (`/tmp/hc-design-check.mjs`) ran the drafted rule patterns against every planned example. Results: 44 room examples (24 positive, 20 negative) with 0 failures; 15 mitigation and marker cases with 0 failures. It also confirmed the R3.10 case gives Cellar severity 3.
+- Before writing the design, a scratch script outside the repo (`/tmp/hc-design-check.mjs`) ran the drafted rule patterns against every planned example. Results: 44 room examples (28 positive, 16 negative) with 0 failures; 15 mitigation and marker cases with 0 failures. It also confirmed the R3.10 case gives Cellar severity 3.
 - **Haunt Score finding:** under the current weights (C4), the realistic long policy (150 clauses, 62 findings: 22 × sev0, 30 × sev1, 8 × sev2, 2 × sev3) scores **97**. A very long policy with only severity 0 and 1 findings scores 95. So long policies saturate, as the user suspected.
 - The design proposes two options:
   - Option A: smaller weights 0/0.01/0.04/0.12. The realistic long policy scores 59, but scores still grow with length, and the average-sample target falls to 24, outside its band.
@@ -199,3 +199,22 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
 - Trade-off reported to the user: with `but` as a marker, "We do not sell your data, but you can ask us to delete it." also loses its mitigation and shows severity 3.
 - Context7 was still not available through Kiro's MCP tools, so the fast-check v4 string API (`fc.string({ unit: "binary" })`, `"grapheme"` and so on) was read from `node_modules/fast-check/lib/fast-check.d.ts` instead.
 - Status: waiting for the user's approval of the design.
+
+### clause-analyzer: design approved with changes; tasks written
+- The user approved Option B for the Haunt Score, the R1.7 and R1.13 clarifications, and asked that cancelled mitigations stop falling back to the full rule severity. All of it is recorded in PLAN_DECISIONS.md C10.6–C10.9.
+- **Haunt Score:**
+  - R5.1 and R5.6 are reworded to the per-room cap formula.
+  - The design states the highest reachable score: 97 (`100 × (1 − 0.65⁸) = 96.81`).
+  - The "Run" band text became "75 and above" in `design-language.md` and PLAN_DECISIONS.md C6, and the UI is told never to show "/100".
+  - `product.md` steering was updated to match.
+- **Cancelled mitigations:**
+  - New R3.11 (a masking rule) and a reworded R3.10 holding the user's three required cases.
+  - The rule was prototyped in a second scratch script outside the repo (`/tmp/hc-cancel-check.mjs`):
+    - "…but you can ask us to delete it." gives 1 (required ≤ 1).
+    - "…but we may share it with advertising partners." gives 3 (required ≥ 2).
+    - "…except to our partners." gives 1 (required ≥ 1).
+    - The 44 room examples were re-checked with 0 failures.
+  - The mitigation test table grew from 15 to 19 rows.
+- **Correction found while writing tasks:** the design, tasks and this log said the room examples were 24 positive and 20 negative. A `grep` count of the design table showed 28 positive and 16 negative (44 in total, so the total was right). All three files were corrected.
+- `tasks.md` written for Tasks 11–16 (splitter, rules and classifier, mitigations, score, `analyze()` and the language flag, samples, coverage and Gate 2). Each sub-task lists its requirement IDs.
+- **clause-analyzer spec complete.** Next: llm-explainer, with one approval stop for requirements and design together.

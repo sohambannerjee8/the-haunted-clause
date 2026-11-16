@@ -60,9 +60,9 @@ The eight rooms keep their names from the brief and appear in this order (left t
 | 0–24 | Mostly quiet |
 | 25–49 | Uneasy |
 | 50–74 | Haunted |
-| 75–100 | Run |
+| 75 and above | Run |
 
-The score is always shown as a number plus its band label.
+The score is always shown as a number plus its band label, for example "97 · Run". The highest reachable score is 97 (see the clause-analyzer design), so never show "/100" or describe 100 as a possible result.
 
 ## Motion limits
 

@@ -92,7 +92,7 @@ flowchart LR
   - Mitigating phrases lower the severity, subject to the exception markers in C1.7.
   - Each clause is classified on its own, with no `Date` and no randomness.
 - **Severity levels:** 0 means the clause matches a room but looks fine; it shows as a faint wisp, which tells the user the clause was checked. Levels 1 to 3 are ghosts of rising intensity.
-- **Haunt Score:**
+- **Haunt Score:** replaced by C10.6 (per-room caps; highest reachable score 97). The original formula was:
   - Per-severity weights are 0, 0.05, 0.15 and 0.30.
   - The score is `round(100 × (1 − Π(1 − w)))`, multiplying over all findings.
   - It is always a whole number from 0 to 100, and adding a finding can never lower it.
@@ -135,7 +135,7 @@ flowchart LR
   - 0–24: Mostly quiet
   - 25–49: Uneasy
   - 50–74: Haunted
-  - 75–100: Run
+  - 75 and above: Run (the highest reachable score is 97; see C10.6)
 - **Lights on mode:** A toggle switches to a plain, semantic list of the same findings.
 - **Motion:** `MotionConfig reducedMotion="user"` plus a CSS `prefers-reduced-motion` media query.
 - **Sound:** Off by default (see C2).
@@ -192,7 +192,23 @@ These are fixtures, checked in both unit and E2E tests.
 2. **Exception markers extended.** The markers are now eight: `except`, `unless`, `other than`, `however`, `provided that`, `but`, `although`, `subject to`. Each marker has its own test. A test must show that "We do not sell your data, but we may share it with advertising partners." is not lowered to severity 0.
 3. **Room examples.** At least three positive and two negative example clauses per room, all listed in the clause-analyzer design, each with its own test (Requirement 2.7).
 4. **Haunt Score check.** The design must compute the score for a realistic long policy (about 150 clauses, mostly severity 0 and 1 findings) and, if long policies land at 95 or above, propose adjusted weights that keep the six properties and the sample bands. Outcome: see the clause-analyzer design, section "Haunt Score". The weights stay as in C4 until the user approves a change.
-5. **Splitter boundary rule.** The design must state which rule wins when an indented list item follows a paragraph break (Requirement 1, criteria 8 and 9).
+5. **Splitter boundary rule.** The design must state which rule wins when an indented list item follows a paragraph break (Requirement 1, criteria 8 and 9). Outcome: criterion 8 wins, with one boundary at the end of the whitespace run, which is the list marker.
+6. **Haunt Score: Option B approved.** This replaces the formula in C4.
+   - Per room: `raw = 1 − Π(1 − w)` with `w = 0, 0.05, 0.15, 0.30`, then `room = min(raw, cap)` with `cap = 0, 0.06, 0.15, 0.35` by the room's highest severity.
+   - Score: `round(100 × (1 − Π(1 − room)))` over the rooms.
+   - R5.1 and R5.6 are reworded to match.
+   - The highest reachable score is 97 (all eight rooms at 0.35). The "Run" band text becomes "75 and above", and the UI shows no "/100" suffix.
+7. **Requirement 1 clarifications approved.**
+   - R1.7: the `.` in a list marker does not end a clause.
+   - R1.13: boundaries in one whitespace run snap to its end.
+8. **Cancelled mitigations do not fall back to the full rule severity.** New R3.11: when a mitigation is cancelled by an exception marker and no mitigation of that room applies, the cancelled mitigation's text is masked with spaces and the room's rules are re-run on the rest.
+   - Severity = `min(raw, max(masked result, 1))`.
+   - The finding records `cancelledMitigationId`.
+   - R3.10 now holds three required tests:
+     - "We do not sell your data, but you can ask us to delete it." ≤ 1 (gives 1).
+     - "We do not sell your data, but we may share it with advertising partners." ≥ 2 (gives 3).
+     - "We do not sell your data except to our partners." ≥ 1 (gives 1).
+9. **clause-analyzer requirements and design approved** on 16 November 2026, with changes 2–8 above.
 
 ## D. Task map (spec tasks.md files must match these ranges)
 

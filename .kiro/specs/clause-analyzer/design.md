@@ -4,7 +4,7 @@
 
 The analyzer is a set of pure TypeScript modules in `src/lib/analyzer/`. `analyze(text)` checks the size cap, splits the text into clauses, classifies each clause against a rule table, computes the Haunt Score and sets a non-English flag. It runs in the browser, reads no clock, uses no randomness, makes no network call and keeps no state.
 
-Requirements: `.kiro/specs/clause-analyzer/requirements.md` (R1–R11 below; "R3.2" means Requirement 3, criterion 2). Decisions: PLAN_DECISIONS.md C1.7, C1.10, C4, C7 and C10.
+Requirements: `.kiro/specs/clause-analyzer/requirements.md` (R1–R11 below; "R3.2" means Requirement 3, criterion 2). Decisions: PLAN_DECISIONS.md C1.7, C1.10, C4, C7 and C10. Status: requirements and design approved by the user on 16 November 2026, with the changes in C10.
 
 ```mermaid
 flowchart LR
@@ -58,7 +58,8 @@ export interface Finding {
   start: number;
   end: number;
   ruleId: string;
-  mitigationId: string | null;
+  mitigationId: string | null;           // a mitigation lowered the severity (R3.6)
+  cancelledMitigationId: string | null;  // a reassurance was undercut by an exception marker (R3.11)
   explanation: string;     // from the rule, 1..400 chars
   whyItMatters: string;    // from the rule, 1..400 chars
 }
@@ -105,7 +106,10 @@ When an indented list item follows a paragraph break, both R1.8 and R1.9 fire. *
 
 1. Trim the clause to its non-whitespace span `[s, e)`. If it is empty, return `null` (R2.3).
 2. For each room in room order, find every rule of that room whose pattern matches `input.slice(s, e)`. The room's raw severity is the highest of their severities. Its `ruleId` is the first rule in the table with that severity (R2.5, R3.1).
-3. For each matching mitigation of that room (in table order), find its first match. Look for an exception marker in the text after the end of that match. If there is none, the mitigation applies (R3.2–R3.5). The applicable mitigation with the lowest level wins; ties go to the first in the table. If its level is lower than the room's severity, the severity becomes that level and `mitigationId` is set (R3.6). Otherwise `mitigationId` stays `null`.
+3. For each mitigation of that room (in table order), find its first match. If an exception marker appears in the text after the end of that match, the mitigation is **cancelled** (R3.3). Otherwise it **applies** (R3.2, R3.4, R3.5).
+   - **Some mitigation applies:** the applying mitigation with the lowest level wins (ties go to the first in the table). If its level is lower than the room's severity, the severity becomes that level and `mitigationId` is set (R3.6).
+   - **None applies, at least one cancelled (R3.11):** copy the clause text and replace every cancelled mitigation match with spaces of the same length. Then re-run the room's rules on that masked copy. The severity becomes `min(raw, max(highestMaskedMatch, 1))`. `ruleId` is the masked match's rule, or the original rule if nothing else matched. `cancelledMitigationId` is the first cancelled mitigation in table order.
+   - **No mitigation matched:** the severity stays at the raw severity.
 4. Choose the room with the highest severity after mitigations. Ties go to the room that comes first in room order (R2.4).
 5. Build the finding: `id` = clause ID, `start = s`, `end = e`, `quote = input.slice(s, e)`, plus `explanation` and `whyItMatters` from the rule (R4). A severity 0 result is still a finding (R3.7).
 
@@ -229,83 +233,81 @@ Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned 
 | Shifting Stairs | Neg | These terms were last updated on 1 November 2026. | no finding |
 | Shifting Stairs | Neg | You can change your password at any time in Settings. | no finding |
 
+### Cancelled mitigations (R3.11)
+
+When an exception marker undercuts a reassurance, the reassurance's own words are not treated as a risk. In "We do not sell your data, but…", the word "sell" belongs to the promise, not to a threat. So those words are masked out and the rest of the clause is judged on its own. The clause never drops below severity 1, because a promise with a condition attached is worth a look. It never rises above the severity it would have had with no mitigation at all.
+
+Masking with spaces keeps every offset unchanged, so the masked text can never invent a match: it holds the same characters minus some words. Hence `min(raw, …)` only guards against mistakes. This rule was checked with a second scratch script (`/tmp/hc-cancel-check.mjs`, not in the repo). It gave the results below, and all 44 room examples still passed.
+
 ### Mitigation and exception-marker tests (R3)
 
-Each row is one unit test in `mitigation.test.ts`. All 15 were checked against the patterns with the scratch script: 0 failures. The two-clause row was checked one clause at a time.
+Each row is one unit test in `mitigation.test.ts`. The first three rows are the three required cases from R3.10. Every row was checked with the scratch script.
 
 | Case | Clause | Expected |
 | --- | --- | --- |
-| `except` cancels | We do not sell your personal information except to our partners. | Cellar 3, `mitigationId` null |
-| `unless` cancels | We do not sell your personal information unless you opt in. | Cellar 3, null |
-| `other than` cancels | We do not sell your personal information other than to trusted partners. | Cellar 3, null |
-| `however` cancels | We do not sell your personal information, however we may sell aggregated data. | Cellar 3, null |
-| `provided that` cancels | We do not sell your personal information, provided that you have not opted in to offers. | Cellar 3, null |
-| `but` cancels | We do not sell your personal information, but we may sell usage statistics. | Cellar 3, null |
-| `although` cancels | We do not sell your personal information, although we may sell usage statistics. | Cellar 3, null |
-| `subject to` cancels | We do not sell your personal information, subject to the exceptions in Sec. 9. | Cellar 3, null |
-| R3.10, user's case | We do not sell your data, but we may share it with advertising partners. | Cellar 3 (`cellar.sell`; `cellar.ad-partners` also matches), never 0 |
-| Marker before mitigation | Except where the law requires it, we do not sell your personal information. | Cellar 0, `cellar.no-sell` |
+| R3.10 (a): ≤ 1 | We do not sell your data, but you can ask us to delete it. | Cellar 1, `cancelledMitigationId` `cellar.no-sell` |
+| R3.10 (b): ≥ 2 | We do not sell your data, but we may share it with advertising partners. | Cellar 3, `ruleId` `cellar.ad-partners`, cancelled `cellar.no-sell` |
+| R3.10 (c): ≥ 1 | We do not sell your data except to our partners. | Cellar 1, cancelled `cellar.no-sell` |
+| `except` cancels | We do not sell your personal information except to our partners. | Cellar 1, cancelled, `mitigationId` null |
+| `unless` cancels | We do not sell your personal information unless you opt in. | Cellar 1, cancelled |
+| `other than` cancels | We do not sell your personal information other than to trusted partners. | Cellar 1, cancelled |
+| `however` cancels | We do not sell your personal information, however we may sell aggregated data. | Cellar 3 (the second "sell … data" is not masked), cancelled |
+| `provided that` cancels | We do not sell your personal information, provided that you have not opted in to offers. | Cellar 1, cancelled |
+| `but` cancels | We do not sell your personal information, but we may sell usage statistics. | Cellar 1, cancelled |
+| `although` cancels | We do not sell your personal information, although we may sell usage statistics. | Cellar 1, cancelled |
+| `subject to` cancels | We do not sell your personal information, subject to the exceptions in Sec. 9. | Cellar 1, cancelled |
+| Risk after the marker | We do not sell your data, but we sell your contact details to data brokers. | Cellar 3, cancelled |
+| Marker before mitigation | Except where the law requires it, we do not sell your personal information. | Cellar 0, `mitigationId` `cellar.no-sell` |
+| Marker before mitigation, other room | Your plan renews automatically, but we email you 7 days before each renewal. | Coin Vault 1, `mitigationId` `vault.reminder` |
 | Marker in another clause | "We do not sell your personal information. However, we use cookies." | Clause 1: Cellar 0, `cellar.no-sell`. Clause 2: Portraits 1 |
 | Word boundary: `exceptional` | We do not sell your personal information, which is an exceptional promise. | Cellar 0, `cellar.no-sell` |
 | Word boundary: `butter` | We do not sell your personal information, not even to the butter-makers next door. | Cellar 0, `cellar.no-sell` |
 | Word boundary: `subjected to` | We do not sell your personal information, as subjected to review by our auditors. | Cellar 0, `cellar.no-sell` |
 | Plain mitigation | We do not sell your data. | Cellar 0 finding still produced (R3.7) |
 
-**Trade-off of adding `but`.** "We do not sell your data, but you can ask us to delete it." also loses its mitigation, and shows as a severity 3 ghost. A cancelled mitigation always falls back to the rule severity, so after a broad marker like `but` the clause errs on the scary side. This follows the approved requirements. If you would rather such clauses show a milder severity, one option is to ignore rule matches that sit inside the mitigation phrase once it is cancelled. That needs a change to R3.1, so I have not designed it in.
+Each of the eight marker rows also asserts `mitigationId === null` and `cancelledMitigationId !== null` (R3.9).
 
 ## Haunt Score (R5)
 
-### Current formula (C4)
+### Formula (approved: Option B, PLAN_DECISIONS.md C10.6)
 
-`score = round(100 × (1 − Π(1 − w)))` over all findings, with `w = 0, 0.05, 0.15, 0.30` for severity 0–3.
+Each room's worst ghost sets that room's ceiling, and then the eight rooms combine.
 
-### Long-policy check (C10.4)
+1. Inside each room, combine its findings: `raw = 1 − Π(1 − w)`, with `w = 0, 0.05, 0.15, 0.30` for severity 0–3.
+2. Cap the room by its highest severity: `room = min(raw, cap[maxSeverity])`, with `cap = 0, 0.06, 0.15, 0.35`.
+3. Combine the rooms: `score = round(100 × (1 − Π(1 − room)))`, rounding half up. The code computes `Math.floor(100 × (1 − P) + 0.5 + 1e-9)`, so a value such as 24.4999999 from floating point still rounds the way the exact value would.
 
-I computed the score for several finding mixes with a scratch script (`/tmp/hc-design-check.mjs`, not in the repo). The "long realistic" row models a 150-clause policy with 62 findings spread over the rooms the way real policies spread them (most in the Cellar and Portraits): 22 at severity 0, 30 at severity 1, 8 at severity 2 and 2 at severity 3.
+`score.ts` exports `SEVERITY_WEIGHTS`, `ROOM_CAPS` and `MAX_REACHABLE_SCORE = 97`.
 
-| Scenario | Current | Option A | Option B |
-| --- | --- | --- | --- |
-| Long realistic: 150 clauses, 62 findings (22 × 0, 30 × 1, 8 × 2, 2 × 3) | **97** | 59 | 80 |
-| Long, mostly severity 1: 150 clauses, 50 findings (16 × 0, 30 × 1, 4 × 2) | 89 | 37 | 44 |
-| Long mild: 150 clauses, 40 findings (20 × 0, 20 × 1) | 64 | 18 | 31 |
-| Very long mild: 400 clauses, 120 findings (60 × 0, 60 × 1) | 95 | 45 | 31 |
-| Mild sample target (band ≤ 25) | 14 | 3 | 14 |
-| Average sample target (band 35–65) | 63 | **24** | 59 |
-| Terrible sample target, severity 3 in all 8 rooms (band ≥ 80) | 100 | 90 | 97 |
-| Highest score possible with only severity 1 findings | → 100 | → 100 | 39 |
+### Highest reachable score: 97
 
-The current formula counts every finding against one shared total, so the score grows with policy length. The realistic long policy lands at 97, and a long policy with nothing worse than severity 1 still reaches 95. So a long but ordinary policy cannot be told apart from a terrible one.
+The largest possible room value is 0.35, a room whose worst finding is severity 3 and whose findings add up to at least 0.35 (two severity 3 findings are enough). With all eight rooms at 0.35, the score is `100 × (1 − 0.65⁸) = 96.81`, which rounds to **97**. No input can score higher. The scale stays 0–100 (R5.2), so a score of 97 means "as haunted as this house can get".
 
-### Option A: smaller weights (same formula)
+The "Run" band therefore covers **75 to 97**. Its text is changed from "75–100" to "75 and above" in `design-language.md` and PLAN_DECISIONS.md C6, so the UI never promises a 100 that cannot happen. The UI shows the score as a number and the band label (for example "97 · Run"), with no "/100" suffix.
 
-`w = 0, 0.01, 0.04, 0.12`. This is the smallest change, and it keeps the formula and both properties. But the score still grows with length without limit: 150 severity 1 findings give 78. The average sample target drops to 24, so the samples would have to be rewritten with many more findings to stay in their bands.
+### Why the old formula was replaced (C10.4)
 
-### Option B (recommended): each room's worst ghost sets that room's ceiling
+Scores were computed with a scratch script (`/tmp/hc-design-check.mjs`, not in the repo). The "long realistic" row is a 150-clause policy with 62 findings spread the way real policies spread them: 22 at severity 0, 30 at severity 1, 8 at severity 2 and 2 at severity 3.
 
-1. Inside each room, combine findings as now: `raw = 1 − Π(1 − w)` with the current weights `0, 0.05, 0.15, 0.30`.
-2. Cap each room by its highest severity: `room = min(raw, cap[maxSeverity])` with `cap = 0, 0.06, 0.15, 0.35`.
-3. Combine the eight rooms: `score = round(100 × (1 − Π(1 − room)))`.
+| Scenario | Old formula | Approved formula |
+| --- | --- | --- |
+| Long realistic: 150 clauses, 62 findings | 97 | **80** |
+| Long, mostly severity 1: 150 clauses, 50 findings (16 × 0, 30 × 1, 4 × 2) | 89 | 44 |
+| Long mild: 150 clauses, 40 findings (20 × 0, 20 × 1) | 64 | 31 |
+| Very long mild: 400 clauses, 120 findings (60 × 0, 60 × 1) | 95 | 31 |
+| Mild sample target (band ≤ 25) | 14 | 14 |
+| Average sample target (band 35–65) | 63 | 59 |
+| Terrible sample target: severity 3 in all 8 rooms (band ≥ 80) | 100 | 97 |
+| Highest score with only severity 1 findings | approaches 100 | 39 |
+| Highest score of any input | approaches 100 | 97 |
 
-What this gives:
-- A policy with nothing worse than severity 1 can never pass 39 (Uneasy), however long it is.
-- A single severity 3 clause still counts fully (0.30, under its 0.35 cap).
-- A policy needs serious findings in several rooms to reach Run (75+).
-- All three sample targets stay inside their bands (14, 59, 97).
+The old formula counted every finding against one total, so long ordinary policies scored like terrible ones. The approved formula ties the score to how bad the worst clauses are, and to how many rooms they reach.
 
-Both score properties still hold:
-- **Range:** each room value is between 0 and 0.35, so the product is between 0 and 1 and the rounded score is a whole number from 0 to 100.
-- **Monotonicity:** adding a finding never lowers `raw` and never lowers the room's highest severity, so the cap never falls. The room value cannot fall, so the total cannot fall.
-- A spot check of 200,000 random finding lists found 0 decreases and 0 out-of-range values. The property test will check this with fast-check.
+### The score properties still hold
 
-The other four properties (quotes, never throws, determinism, round trip) do not involve the score.
-
-**If you approve Option B, two approved requirements change:**
-- R5.1 becomes: "THE analyzer SHALL compute, for each room with findings, `raw = 1 − Π(1 − w)` over that room's findings with `w = 0, 0.05, 0.15, 0.30` for severity 0–3, and `room = min(raw, cap)`, where `cap` is 0, 0.06, 0.15 or 0.35 for the room's highest severity 0–3. THE Haunt Score SHALL be `round(100 × (1 − Π(1 − room)))` over the rooms, rounding half up."
-- R5.6 becomes "the same multiset of (room, severity) pairs" instead of "the same multiset of severities".
-
-R5.2–R5.5 stay as they are. The weights and caps live as named constants in `score.ts`. To avoid a floating-point result such as 24.9999999, the code rounds `100 × (1 − P) + 1e-9`.
-
-Until you choose, the plan keeps the current formula (C4).
+- **Range (P1):** every room value is between 0 and 0.35, so the product is between 0.65⁸ and 1, and the rounded score is a whole number from 0 to 97, inside 0–100.
+- **Monotonicity (P2):** adding a finding never lowers a room's `raw` value and never lowers its highest severity, so its cap never falls either. The room value cannot fall, so the score cannot fall. A spot check of 200,000 random finding lists found 0 decreases and 0 out-of-range values.
+- **Order independence (P7):** the score depends only on the multiset of (room, severity) pairs (R5.6).
 
 ## Non-English flag (R9)
 
@@ -335,8 +337,8 @@ export function analyze(text: string): AnalyzeResult {
 
 Three files under `src/lib/samples/` export `{ id, company, title, text }`. Each is written as a short, realistic, fictional policy.
 - **Mild**: about 30 clauses. Mitigated wisps in the Cellar and Locked Door, and three severity 1 clauses in three rooms. Target 14.
-- **Average**: about 45 clauses. One severity 3 (arbitration), three severity 2 rooms and three severity 1 rooms. Target 59 under Option B, 63 under the current formula.
-- **Terrible**: about 50 clauses. Severity 3 in all eight rooms, plus several severity 2. Target 97 or 100.
+- **Average**: about 45 clauses. One severity 3 (arbitration), three severity 2 rooms and three severity 1 rooms. Target 59.
+- **Terrible**: about 50 clauses. Severity 3 in all eight rooms, at least two in each, plus several severity 2. Target 97, the highest reachable score.
 
 Candidate company names: **Lanternmoth Notes** (mild), **Mirebell Streaming** (average), **Grimhollow Social** (terrible). Each will be web-searched in Task 15, replaced if a real company uses it, and the search recorded in BUILD_LOG.md (R11.2). The texts are written from scratch for this project and copy no real policy (R11.8).
 
@@ -347,13 +349,13 @@ All properties use fast-check with `fc.assert(property, { numRuns: 1000 })` (tes
 The generators are:
 - `anyString`: `fc.string({ unit: "binary", maxLength: 2_000 })`, all code points.
 - `utf16String`: `fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((n) => String.fromCharCode(n)), maxLength: 2_000 })`. It includes unpaired surrogates and control characters.
-- `policyLike`: fragments joined from a pool. The pool holds the 24 positive and 16 negative example clauses, the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
+- `policyLike`: fragments joined from a pool. The pool holds the 28 positive and 16 negative example clauses, the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
 - `bigString`: a fragment from `policyLike` repeated up to a length drawn from `fc.integer({ min: 0, max: 50_000 })`, so sizes up to the cap are covered.
 
 | # | Property (PLAN.md section 4) | Requirement | Test file | Generator |
 | --- | --- | --- | --- | --- |
 | P1 | The Haunt Score is always a whole number from 0 to 100. | R5.2 | `score.property.test.ts` | Arrays of up to 400 `{ room, severity }`, and `analyze` on `policyLike` |
-| P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the 24 positive examples `r`: `score(t + "\n\n" + r) >= score(t)` |
+| P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the 28 positive examples `r`: `score(t + "\n\n" + r) >= score(t)` |
 | P3 | Every finding quotes text that appears in the input, character for character. | R4.1, R4.2 | `analyze.property.test.ts` | `policyLike`, `utf16String`: `f.quote === input.slice(f.start, f.end)`, non-empty, no edge whitespace |
 | P4 | The analyzer never throws, for any string up to the size cap, including empty text and emoji. | R6.1, R6.2 | `analyze.property.test.ts` | `fc.oneof(anyString, utf16String, policyLike, bigString)` plus explicit `""`, whitespace and emoji cases in unit tests |
 | P5 | The same input always gives the same rule-based result. | R7.1, R7.3 | `analyze.property.test.ts` | Pairs `(x, y)`: `analyze(x)` deep-equals `analyze(x)` called again after `analyze(y)` |
@@ -363,6 +365,7 @@ Further properties that support the six (also at 1,000 runs):
 - P7 (R5.6): the score does not depend on the order of findings.
 - P8 (R1.6, R4.3): IDs equal `c-<start>` and are unique.
 - P9 (R10.2): every finding's room is one of the eight room IDs.
+- P10 (R3.1, R3.11): a finding's severity is never higher than the highest severity of any rule of its room that matches the unmasked clause, and a finding with `cancelledMitigationId` set has severity 1 or more.
 
 ## Testing
 
@@ -371,13 +374,13 @@ Further properties that support the six (also at 1,000 runs):
 | `splitter.test.ts` | Unit | Each of the 11 abbreviations mid-sentence (one test each); `etc.` before a paragraph break; the four boundary-resolution rows above; terminators with closers; CRLF; empty input; whitespace only; emoji; `zinc. Then` still splits; list markers `-`, `*`, `•`, `1.`, `12)`, `a)`, `(iv)` |
 | `splitter.property.test.ts` | Property | P6, P8 |
 | `classifier.test.ts` | Unit | The 44 room examples (R2.7); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
-| `mitigation.test.ts` | Unit | The 15 mitigation and marker rows (R3) |
+| `mitigation.test.ts` | Unit | The 19 mitigation and marker rows (R3), including the three R3.10 cases |
 | `rules.test.ts` | Unit | Every room has at least 3 rules; IDs are unique; severities are 1–3; texts are 1–400 characters; patterns have no `g` or `y` flag (R2.6, R4.5) |
-| `score.test.ts` | Unit | No findings gives 0; all severity 0 gives 0; one finding at each severity; saturation; the scenario table above (fixed numbers for whichever option you approve) |
+| `score.test.ts` | Unit | No findings gives 0; all severity 0 gives 0; one finding at each severity (5, 15, 30); a room capped at 6, 15 and 35; all eight rooms saturated gives exactly 97 (`MAX_REACHABLE_SCORE`); the long-policy scenarios in the table above give 80, 44, 31 and 31 |
 | `score.property.test.ts` | Property | P1, P7 |
 | `language.test.ts` | Unit | Under 40 letters; Spanish, French and Japanese paragraphs; an English policy paragraph |
 | `analyze.test.ts` | Unit | Cap at 50,000 and 50,001 (R8); typed error; 50,000-character inputs finish in under 1 second (R6.3), for both realistic text and one 50,000-character clause with no terminators |
-| `analyze.property.test.ts` | Property | P2, P3, P4, P5, P9 |
+| `analyze.property.test.ts` | Property | P2, P3, P4, P5, P9, P10 |
 | `purity.test.ts` | Unit | Reads the analyzer source files and fails on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, or any non-type import from outside `src/lib/analyzer/` (R7.2) |
 | `src/lib/samples/samples.test.ts` | Unit | Score bands, a risky finding in every room for the terrible sample, a mitigated wisp in the mild sample, length cap, `likelyNonEnglish === false` (R11.3–R11.7) |
 

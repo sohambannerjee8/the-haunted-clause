@@ -1,0 +1,130 @@
+# Implementation Plan: clause-analyzer
+
+Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
+
+- [ ] 11. Types, rooms and the clause splitter
+- [ ] 11.1 Write `src/lib/analyzer/types.ts` and `rooms.ts`
+  - Add the types from the design (`RoomId`, `Severity`, `Room`, `Clause`, `Finding` with `mitigationId` and `cancelledMitigationId`, `AnalyzeResult`).
+  - Add `ROOMS`, the eight rooms in order with ID, name and clause type exactly as in the requirements glossary.
+  - Test `rooms.test.ts`: eight rooms, in order, with names and clause types matching the glossary and unique IDs.
+  - _Requirements: 10.1, 10.2_
+- [ ] 11.2 Write the splitter unit tests, then `splitter.ts`
+  - Tests in `splitter.test.ts`:
+    - One test for each of the 11 abbreviations used mid-sentence, plus the capitalised forms.
+    - `etc.` followed by a paragraph break.
+    - `zinc. Then` still splits.
+    - Terminators with closing quotes and brackets.
+    - CRLF line endings.
+    - Empty input and whitespace-only input.
+    - Emoji.
+    - List markers `-`, `*`, `•`, `1.`, `12)`, `a)` and `(iv)`.
+    - The four rows of the "Boundary resolution" table in the design, including an indented list item after a paragraph break (R1.8 wins).
+  - Implement `splitClauses` with candidate collection, snapping to the end of each whitespace run, and IDs `c-<start>`.
+  - _Requirements: 1.3–1.11, 1.13_
+- [ ] 11.3 Write the splitter properties
+  - `splitter.property.test.ts`:
+    - P6: joining the clauses gives the input; spans are contiguous; no whitespace-only clause when the input has non-whitespace.
+    - P8: IDs are `c-<start>` and unique.
+  - Generators: `anyString`, `utf16String` and `policyLike` from the design, including inputs over the cap (R1.12).
+  - _Requirements: 1.1, 1.2, 1.5, 1.6, 1.12, 1.13_
+
+- [ ] 12. Rule table and classifier
+- [ ] 12.1 Write `rules.test.ts`, then `rules.ts`
+  - Add the 40 rules and 11 mitigations from the design, and `EXCEPTION_MARKER` with all eight markers.
+  - Tests:
+    - Each room has at least 3 rules.
+    - Rule and mitigation IDs are unique.
+    - Severities are 1–3 and mitigation levels are 0–1.
+    - Explanation and "why it matters" texts are 1–400 characters.
+    - No pattern has the `g` or `y` flag.
+  - _Requirements: 2.6, 2.8, 3.8, 4.5_
+- [ ] 12.2 Write `classifier.test.ts` with the 44 room examples, then `classifier.ts`
+  - Write one test per row of the "Room examples" table (28 positive with expected room, severity and rule; 16 negative).
+  - Add tests for:
+    - The room tie-break (room order).
+    - The rule tie-break (table order).
+    - Case-insensitivity.
+    - A whitespace-only clause gives no finding.
+    - Trimmed `start`, `end` and `quote`.
+  - Implement `classifyClause`, steps 1–5 of the design's classifier algorithm.
+  - _Requirements: 2.1–2.5, 2.7, 2.8, 4.1–4.3, 4.5_
+- [ ] 12.3 Write `mitigation.test.ts`, then the mitigation logic
+  - Write one test per row of the 19-row "Mitigation and exception-marker tests" table, including:
+    - The three R3.10 cases.
+    - The eight marker rows, each asserting `mitigationId === null` and `cancelledMitigationId !== null`.
+    - Marker before the mitigation, and marker in another clause.
+    - The three word-boundary rows.
+    - The plain severity 0 finding.
+  - Implement applied and cancelled mitigations, including the R3.11 masking rule (`min(raw, max(masked, 1))`).
+  - _Requirements: 3.1–3.11_
+
+- [ ] 13. Haunt Score
+- [ ] 13.1 Write `score.test.ts`, then `score.ts`
+  - Export `SEVERITY_WEIGHTS`, `ROOM_CAPS` and `MAX_REACHABLE_SCORE = 97`, and `hauntScore(findings)` with the per-room cap formula.
+  - Tests:
+    - No findings gives 0, and all severity 0 gives 0.
+    - One finding at each severity gives 5, 15 and 30.
+    - Rooms cap at 6, 15 and 35.
+    - All eight rooms saturated gives exactly 97.
+    - The four long-policy scenarios from the design give 80, 44, 31 and 31.
+    - Rounding at an exact .5.
+  - _Requirements: 5.1, 5.3, 5.4_
+- [ ] 13.2 Write `score.property.test.ts`
+  - P1: the score is a whole number from 0 to 100 (and at most `MAX_REACHABLE_SCORE`).
+  - P7: shuffling the findings does not change the score.
+  - Generator: arrays of up to 400 `{ room, severity }`.
+  - _Requirements: 5.2, 5.6_
+
+- [ ] 14. `analyze()` and the non-English flag
+- [ ] 14.1 Write `language.test.ts`, then `language.ts`
+  - Tests:
+    - Under 40 letters gives `false`.
+    - Spanish, French and Japanese paragraphs give `true`.
+    - An English policy paragraph gives `false`.
+  - _Requirements: 9.1–9.5_
+- [ ] 14.2 Write `analyze.test.ts`, then `analyze.ts` and `index.ts`
+  - Tests:
+    - Exactly 50,000 characters gives `ok: true`.
+    - 50,001 characters gives the typed `too-long` error, with no splitting.
+    - Non-English text is still classified.
+    - Findings come in input order.
+    - 50,000-character inputs finish in under 1 second, both realistic text and one long clause with no terminators.
+  - _Requirements: 4.4, 6.2, 6.3, 8.1–8.3, 9.6_
+- [ ] 14.3 Write `analyze.property.test.ts`
+  - P2: appending one of the 28 positive examples at a clause boundary never lowers the score.
+  - P3: quotes equal `input.slice(start, end)`, are non-empty and have no edge whitespace.
+  - P4: never throws, for `anyString`, `utf16String`, `policyLike` and `bigString` up to the cap.
+  - P5: the result is the same after analysing another input in between.
+  - P9: every room is one of the eight IDs.
+  - P10: severity is never above the unmasked rule severity, and a cancelled mitigation gives at least 1.
+  - _Requirements: 3.1, 3.11, 4.1, 4.2, 5.5, 6.1, 7.1, 7.3, 10.2_
+- [ ] 14.4 Write `purity.test.ts`
+  - Fail on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, or any non-type import from outside `src/lib/analyzer/` in the analyzer source files.
+  - _Requirements: 7.2_
+
+- [ ] 15. Three fictional sample policies
+- [ ] 15.1 Check the company names
+  - Web-search "Lanternmoth Notes", "Mirebell Streaming" and "Grimhollow Social" (and each name on its own).
+  - Replace any name a real company uses.
+  - Record the queries and results in BUILD_LOG.md.
+  - _Requirements: 11.2, 11.8_
+- [ ] 15.2 Write `samples.test.ts`, then the three sample files
+  - `src/lib/samples/{mild,average,terrible}.ts` and `index.ts`, each exporting `{ id, company, title, text }`, written from scratch.
+  - Tests:
+    - The mild sample scores ≤ 25 and has a mitigated severity 0 finding.
+    - The average sample scores 35–65.
+    - The terrible sample scores ≥ 80 with a risky finding in each of the eight rooms.
+    - Every sample is at most 50,000 characters and gives `likelyNonEnglish === false`.
+  - Print each sample's score and ghosts per room in the test output.
+  - _Requirements: 11.1, 11.3–11.7_
+
+- [ ] 16. Coverage thresholds and Gate 2
+- [ ] 16.1 Enforce coverage in `vitest.config.mts`
+  - Thresholds: lines ≥ 90% for `src/lib/analyzer/**` and ≥ 80% for the rest of `src/`.
+  - Run `npm run test:coverage`, `npm run typecheck` and `npm run lint` with zero errors.
+  - _Requirements: all (testing.md)_
+- [ ] 16.2 Run Gate 2
+  - Run the `test-verifier` sub-agent.
+  - Save its report unchanged to `docs/gate-reports/phase-2-test-verifier-attempt-N.md`.
+  - Append the result to BUILD_LOG.md.
+  - Pass when all tests pass, every property runs at least 1,000 cases and analyzer line coverage is 90% or higher.
