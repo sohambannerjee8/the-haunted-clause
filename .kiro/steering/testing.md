@@ -11,6 +11,7 @@ inclusion: always
 3. Write the failing test first, then the code, then see it pass.
 4. Every property-based test runs at least 1,000 cases: `fc.assert(property, { numRuns: 1000 })`. A property with fewer runs does not count.
 5. The builder does not verify its own work at a gate. Verification agents run as sub-agents with fresh context.
+6. When a test named in `.kiro/specs/traceability.md` is written, it must check what its matrix row says. Adding, renaming or removing a criterion or a named test means updating the matrix in the same commit, and `npm run check:trace` must pass.
 
 ## Coverage targets (line coverage, enforced in `vitest.config.mts`)
 
@@ -39,6 +40,7 @@ inclusion: always
 | `npm run check:secrets` | Secret scan of tracked files |
 | `npm run check:rules` | Repository rules check |
 | `npm run check:bundle` | Build with a canary key and search the browser bundle |
+| `npm run check:trace` | Every spec criterion has a named test or check listed in its task (`.kiro/specs/traceability.md`) |
 
 ## Fake secrets in tests
 

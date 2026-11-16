@@ -14,12 +14,13 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - `globals.css`: the Tailwind v4 `@theme` tokens for the design-language palette, the ghost level custom properties, the focus ring and the reduced-motion rule.
   - Tests:
     - The footer shows "Not legal advice" and the sentence saying the readings are automated and can be wrong (R1.2).
-    - E2E shell check: one `h1` "The Haunted Clause", `<html lang="en">` and the title "The Haunted Clause" (R1.1).
-    - The skip link is the first focusable element and moves focus to `main`.
-    - The page requests no font or image from another origin (E2E request listener).
-    - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6).
+    - `e2e/shell.spec.ts`: one `h1` "The Haunted Clause", `<html lang="en">`, the title "The Haunted Clause" (R1.1), exactly one `main` (R19.3).
+    - `e2e/shell.spec.ts`: the skip link is the first focusable element and moves focus to `main` (R1.3).
+    - `e2e/shell.spec.ts`: the page requests no font or image from another origin (R1.4, R1.5).
+    - `scripts/assets.test.mts`: no audio files tracked and no `new Audio(` or `<audio` in `src/` (R11.4); the only image is `src/app/icon.svg`; fonts only under `src/app/fonts/` with OFL files (R1.4, R1.5).
+    - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6); and `src/lib/llm/` and `src/app/api/` import no `fs`/`node:fs` and call no `cookies()` (llm-explainer R11.1).
     - axe finds no serious or critical issue on the empty page.
-  - _Requirements: 1.1–1.6, 13.1, 19.2, 19.3_
+  - _Requirements: 1.1–1.6, 11.4, 13.1, 19.2, 19.3_
 - [ ] 23.3 Wire `page.tsx` to `isLlmAvailable()` and pass only the boolean to `HauntedApp`
   - Confirm that the prerendered page reads the variable with Cache Components on. If Next.js refuses, use the `connection()` + `<Suspense>` fallback from the design and log which one was used.
   - Add `next.config.ts` `distDir: process.env.HC_DIST_DIR || ".next"`, and add `.next-e2e-llm` to `.gitignore`.
@@ -28,14 +29,14 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 14.1, 14.2, 14.8_
 
 - [ ] 24. Input screen and sample cards
-- [ ] 24.1 Write `InputScreen.test.tsx` and `SampleCards.test.tsx`, then the components
+- [ ] 24.1 Write `InputScreen.test.tsx` and `SampleCards.test.tsx`, then the components (the cards read `src/lib/samples/meta.ts` from clause-analyzer Task 15.2)
   - Tests:
     - The label and the counter format.
+    - The counter has `aria-live="off"` and sits in no live region (R2.6).
     - `maxLength` 50,000.
     - A paste that would pass the cap is cut, with the notice.
     - Empty or whitespace text shows the message, with `aria-invalid` and `aria-describedby`.
     - Three cards, each with its company name and one-line description, and buttons named by company (R2.5).
-    - `src/lib/samples/meta.ts` holds no policy text.
   - _Requirements: 2.1–2.6_
 - [ ] 24.2 Write `HauntedApp` with the state machine, the lazy `HouseView` with a retryable import, `Suspense` "Opening the house…" and the error boundary
   - E2E `flow.spec.ts` (first part):
@@ -43,6 +44,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - No request goes to `/api/explain`.
     - Pasted text is analyzed in the browser, and no request carries it. It shows rule texts and "Rule reading" badges (llm-explainer R3.3).
     - After the flows: both storages are empty, there is no cookie and no IndexedDB database, and no request went to another host (R1.6).
+    - While the house chunk loads (delayed with `page.route`), "Opening the house…" shows and `main` has `aria-busy="true"` (R17.2); the full check moves to `loading.spec.ts` in Task 32.2.
   - _Requirements: 1.6, 3.1–3.4, 15.2, 17.1, 17.2, 17.4_
 
 - [ ] 25. House, rooms, ghosts and the Haunt Score
@@ -61,10 +63,11 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 4.1–4.6, 5.1–5.6, 7.1–7.3, 15.3_
 - [ ] 25.3 E2E `flow.spec.ts` (second part), for all three samples
   - The toolbar shows "Sample: <company> (a fictional company)".
+  - The house view has the `h2` "Inside the house", and every room heading is an `h3` (R19.3).
   - 8 rooms in order.
   - Per-room ghost and wisp counts, and each `data-severity`, equal the analyzer's output.
   - The score equals `hauntScore`.
-  - _Requirements: 4, 5, 7, 15.1, 15.3_
+  - _Requirements: 4, 5, 7, 15.1, 15.3, 19.3_
 
 - [ ] 26. Ghost detail panel
 - [ ] 26.1 Write `DetailDialog.test.tsx`, then `DetailDialog`
@@ -75,7 +78,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - A quote containing `<b>` shows as literal text.
     - Close returns focus to the opener.
   - _Requirements: 6.1–6.7, 13.1_
-- [ ] 26.2 E2E: clicking a ghost opens the panel
+- [ ] 26.2 E2E in `flow.spec.ts`: clicking a ghost opens the panel
   - The quote equals `text.slice(start, end)` exactly, with the right source badge, for at least one finding per sample.
   - Escape closes the panel.
   - _Requirements: 6.2, 6.6_
@@ -96,11 +99,12 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 27.3 E2E `keyboard.spec.ts` on the terrible sample
   - Tab visits the 8 rooms in order, with one stop each.
   - Arrows, Home and End reach every ghost in each room.
-  - A focused ghost has a computed 3 px solid candle-amber (`rgb(242, 181, 68)`) outline with a 2 px offset (R5.6).
+  - A focused ghost has a computed 3 px solid candle-amber (`rgb(242, 181, 68)`) outline with a 2 px offset (R5.6), and so does every other control reached by Tab on both screens (R19.4).
+  - With the dialog open, 10 presses of Tab and Shift+Tab keep focus inside it, and the dialog matches `:modal` (R6.7).
   - Enter opens the panel; Escape closes it and returns focus to the same ghost.
   - Tab after a ghost goes to the next room.
   - The skip link and toolbar come first in tab order.
-  - _Requirements: 5.6, 9.1–9.7_
+  - _Requirements: 5.6, 6.7, 9.1–9.7, 19.4_
 
 - [ ] 28. Lights on mode
 - [ ] 28.1 Write `LightsOnList.test.tsx` and extend `Toolbar.test.tsx`, then `LightsOnList` and the Toolbar's Lights on toggle
@@ -136,13 +140,14 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 14.1–14.7, 15.2_
 
 - [ ] 30. Motion and sound settings
-- [ ] 30.1 Add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the 200 ms one-off fades. Add the Sound toggle to the Toolbar (off by default)
+- [ ] 30.1 Extend `Toolbar.test.tsx` (Sound toggle with `aria-pressed`, off by default, R11.2), then add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the 200 ms one-off fades. Add the Sound toggle to the Toolbar (off by default)
   - E2E `motion.spec.ts`:
     - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s.
     - Without it, level 3 ghosts are animated.
     - On each sample's house and in an open dialog, every repeating `document.getAnimations()` entry lasts at least 1 s per cycle with at most one opacity peak, and every one-off entry changes opacity in one direction and lasts at most 300 ms (R10.4).
+    - With motion on, switching Lights on leaves no running repeating animation (R10.5).
     - Sound is off on load, and no `AudioContext` is constructed.
-  - _Requirements: 10.1–10.4, 11.1, 11.2_
+  - _Requirements: 10.1–10.5, 11.1, 11.2_
 
 - [ ] 31. Responsive layout, Gate 4 and the visual review
 - [ ] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
@@ -175,9 +180,10 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Spanish and Japanese paragraphs show the English-only notice.
   - A policy with no risky clauses shows "No ghosts here" and "0 · Mostly quiet".
   - A wisps-only policy shows "Only calm wisps here".
-  - The analyzer `too-long` path, through a unit test of `HauntedApp`.
+  - The analyzer `too-long` path, through `HauntedApp.test.tsx` with a mocked `analyze` (R16.6).
   - _Requirements: 2.2–2.4, 16.1–16.6_
 - [ ] 32.2 E2E `loading.spec.ts`, then any fixes
+  - The house chunk is delayed, and "Opening the house…" shows with `aria-busy="true"` on `main` (R17.2).
   - The house chunk is blocked, and the error and "Try again" are shown.
   - After unblocking and retrying, the house opens and the text is kept.
   - A render error shows the error boundary message.
@@ -187,9 +193,9 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 33. Performance, clean clone and Gate 5 (Phase 5)
 - [ ] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
   - The textarea accepts typing within 5 s.
-  - The JS transferred before any action is at most 200 kB.
+  - The JS transferred before any action is at most 200 kB, and no request loads the house view chunk before the first Analyze or sample click (R17.1).
   - Record the measured values in tech.md (replacing "to be confirmed") and in BUILD_LOG.md.
-  - _Requirements: 18.1, 18.2_
+  - _Requirements: 17.1, 18.1, 18.2_
 - [ ] 33.2 Clean clone
   - `git clone` into `/tmp`, then run `npm ci`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run test:e2e`, all with zero errors and no skipped tests.
   - Log the commands and results.

@@ -371,3 +371,35 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - security-reviewer item 6 still mentions a "build-time script".
 - **Why the build stopped:** Gate 1 has failed three times. Each time the failing item included item 4, traceability (every criterion must have a named test). The specific criteria differed each time, but the underlying problem is the same: the specs had no complete criterion-to-test map, and the fixes patched only the criteria each review happened to list. Under PLAN.md section 1 rule 4, the builder stopped and asked the user, and made no further spec changes after attempt 3.
 - **Proposed fix, given to the user:** build a full traceability matrix (all 234 criteria: clause-analyzer 69, llm-explainer 72, haunted-house-ui 93), with each criterion mapped to its named test and task. A script then fails if any criterion ID is missing from it. Fix the five gaps, the `GET` prerender risk and the minor items, and then run attempt 4.
+
+### User decision after the stop, and the fixes for Gate 1 attempt 4
+- **The user approved attempt 4 with five instructions**, recorded in PLAN_DECISIONS.md C10.21:
+  - Build a traceability matrix and a check script.
+  - Change spec-reviewer item 4 to "the script exits 0, plus a 30-entry spot check".
+  - Make the proposed fixes.
+  - Do not start a fifth round if attempt 4 fails only on minor or naming items.
+  - Push after every passed gate, and now.
+- **Push:** `git push` sent `691e61e..2e5813c` to `origin/main`, after `check:secrets`, `check:history` and `check:rules` all passed.
+- **Traceability check, test first:** `scripts/check-traceability.test.mts` (12 tests) failed with "Cannot find module", then passed after `scripts/check-traceability.mjs` was written. It is wired as `npm run check:trace`, a separate command from `check:rules`, so the Rules guard hook stays fast.
+  - Three deliberate breakages of a copy of the real specs were each caught: a test listed under the wrong task, a missing row and an unknown test file. Restoring the copy gave 0 problems.
+  - Type-check then failed (TS2345): JSDoc inference narrowed the `specs` option to the three real spec names. A `Record<string, string>` JSDoc type fixed it.
+- **Matrix:** `.kiro/specs/traceability.md` has 236 rows, one per criterion: clause-analyzer 69, llm-explainer 72, haunted-house-ui 95 (two criteria were added, R10.5 and R19.4). `npm run check:trace` reports "all 236 criteria have a row with a named test or check listed in its task".
+- **Gaps filled while building the matrix** (each now a named test in a task):
+  - The five attempt 3 gaps.
+  - The heading structure.
+  - llm-explainer R1.1 (one route).
+  - R11.1 (no file or cookie writes in llm and api code).
+  - R14.3 (no fetch on import).
+  - R15.1 and R15.2 (`server-only.test.ts`).
+  - clause-analyzer R2.1 and R4.3 (P8 extended to findings) and R4.5.
+  - haunted-house-ui R11.2, R16.6 (`HauntedApp.test.tsx`) and R17.1 (the perf spec checks that the house chunk is not loaded early).
+- **Cache Components risk:** the 405 handlers now `await connection()`. `e2e/explain-route.spec.ts` runs against the production build and checks 405, `Allow: POST` and `Cache-Control: no-store` for `GET`, `PUT`, `PATCH` and `DELETE`.
+- **Minor items:**
+  - Stale `route.ts` row fixed.
+  - `e2e/shell.spec.ts` named.
+  - `meta.ts` moved to clause-analyzer Task 15.2, with no imports.
+  - design-language steering: the 5-second motion rule now names Lights on as the stop control (new R10.5), and the focus ring "on every focusable element" became new R19.4.
+  - security-reviewer item 6 updated.
+  - test-verifier gained item 11 (`check:trace` and open items).
+  - `testing.md` gained rule 6 (keep the matrix in step with the specs).
+- Checks after the fixes: `npm test` 7 files, 47 tests passed; typecheck, lint and `check:rules` exit 0.

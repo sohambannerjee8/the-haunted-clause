@@ -38,7 +38,7 @@ Secrets
 
 Browser bundle
 5. Does `npm run check:bundle` exit 0, showing that neither the canary key value nor the string `GEMINI_API_KEY` appears in `.next/static`?
-6. Does every file that reads `GEMINI_API_KEY` (search `src/` and `scripts/`) import `server-only`, or run only as a build-time script?
+6. Does every file that reads `GEMINI_API_KEY` (search `src/` and `scripts/`) import `server-only`, except `scripts/precompute-samples.mts`, which runs only by hand as `npm run precompute:samples` and is never run by the build (PLAN_DECISIONS.md C10.14)?
 7. Does no file marked `"use client"` import from `src/lib/llm/gemini*`, the route handler or any `server-only` module?
 8. Does the server pass only a boolean (`llmAvailable`) to the page, never the key or any part of it?
 

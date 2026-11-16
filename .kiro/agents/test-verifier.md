@@ -50,7 +50,8 @@ Run every command even if an earlier one fails. Record the exit code and the sum
 8. Has no test or threshold been weakened? Check `git log -p` for test files and `vitest.config.mts`: no removed assertions without replacement, no lowered `numRuns`, no lowered coverage thresholds, no widened expected ranges (for example the sample score bands in PLAN_DECISIONS.md C7).
 9. Does `npm run build` exit 0?
 10. Does `npm run test:e2e` exit 0 with zero failed, skipped or flaky tests?
-11. For the current gate, do the tests the gate names exist? Gate 3: mocked-LLM tests for good output, malformed output, timeout and no key. Gate 4: Playwright tests covering the full flow for all three samples, keyboard navigation on the terrible sample, and an axe scan. Gate 5: edge-case E2E tests (empty input, 50,000 characters, non-English text, no risky clauses) and the slow-connection test.
+11. Does `npm run check:trace` exit 0, and does every test named in `.kiro/specs/traceability.md` for the tasks finished so far exist and check what its row says? (Phase 2 onward; open items from Gate 1 are listed in BUILD_LOG.md and must be met by the task that lists them.)
+12. For the current gate, do the tests the gate names exist? Gate 3: mocked-LLM tests for good output, malformed output, timeout and no key. Gate 4: Playwright tests covering the full flow for all three samples, keyboard navigation on the terrible sample, and an axe scan. Gate 5: edge-case E2E tests (empty input, 50,000 characters, non-English text, no risky clauses) and the slow-connection test.
 
 The gate fails when any answer is No: any test fails, a test is skipped or weakened, a property is missing, or coverage is under target. A check that does not apply yet at this gate is answered "Yes (not due until Phase N)" with the reason.
 
@@ -66,10 +67,11 @@ Date: <today>
 Evidence (one line per check):
 1. Yes|No - <command, exit code, key output line or file path>
 ...
-11. ...
+12. ...
 
 Test counts: unit <n>, property <n> (cases per property <n>), e2e <n>, skipped <n>
 Coverage (lines): analyzer <x>%, llm <x>%, other <x>%
+Traceability: `npm run check:trace` -> <summary line>
 
 Commands run:
 - <command> -> exit <code>; <summary line>

@@ -49,7 +49,7 @@ src/lib/ui/
   houseModel.ts               buildHouseModel, bandFor, severityLabel, ghostLabel, roomLabel
   roving.ts                   nextIndex(key, index, count)
   sound.ts                    createSound(): { enable(), play(severity) }
-src/lib/samples/meta.ts       sample IDs, company names and blurbs (no policy text)
+src/lib/samples/meta.ts       sample IDs, company names and blurbs (no policy text, no imports; created in clause-analyzer Task 15.2)
 ```
 
 The analyzer and the sample texts are imported only from `HouseView`'s chunk (and from a `loadSample(id)` dynamic import), never from the input screen.
@@ -128,6 +128,7 @@ stateDiagram-v2
 - **Animation:** CSS keyframes `hc-drift` (level 0), `hc-bob` (1), `hc-bob-sway` (2) and `hc-bob-sway-glow` (3), with the amplitudes and durations from design-language.md. The glow is a slow opacity pulse on a blurred copy, under 0.5 Hz, so far below the 3-flashes-per-second limit (R10.4).
 - **Reduced motion:** `@media (prefers-reduced-motion: reduce) { .hc-ghost, .hc-ghost * { animation: none !important; transition: none !important; } }` (R10.2, R10.3).
 - **Motion library:** used only for one-off fade-ins of the house view and the dialog content: opacity 0 → 1, 200 ms, one iteration, no transform (`m.div` with `LazyMotion features={domAnimation}`, to keep it small). It runs under `MotionConfig reducedMotion="user"`, which drops transforms when reduced motion is on. These fades meet R10.4's one-off rule (one direction, at most 300 ms).
+- **Stopping motion (R10.5):** the Lights on toggle is the second control in the toolbar, after "Read another policy", and is always visible. Lights on mode renders no ghost, so every repeating animation stops. This is the pause mechanism for WCAG 2.2.2 and the design-language 5-second rule. The OS reduced-motion setting is the other way.
 - **Delays:** ghost animation delays are derived from each finding's ID with a stable hash, so ghosts do not move in step and the result stays deterministic. There is no randomness.
 
 ## Detail panel (R6, R13)
@@ -150,6 +151,7 @@ stateDiagram-v2
 
 ## Score (R7)
 
+- **Headings (R19.3):** `h1` is the app name in the layout. The house view has an `h2`, "Inside the house" (or "Lights on" in Lights on mode), above the rooms. Each room is an `h3`. The dialog title is an `h2` inside the modal dialog. The input screen uses `h2` "Read a policy" and `h3` per sample card.
 - `ScoreBadge` shows `` `${score} · ${bandFor(score)}` `` with the band in Creepster. There is no "/100" anywhere (R7.1).
 - A separate visually hidden `role="status"` element gets "Haunt Score N, band" only when the score changes, using a ref to the previous value (R7.3).
 
@@ -238,7 +240,7 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 
 | File | Covers |
 | --- | --- |
-| `InputScreen.test.tsx` | Counter format; `maxLength`; paste over the cap is cut with the notice; the empty message with `aria-invalid`; the Analyze callback |
+| `InputScreen.test.tsx` | Counter format; the counter has `aria-live="off"` and no ancestor with `role="status"`, `role="alert"` or `aria-live` polite or assertive (R2.6); `maxLength`; paste over the cap is cut with the notice; the empty message with `aria-invalid`; the Analyze callback |
 | `SampleCards.test.tsx` | Three cards; each shows its company name and its one-line description from `meta.ts`; buttons named with the company (R2.5) |
 | `Ghost.test.tsx` | Each level 0–3: `data-severity`, aria-label, visible numeral, the level class; 44 px minimum |
 | `Room.test.tsx` | Quiet room text and no buttons; the status line; the group label; roving tabindex (one `tabindex=0`; arrows, Home and End move focus; wrap-around; focus memory) |
@@ -248,7 +250,9 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 | `OptInPanel.test.tsx` | Hidden when `llmAvailable` is false (the "no medium" line shown); hidden for samples; listening state; the success merge; each failure message; no call without a press |
 | `Footer.test.tsx` | "Not legal advice" and the sentence saying the readings are automated and can be wrong (R1.2) |
 | `House.test.tsx` | The frame SVG has `aria-hidden="true"` and holds no text nodes; 8 rooms in order (R4.1, R4.6) |
-| `no-storage.test.ts` | Scans `src/` (not tests) for `localStorage`, `sessionStorage`, `document.cookie` and `indexedDB`, and fails on any match (R1.6) |
+| `no-storage.test.ts` | Scans `src/` (not tests) for `localStorage`, `sessionStorage`, `document.cookie` and `indexedDB`, and fails on any match (R1.6); fails if `src/lib/llm/` or `src/app/api/` imports `fs` or `node:fs` or calls `cookies()` (llm-explainer R11.1) |
+| `HauntedApp.test.tsx` | With `analyze` mocked to return the `too-long` error, the app stays on the input screen with "That text is longer than 50,000 characters." (R16.6) |
+| `scripts/assets.test.mts` | `git ls-files` holds no audio file (`.mp3`, `.wav`, `.ogg`, `.oga`, `.m4a`, `.aac`, `.flac`, `.opus`) and `src/` has no `new Audio(` or `<audio` (R11.4); the only image file is `src/app/icon.svg`; the only font files are under `src/app/fonts/`, each with an OFL licence file (R1.4, R1.5) |
 | `Toolbar.test.tsx` | Sample name line "Sample: <company> (a fictional company)" for each sample; no sample line for pasted text (R15.3) |
 | `sound.test.ts` | No `AudioContext` before `enable()`; pitch per severity; duration ≤ 600 ms (mocked `AudioContext`) |
 | `houseModel.test.ts`, `roving.test.ts` | Examples, plus properties U1–U4 |
@@ -257,17 +261,18 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 
 | Spec | Project | Covers | Requirements |
 | --- | --- | --- | --- |
-| `flow.spec.ts` | no-key | On load: one `h1` "The Haunted Clause", `<html lang="en">` and title "The Haunted Clause" (R1.1). For each sample: open it; the toolbar reads "Sample: <company> (a fictional company)"; 8 rooms in order; per-room counts, `data-severity` and score equal the analyzer's; open a ghost, and the quote equals `text.slice(start, end)` with the right badge; no request to `/api/explain` (request listener); Read another policy. Pasted text: type a short policy, Analyze, see the house with rule texts and "Rule reading" badges (llm-explainer R3.3). After all flows: both storages empty, no cookie, no IndexedDB database, and no request to any host other than the app's own (R1.6) | R3, R4, R5, R6, R7, R15 |
-| `keyboard.spec.ts` | no-key | Terrible sample: a focused ghost has a computed `outline-style: solid`, `outline-width: 3px`, `outline-offset: 2px` and `outline-color: rgb(242, 181, 68)` (R5.6); Tab visits the 8 rooms in order (one stop each); arrows, Home and End reach every ghost in each room; Enter opens, Escape closes, and focus returns to the same ghost; Tab after a ghost goes to the next room | R9 |
+| `shell.spec.ts` | no-key | One `h1` "The Haunted Clause", `<html lang="en">`, title "The Haunted Clause" (R1.1); the skip link is the first focusable element and moves focus to `main` (R1.3); no font or image request to another origin (R1.4, R1.5); exactly one `main` (R19.3) | R1.1, R1.3–R1.5, R19.3 |
+| `flow.spec.ts` | no-key | For each sample: open it; the house view has `h2` "Inside the house" and every room heading is an `h3` (R19.3); the toolbar reads "Sample: <company> (a fictional company)"; 8 rooms in order; per-room counts, `data-severity` and score equal the analyzer's; open a ghost, and the quote equals `text.slice(start, end)` with the right badge; no request to `/api/explain` (request listener); Read another policy. Pasted text: type a short policy, Analyze, see the house with rule texts and "Rule reading" badges (llm-explainer R3.3). After all flows: both storages empty, no cookie, no IndexedDB database, and no request to any host other than the app's own (R1.6) | R3, R4, R5, R6, R7, R15 |
+| `keyboard.spec.ts` | no-key | Terrible sample: a focused ghost has a computed `outline-style: solid`, `outline-width: 3px`, `outline-offset: 2px` and `outline-color: rgb(242, 181, 68)` (R5.6), and so does every other control reached by Tab on both screens (R19.4); with the dialog open, 10 presses of Tab and Shift+Tab keep `document.activeElement` inside the dialog, and the dialog matches `:modal` (R6.7); Tab visits the 8 rooms in order (one stop each); arrows, Home and End reach every ghost in each room; Enter opens, Escape closes, and focus returns to the same ghost; Tab after a ghost goes to the next room | R9 |
 | `lights.spec.ts` | no-key | Same findings as the house for all samples; Quiet rooms; focus stays on the toggle | R8 |
 | `optin.spec.ts` | llm-ui | Button and notice shown for pasted text; hidden for samples; stub success updates the badges and the score; stub failures (`rate-limited`, `timeout`, network abort) keep the rules and show the messages; the request body holds only flagged-clause text (every `text` is a substring of a finding quote, and the unflagged sentences are absent); no request before the press | R14 |
 | `optin-hidden.spec.ts` | no-key | The button is absent; the "no medium" line is shown | R14.2 |
-| `motion.spec.ts` | no-key | With `reducedMotion: "reduce"`, every `.hc-ghost` has `animation-name: none`; without it, level 3 ghosts have a running animation; on each sample's house and in an open dialog, every repeating entry of `document.getAnimations()` lasts at least 1 s per cycle with at most one opacity peak, and every one-off entry changes opacity in one direction and lasts at most 300 ms (R10.4); sound off on load and no `AudioContext` constructed (an init script counts constructor calls) | R10, R11 |
+| `motion.spec.ts` | no-key | With `reducedMotion: "reduce"`, every `.hc-ghost` has `animation-name: none`; without it, level 3 ghosts have a running animation; on each sample's house and in an open dialog, every repeating entry of `document.getAnimations()` lasts at least 1 s per cycle with at most one opacity peak, and every one-off entry changes opacity in one direction and lasts at most 300 ms (R10.4); with motion on, switching Lights on leaves no running repeating animation in `document.getAnimations()` (R10.5); sound off on load and no `AudioContext` constructed (an init script counts constructor calls) | R10, R11 |
 | `layout.spec.ts` | no-key and llm-ui | 360 × 740 and 1440 × 900 in every state listed in R12.1 (input, empty-input message, paste-cut notice, loading — the house chunk is delayed with `page.route` — load error, each sample house, open dialog, Lights on, opt-in panel with listening and failure states on llm-ui, non-English, no ghosts, only wisps): no horizontal scroll; no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width); no two visible controls' bounding boxes intersect; 2 or 4 grid columns | R12 |
 | `a11y.spec.ts` | both | The axe scan of every state in R19.1, with `withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa","wcag22aa"])`, failing on serious or critical | R19 |
 | `edge.spec.ts` (Phase 5) | no-key | Empty input; exactly 50,000 characters; the 50,001st blocked; a 60,000-character paste cut with the notice; a Spanish and a Japanese paragraph show the notice; a policy with no risky clauses shows "No ghosts here"; a wisps-only policy | R2, R16 |
-| `loading.spec.ts` (Phase 5) | no-key | Block the house chunk with `page.route`, see the error and "Try again", unblock, retry, and the house opens with the text kept | R17 |
-| `perf.spec.ts` (Phase 5) | no-key | A CDP session with `Network.emulateNetworkConditions` (latency 150 ms, download 200,000 B/s, upload 93,750 B/s) and the cache disabled: the textarea accepts typing within 5 s; the sum of `encodedDataLength` for JS responses before any action is ≤ 200 kB, and is printed | R18 |
+| `loading.spec.ts` (Phase 5) | no-key | Delay the house chunk with `page.route` and see "Opening the house…" with `aria-busy="true"` on `main` (R17.2); block it, see the error and "Try again", unblock, retry, and the house opens with the text kept | R17 |
+| `perf.spec.ts` (Phase 5) | no-key | A CDP session with `Network.emulateNetworkConditions` (latency 150 ms, download 200,000 B/s, upload 93,750 B/s) and the cache disabled: the textarea accepts typing within 5 s; the sum of `encodedDataLength` for JS responses before any action is ≤ 200 kB, and is printed; no request loads the house view chunk before the first Analyze or sample click (R17.1) | R18 |
 
 Coverage target: 80% of lines for `src/` outside the analyzer and llm folders, enforced in `vitest.config.mts`.
 

@@ -47,6 +47,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - Case-insensitivity.
     - A whitespace-only clause gives no finding.
     - Trimmed `start`, `end` and `quote`.
+    - Each finding's `explanation` and `whyItMatters` equal the texts of the rule named by `ruleId` (R4.5).
   - Implement `classifyClause`, steps 1–5 of the design's classifier algorithm.
   - _Requirements: 2.1–2.5, 2.7, 2.8, 4.1–4.3, 4.5_
 - [ ] 12.3 Write `mitigation.test.ts`, then the mitigation logic
@@ -87,7 +88,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Tests:
     - Exactly 50,000 characters gives `ok: true`.
     - 50,001 characters gives the typed `too-long` error, with no splitting.
-    - Non-English text is still classified.
+    - Every successful result has a boolean `likelyNonEnglish` (R9.1), and non-English text is still classified (R9.6).
     - Findings come in input order.
     - 50,000-character inputs finish in under 1 second, both realistic text and one long clause with no terminators.
   - _Requirements: 4.4, 6.2, 6.3, 8.1–8.3, 9.6_
@@ -96,12 +97,13 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - P3: quotes equal `input.slice(start, end)`, are non-empty and have no edge whitespace.
   - P4: never throws, for `anyString`, `utf16String`, `policyLike` and `bigString` up to the cap; `overCapString` gives the typed `too-long` result.
   - P5: the result is the same after analysing another input in between.
+  - P8 (findings): at most one finding per clause, and finding IDs are unique clause IDs (R2.1, R4.3).
   - P9: every room is one of the eight IDs.
   - P10: severity is never above the unmasked rule severity, and a cancelled mitigation gives at least 1.
-  - _Requirements: 3.1, 3.11, 4.1, 4.2, 5.5, 6.1, 7.1, 7.3, 10.2_
+  - _Requirements: 2.1, 3.1, 3.11, 4.1–4.3, 5.5, 6.1, 6.2, 7.1, 7.3, 10.2_
 - [ ] 14.4 Write `purity.test.ts`
   - Fail on `Date`, `performance`, `Math.random`, `crypto`, `fetch`, `XMLHttpRequest`, `WebSocket`, any non-type import from outside `src/lib/analyzer/`, or any `@/` import, in the analyzer source files (not test files or test utilities).
-  - Fail on any `@/` import in `src/lib/samples/*.ts` (not test files). For `mild.ts`, `average.ts`, `terrible.ts`, `meta.ts` and `index.ts`, also fail on any import other than analyzer types and each other, and on `index.ts` re-exporting anything else. `explanations.ts` is bound only by the relative-import rule.
+  - Fail on any `@/` import in `src/lib/samples/*.ts` (not test files). Also fail when `mild.ts`, `average.ts` or `terrible.ts` imports anything other than analyzer types, when `meta.ts` imports anything, or when `index.ts` imports anything other than the three text modules and `meta.ts`. `explanations.ts` is bound only by the relative-import rule. Files that do not exist yet are skipped.
   - _Requirements: 7.2, 7.4_
 
 - [ ] 15. Three fictional sample policies
@@ -111,7 +113,8 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Record the queries and results in BUILD_LOG.md.
   - _Requirements: 11.2, 11.8_
 - [ ] 15.2 Write `samples.test.ts`, then the three sample files
-  - `src/lib/samples/{mild,average,terrible}.ts` and `index.ts`, each exporting `{ id, company, title, text }`, written from scratch.
+  - `src/lib/samples/{mild,average,terrible}.ts`, each exporting `{ id, company, title, text }`, written from scratch; `meta.ts` with `{ id, company, blurb }` for each sample and no imports; and `index.ts`.
+  - Test that `meta.ts` holds no policy text (none of its strings is longer than 120 characters or appears in a sample text) and agrees with the samples' IDs and company names.
   - Tests:
     - The mild sample scores ≤ 25 and has a mitigated severity 0 finding.
     - The average sample scores 35–65.

@@ -10,7 +10,7 @@ Planned layout. Folders appear as their phase builds them.
 /
 ├── .kiro/
 │   ├── steering/          product, tech, structure, hackathon-rules, design-language, testing
-│   ├── specs/             clause-analyzer/, llm-explainer/, haunted-house-ui/ (requirements, design, tasks)
+│   ├── specs/             clause-analyzer/, llm-explainer/, haunted-house-ui/ (requirements, design, tasks), traceability.md
 │   ├── hooks/             test-on-save, secret-guard, spec-sync, rules-guard (.json)
 │   ├── agents/            spec-reviewer, test-verifier, security-reviewer, ui-a11y-reviewer, rules-auditor (.md)
 │   └── settings/mcp.json  Context7 and Playwright MCP

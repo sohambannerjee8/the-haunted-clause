@@ -139,7 +139,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 1. FOR any input, THE analyzer SHALL return results that are deeply equal when called twice on the same input, including when other inputs are analysed between the two calls.
 2. THE analyzer modules SHALL NOT read the clock (`Date`, `performance`), use randomness (`Math.random`, `crypto`), make network calls (`fetch`, `XMLHttpRequest`, `WebSocket`) or import anything from outside `src/lib/analyzer/` other than type-only imports.
 3. THE analyzer SHALL NOT keep state between calls.
-4. THE analyzer modules (`src/lib/analyzer/*.ts`) and the sample modules (`src/lib/samples/*.ts`) SHALL use relative imports only (no `@/` alias), so that Playwright tests and scripts can import them directly. THE sample text modules (`mild.ts`, `average.ts`, `terrible.ts`, `meta.ts`) and `src/lib/samples/index.ts` SHALL import nothing except analyzer types and each other; `index.ts` SHALL re-export only the text modules. Other sample modules (for example llm-explainer's `explanations.ts`, which imports Zod and the JSON file) are bound only by the relative-import rule. Test files (`*.test.ts`) and test utilities (`*.test-util.ts`) are excluded. `purity.test.ts` SHALL check all of this.
+4. THE analyzer modules (`src/lib/analyzer/*.ts`) and the sample modules (`src/lib/samples/*.ts`) SHALL use relative imports only (no `@/` alias), so that Playwright tests and scripts can import them directly. THE sample text modules (`mild.ts`, `average.ts`, `terrible.ts`) SHALL import nothing except analyzer types. `meta.ts` (sample IDs, company names and one-line descriptions, no policy text) SHALL import nothing at all, so that the input screen can load it without pulling in the policy texts. `src/lib/samples/index.ts` SHALL import only the three text modules and `meta.ts`, and re-export them. Other sample modules (for example llm-explainer's `explanations.ts`, which imports Zod and the JSON file) are bound only by the relative-import rule. Test files (`*.test.ts`) and test utilities (`*.test-util.ts`) are excluded. `purity.test.ts` SHALL check all of this.
 
 ### Requirement 8: Size cap
 
@@ -179,7 +179,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 
 #### Acceptance Criteria
 
-1. THE project SHALL provide three sample policies, `mild`, `average` and `terrible`, each with an invented company name, a title and the policy text, written for this project.
+1. THE project SHALL provide three sample policies, `mild`, `average` and `terrible`, each with an invented company name, a title and the policy text, written for this project, and `src/lib/samples/meta.ts` with each sample's ID, company name and a one-line description of how haunted it is.
 2. THE sample company names SHALL be checked by web search before they are committed, and the check SHALL be recorded in BUILD_LOG.md under a heading "Sample name check" that names each company; WHEN a search shows a real company using the name, the name SHALL be replaced. Verified by: `samples.test.ts`, which fails unless BUILD_LOG.md has that heading and each sample's company name below it, and by rules-auditor item A4.
 3. EACH sample text SHALL be at most 50,000 characters and SHALL give `likelyNonEnglish === false`.
 4. WHEN analysed, the mild sample SHALL get a Haunt Score of at most 25.

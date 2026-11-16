@@ -9,7 +9,7 @@ permissions:
       match: ["**"]
       effect: deny
     - capability: shell
-      match: ["git log*", "git ls-files*", "git show*", "git check-ignore*", "grep *", "rg *", "ls *", "wc *"]
+      match: ["git log*", "git ls-files*", "git show*", "git check-ignore*", "git diff*", "npm run check:trace*", "grep *", "rg *", "ls *", "wc *"]
       effect: allow
     - capability: shell
       match: ["rm *", "mv *", "cp *", "git commit*", "git push*", "git reset*", "git checkout*", "git add*", "npm install*", "npm i *", "sed -i*", "tee *", "* > *", "* >> *"]
@@ -37,7 +37,9 @@ Review `.kiro/specs/clause-analyzer/`, `.kiro/specs/llm-explainer/` and `.kiro/s
 1. Does each of the three spec folders contain `requirements.md`, `design.md` and `tasks.md`?
 2. Is every requirement written in EARS form (for example "WHEN … THE <system> SHALL …", "IF … THEN …", "WHILE …", "WHERE …", or an ubiquitous "THE <system> SHALL …")?
 3. Is every requirement testable: does it name an observable result that a unit, property or end-to-end test can check, with no vague words such as "fast", "nice" or "appropriate" left unmeasured?
-4. Does every requirement trace to at least one task in `tasks.md` and to at least one named test or property?
+4. Does every requirement trace to a task and a named test, property or check? This item passes when both of these hold (PLAN_DECISIONS.md C10.21, approved by the user):
+   - `npm run check:trace` exits 0. It checks the matrix in `.kiro/specs/traceability.md` against every criterion in the three `requirements.md` files.
+   - A spot check of 30 matrix entries, chosen across all three specs (at least 8 from each), finds each named test or check listed in one of that entry's tasks. List the 30 IDs you checked.
 5. Is each of the five user abilities in PLAN.md section 2 ("What the user can do") covered by at least one requirement?
 6. Are all eight rooms named with their clause types exactly as in PLAN.md section 2?
 7. Does the clause-analyzer design state all six properties from PLAN.md section 4, each linked to a requirement and each run with at least 1,000 cases?

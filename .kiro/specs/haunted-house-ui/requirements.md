@@ -159,6 +159,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 2. WHILE reduced motion is requested, ghosts and wisps SHALL NOT animate: their computed `animation-name` SHALL be `none` and their transform SHALL not change over time; size, opacity, colour and numeral SHALL still show the level.
 3. THE app SHALL wrap its animated parts in `MotionConfig reducedMotion="user"`, and every CSS animation SHALL be disabled by a `prefers-reduced-motion: reduce` media query.
 4. NOTHING in the app SHALL flash more than 3 times in any one-second period. To make this measurable: every repeating animation (more than one iteration) SHALL last at least 1 second per cycle and change opacity through at most one peak per cycle; every one-off animation (one iteration, such as a fade-in) SHALL change opacity in one direction only and last at most 300 ms. Verified by: `motion.spec.ts`, which reads `document.getAnimations()` on each sample's house and in an open detail panel, and checks each animation's iterations, duration and opacity keyframes.
+5. WHILE ghosts are animating, THE toolbar's "Lights on" toggle SHALL be visible and reachable, and switching it on SHALL stop every repeating animation on the page, so that motion lasting longer than 5 seconds can be stopped (design-language.md motion limits).
 
 ### Requirement 11: Sound
 
@@ -264,7 +265,8 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
    - the no-ghosts state;
    - the non-English notice.
 2. ALL text SHALL meet WCAG 2.2 AA contrast, using the palette in design-language.md.
-3. THE page SHALL have one `main` landmark, one `h1`, and room headings at one level below the house heading.
+3. THE page SHALL have one `main` landmark and one `h1` (the app name). THE house view SHALL have an `h2` heading ("Inside the house" for the house, "Lights on" for the list), every room heading SHALL be an `h3`, and the detail panel's title SHALL be an `h2` inside the dialog.
+4. EVERY focusable element on both screens SHALL show the visible focus ring from design-language.md (3 px candle-amber outline, 2 px offset) when focused with the keyboard.
 
 ### Requirement 20: Screenshots for the user's visual review
 

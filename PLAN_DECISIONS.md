@@ -260,6 +260,30 @@ These are fixtures, checked in both unit and E2E tests.
     - R12.1 lists every state that `layout.spec.ts` checks.
     - An `overCapString` generator for R1.12.
     - The route exports `GET`, `PUT`, `PATCH` and `DELETE` as explicit 405 handlers, so `Cache-Control: no-store` is on every response (R1.3, R1.4, R8.2).
+21. **Traceability matrix and spec-reviewer item 4 (approved by the user on 16 November 2026, after Gate 1 attempt 3).**
+    - `.kiro/specs/traceability.md` maps every acceptance criterion in the three specs to its named test, property or check and its task(s).
+    - `npm run check:trace` (`scripts/check-traceability.mjs`, with its own tests) fails when:
+      - a criterion has no row;
+      - a row names no test or check;
+      - a task does not exist;
+      - a named test file is not mentioned in one of the row's tasks;
+      - or a named agent does not exist.
+    - spec-reviewer item 4 passes when `npm run check:trace` exits 0 and a spot check of 30 entries across all three specs (at least 8 from each) finds each named test listed in a task.
+    - The user also approved:
+      - If Gate 1 attempt 4 fails only on minor or traceability-naming items, there is no fifth round. The open items are logged in BUILD_LOG.md and added to the relevant tasks, test-verifier enforces them as each task is built, and the build moves on to Phase 2.
+      - If attempt 4 fails on a conflict with PLAN_DECISIONS.md or a scope limit, the builder stops and asks.
+      - The builder pushes to origin after every gate that passes, and logs each push.
+22. **Fixes from Gate 1 attempt 3** (no change to approved behaviour):
+    - Named checks for haunted-house-ui R2.6, R6.7, R11.4, R17.2 and R19.3.
+    - The heading structure is defined: `h1` app name, `h2` "Inside the house" or "Lights on", `h3` rooms, `h2` dialog title.
+    - The 405 handlers `await connection()`, so Cache Components cannot prerender the `GET`, and a production-build E2E test checks the 405 and headers for `GET`, `PUT`, `PATCH` and `DELETE`.
+    - New haunted-house-ui R10.5 (Lights on stops all repeating motion, matching the design-language 5-second rule) and R19.4 (focus ring on every focusable element, matching design-language).
+    - `e2e/shell.spec.ts` is named.
+    - `meta.ts` is created in clause-analyzer Task 15.2 and imports nothing.
+    - The stale `route.ts` Files row is fixed.
+    - A one-route test is added for llm-explainer R1.1.
+    - security-reviewer item 6 no longer mentions a build-time script.
+    - New named tests that the matrix needed: `server-only.test.ts`, `assets.test.mts`, `HauntedApp.test.tsx`, and `no-storage.test.ts` extended to llm and api code.
 
 ## D. Task map (spec tasks.md files must match these ranges)
 

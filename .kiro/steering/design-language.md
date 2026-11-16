@@ -67,7 +67,7 @@ The score is always shown as a number plus its band label, for example "97 · Ru
 ## Motion limits
 
 - Nothing flashes more than 3 times per second (WCAG 2.3.1).
-- No motion lasts longer than 5 seconds without a way to stop it, except the reduced-motion path, which has none.
+- No motion lasts longer than 5 seconds without a way to stop it: the toolbar's Lights on toggle, which is always visible on the house view, removes every ghost and so stops every repeating animation; the OS reduced-motion setting stops them too (haunted-house-ui R10.5).
 - Reduced motion: `MotionConfig reducedMotion="user"` plus a CSS `prefers-reduced-motion: reduce` query. With reduced motion, ghosts are still, with no transforms and no glow pulse. Size, opacity, colour and numeral still show the level.
 - Sound is off by default and only plays after the user turns it on. Sound is synthesised with the Web Audio API; there are no audio files.
 
