@@ -350,3 +350,24 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - The route exports explicit 405 handlers that go through `respond()`.
   - The Toolbar is built in Task 25.2, with its toggles added in 28.1 and 30.1.
 - These are different problems from attempt 1, not the same problem failing again, so the three-attempt stop does not apply yet.
+
+### Gate 1: spec-reviewer, attempt 3: FAIL, build stopped (PLAN.md section 1, rule 4)
+- Ran a fresh `spec-reviewer` sub-agent. Full report: `docs/gate-reports/phase-1-spec-reviewer-attempt-3.md`.
+- **Verdict: FAIL** on item 4 only (traceable). Items 1–3 and 5–15 were Yes, and all nine attempt 2 problems were resolved.
+- **Remaining item 4 failures:** five haunted-house-ui criteria have no named test:
+  - R2.6: the counter is not a live region.
+  - R6.7: focus stays inside the open dialog and the page behind is inert.
+  - R11.4: no audio files are shipped.
+  - R17.2: "Opening the house…" with `aria-busy`.
+  - R19.3: one `main` landmark and room heading levels; the design also never defines the house heading level.
+  - The reviewer noted that none of these lines changed in the attempt 2 commit, so they were missed by earlier reviews rather than introduced by fixes.
+- **New design risk** from the attempt 2 fix (not failing an item): the explicit `GET` 405 handler reads no request data. The bundled Next.js 16 docs (`15-route-handlers.md`) say such a `GET` can be prerendered under Cache Components, which could drop the 405 status and headers in production.
+- **Minor items:**
+  - The stale `route.ts` Files row.
+  - An unnamed shell E2E spec.
+  - `meta.ts` being allowed to import the sample texts.
+  - Steering items: the focus ring "on every focusable element" and the 5-second motion rule.
+  - No test that only one route exists.
+  - security-reviewer item 6 still mentions a "build-time script".
+- **Why the build stopped:** Gate 1 has failed three times. Each time the failing item included item 4, traceability (every criterion must have a named test). The specific criteria differed each time, but the underlying problem is the same: the specs had no complete criterion-to-test map, and the fixes patched only the criteria each review happened to list. Under PLAN.md section 1 rule 4, the builder stopped and asked the user, and made no further spec changes after attempt 3.
+- **Proposed fix, given to the user:** build a full traceability matrix (all 234 criteria: clause-analyzer 69, llm-explainer 72, haunted-house-ui 93), with each criterion mapped to its named test and task. A script then fails if any criterion ID is missing from it. Fix the five gaps, the `GET` prerender risk and the minor items, and then run attempt 4.
