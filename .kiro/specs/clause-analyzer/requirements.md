@@ -30,7 +30,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 
 - **Rule**: an entry in the rule table that belongs to one room and has an ID, a case-insensitive pattern, a severity from 1 to 3, a plain-English explanation and a "why it matters" text.
 - **Mitigation**: an entry in the rule table that belongs to one room and has an ID, a case-insensitive pattern and a level (0 or 1). Example: "we do not sell" in The Cellar, level 0.
-- **Exception marker**: one of the words or phrases `except`, `unless`, `other than`, `however`, `provided that`, matched case-insensitively on word boundaries.
+- **Exception marker**: one of the eight words or phrases `except`, `unless`, `other than`, `however`, `provided that`, `but`, `although`, `subject to`, matched case-insensitively on word boundaries.
 - **Finding**: the analyzer's output for one clause that matched a room. Fields: `id` (the clause ID), `room`, `severity` (0–3), `quote`, `start`, `end`, `ruleId`, `mitigationId` (or `null`), `explanation` and `whyItMatters`.
 - **Risky finding**: a finding with severity 1, 2 or 3. In the UI each risky finding is a ghost; a severity 0 finding is a faint wisp meaning "checked, looks fine".
 - **Haunt Score**: a whole number from 0 to 100 computed from the severities of all findings.
@@ -50,12 +50,13 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 4. WHEN the input consists only of whitespace, THE splitter SHALL return exactly one clause covering the whole input.
 5. WHEN the input contains at least one non-whitespace character, THE splitter SHALL return no clause that consists only of whitespace.
 6. THE splitter SHALL give each clause the ID `c-<start>`, where `<start>` is the clause's start offset in decimal.
-7. WHEN a sentence terminator (`.`, `;`, `?` or `!`), optionally followed by one or more closing characters (`)`, `]`, `"`, `'`, `”`, `’`), is followed by whitespace, THE splitter SHALL end the clause after that run of whitespace.
+7. WHEN a sentence terminator (`.`, `;`, `?` or `!`), optionally followed by one or more closing characters (`)`, `]`, `"`, `'`, `”`, `’`), is followed by whitespace, THE splitter SHALL end the clause after that run of whitespace, except WHEN the `.` is part of a list marker under criterion 9 (for example the `.` in `1. `).
 8. WHEN the input contains a paragraph break (a line break, optional spaces or tabs, then another line break, where a line break is `\n` or `\r\n`), THE splitter SHALL end the clause after the full run of whitespace that contains the break.
-9. WHEN a line begins, after optional spaces or tabs, with a list marker (`-`, `*` or `•`; one to three digits followed by `.` or `)`; a single letter followed by `)`; or `(` followed by one to four letters or digits and `)`), each followed by a space or tab, THE splitter SHALL start a new clause at the beginning of that line.
+9. WHEN a line begins, after optional spaces or tabs, with a list marker (`-`, `*` or `•`; one to three digits followed by `.` or `)`; a single letter followed by `)`; or `(` followed by one to four letters or digits and `)`), each followed by a space or tab, THE splitter SHALL start a new clause at that list marker. Any indentation before the marker stays at the end of the previous clause (see the design, "Boundary resolution").
 10. WHEN a `.` is the last character of one of the abbreviations `e.g.`, `i.e.`, `Inc.`, `Ltd.`, `Co.`, `Corp.`, `U.S.`, `No.`, `Sec.`, `etc.` or `vs.`, and the abbreviation is not preceded by a letter, THE splitter SHALL NOT end a clause after that `.` under criterion 7. The abbreviations SHALL match exactly as written, and `e.g.`, `i.e.`, `etc.` and `vs.` SHALL also match with a capital first letter (`E.g.`, `I.e.`, `Etc.`, `Vs.`).
 11. WHEN an abbreviation from criterion 10 is followed by a paragraph break, THE splitter SHALL still end the clause at the paragraph break, as in criterion 8.
 12. WHEN the input is longer than the cap, THE splitter SHALL still satisfy criteria 1 to 6. (The analyzer refuses such input; see Requirement 8.)
+13. WHEN two or more boundaries from criteria 7, 8 and 9 fall in or next to the same run of whitespace, THE splitter SHALL place a single boundary at the end of that run, so that every clause after the first starts with a non-whitespace character.
 
 ### Requirement 2: Classify each clause into at most one room
 
@@ -69,7 +70,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 4. WHEN one or more rules match a clause, THE classifier SHALL compute a severity for each room that has a matching rule (see Requirement 3) and SHALL assign the clause to the room with the highest severity; WHEN two rooms tie, THE classifier SHALL choose the room that comes first in the room order in the Glossary.
 5. THE classifier SHALL set the finding's `ruleId` to the ID of the highest-severity matching rule in the chosen room; WHEN several rules in that room tie, it SHALL use the one listed first in the rule table.
 6. THE rule table SHALL contain at least three rules for each of the eight rooms, and every rule SHALL have a unique ID, a severity of 1, 2 or 3, a non-empty explanation and a non-empty "why it matters" text.
-7. FOR each of the eight rooms, THE classifier SHALL assign to that room at least one example clause of that room's clause type written for the tests (a positive case), and SHALL NOT assign to that room at least one example clause that mentions the room's topic words without the risky behaviour (a negative case). The test examples SHALL be listed in the design.
+7. FOR each of the eight rooms, THE classifier SHALL assign to that room each of at least three example clauses of that room's clause type written for the tests (positive cases), and SHALL NOT assign to that room any of at least two example clauses that mention the room's topic words without the risky behaviour (negative cases). Every example clause and its expected room and severity SHALL be listed in the design, and each SHALL have its own test.
 8. THE classifier SHALL match rules and mitigations case-insensitively.
 
 ### Requirement 3: Severity, mitigations and exception markers
@@ -85,8 +86,9 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 5. WHEN an exception marker appears only in a different clause, THE classifier SHALL apply the mitigation as in criterion 2.
 6. WHEN a room's severity has been lowered by a mitigation, THE classifier SHALL set the finding's `mitigationId` to that mitigation's ID; otherwise `mitigationId` SHALL be `null`.
 7. WHEN a mitigation lowers the severity to 0, THE classifier SHALL still produce the finding, with severity 0.
-8. THE exception markers SHALL be matched on word boundaries, so that, for example, `exceptional` and `unlessened` do not count as markers.
-9. THE classifier SHALL treat each of the five exception markers the same way; each marker SHALL have its own test showing that it cancels a mitigation that comes before it in the same clause.
+8. THE exception markers SHALL be matched on word boundaries, so that, for example, `exceptional`, `butter` and `subjected to` do not count as markers.
+9. THE classifier SHALL treat each of the eight exception markers the same way; each marker SHALL have its own test showing that it cancels a mitigation that comes before it in the same clause.
+10. WHEN the clause is "We do not sell your data, but we may share it with advertising partners.", THE classifier SHALL assign it to The Cellar with a severity of at least 1, and SHALL NOT lower it to severity 0.
 
 ### Requirement 4: Findings quote the input exactly
 

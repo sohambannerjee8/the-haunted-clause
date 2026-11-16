@@ -178,3 +178,24 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - A 1-second limit for analysing 50,000 characters guards against run-away regular expressions.
   - The mild sample must show at least one mitigated severity 0 wisp.
 - Status: waiting for the user's approval of the requirements. The design is not started.
+
+### clause-analyzer: requirements approved with changes, design written
+- The user approved the requirements with three changes, all applied to `requirements.md` and recorded in PLAN_DECISIONS.md C10:
+  - Exception markers extended with `but`, `although` and `subject to` (glossary, R3.8, R3.9).
+  - New R3.10: "We do not sell your data, but we may share it with advertising partners." must not drop to severity 0.
+  - R2.7 now requires at least 3 positive and 2 negative example clauses per room, listed in the design, each with its own test.
+- Also recorded in C10: two approval stops for clause-analyzer, and one stop (requirements and design together) for llm-explainer and haunted-house-ui. Steering `product.md` was updated with the eight markers.
+- Two clarifications made to Requirement 1 while designing the splitter, flagged to the user for approval:
+  - R1.7: the `.` in a list marker such as `1. ` does not end a clause.
+  - R1.9 and a new R1.13: boundaries in the same whitespace run snap to the end of that run, so the clause starts at the list marker.
+  - These answer the user's question about R1.8 against R1.9: R1.8 wins, with one boundary at the end of the whitespace run.
+- Before writing the design, a scratch script outside the repo (`/tmp/hc-design-check.mjs`) ran the drafted rule patterns against every planned example. Results: 44 room examples (24 positive, 20 negative) with 0 failures; 15 mitigation and marker cases with 0 failures. It also confirmed the R3.10 case gives Cellar severity 3.
+- **Haunt Score finding:** under the current weights (C4), the realistic long policy (150 clauses, 62 findings: 22 × sev0, 30 × sev1, 8 × sev2, 2 × sev3) scores **97**. A very long policy with only severity 0 and 1 findings scores 95. So long policies saturate, as the user suspected.
+- The design proposes two options:
+  - Option A: smaller weights 0/0.01/0.04/0.12. The realistic long policy scores 59, but scores still grow with length, and the average-sample target falls to 24, outside its band.
+  - Option B (recommended): per-room ceilings set by each room's worst severity (caps 0/0.06/0.15/0.35), with the rooms then combined. The realistic long policy scores 80, a policy with only severity 1 findings can never pass 39, and the sample targets score 14, 59 and 97.
+  - A 200,000-case random spot check of Option B found 0 monotonicity violations and 0 out-of-range values.
+  - Option B needs R5.1 and R5.6 reworded. The current formula stays in force until the user decides.
+- Trade-off reported to the user: with `but` as a marker, "We do not sell your data, but you can ask us to delete it." also loses its mitigation and shows severity 3.
+- Context7 was still not available through Kiro's MCP tools, so the fast-check v4 string API (`fc.string({ unit: "binary" })`, `"grapheme"` and so on) was read from `node_modules/fast-check/lib/fast-check.d.ts` instead.
+- Status: waiting for the user's approval of the design.

@@ -34,7 +34,7 @@ The Haunted Clause turns any Terms & Conditions or privacy policy into a haunted
 ## How analysis works
 
 1. A clause splitter breaks the text into clauses. Joining them back gives the input exactly.
-2. A deterministic rule-based classifier gives each clause a room and a severity from 0 to 3. Mitigating phrases lower severity unless an exception marker (except, unless, other than, however, provided that) follows in the same clause.
+2. A deterministic rule-based classifier gives each clause a room and a severity from 0 to 3. Mitigating phrases lower severity unless an exception marker (except, unless, other than, however, provided that, but, although, subject to) follows in the same clause.
 3. The Haunt Score combines all findings into a whole number from 0 to 100.
 4. Optionally, a server-side Gemini call rewrites explanations in plain English and can raise or confirm a severity, never lower it. Pasted text needs the user's opt-in; samples use explanations precomputed at build time.
 5. If the LLM is missing, slow or wrong, the rule-based result is shown. The app works fully with no API key.

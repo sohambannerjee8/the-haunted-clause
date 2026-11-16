@@ -39,7 +39,7 @@ Re-read PLAN.md and this file at the start of every phase and after every contex
 6. **Visual direction: Victorian gothic.**
    - Palette: deep aubergine, ink-black, candle-amber, and sickly green for severity 3.
    - Fonts: Creepster for headings only (not Nosifer) and Atkinson Hyperlegible for body text. Both are under the SIL Open Font License and are self-hosted through `next/font`, with no runtime request to Google.
-7. **Mitigations and exception markers.** A mitigating phrase (for example "we do not sell") lowers severity only when no exception marker follows it in the same clause. The markers are: `except`, `unless`, `other than`, `however`, `provided that`. Matching is case-insensitive and on word boundaries. Add tests for each marker, for a marker that comes before the mitigation (the mitigation still applies), and for a marker in a different clause (the mitigation still applies).
+7. **Mitigations and exception markers.** A mitigating phrase (for example "we do not sell") lowers severity only when no exception marker follows it in the same clause. The markers are: `except`, `unless`, `other than`, `however`, `provided that` (extended in C10.2 with `but`, `although`, `subject to`). Matching is case-insensitive and on word boundaries. Add tests for each marker, for a marker that comes before the mitigation (the mitigation still applies), and for a marker in a different clause (the mitigation still applies).
 8. **Keyboard navigation in the house: roving tabindex.**
    - Each room that has ghosts is exactly one tab stop. Arrow keys (Left/Right and Up/Down) move between the ghosts in that room. Home and End jump to the first and last ghost. Enter or Space opens the detail panel. Escape closes it and returns focus to the same ghost. Tab moves to the next room, not the next ghost.
    - Rooms with no ghosts are not tab stops. Their "Quiet" status is visible text, is announced in each room's accessible name, and appears in Lights on mode.
@@ -47,7 +47,7 @@ Re-read PLAN.md and this file at the start of every phase and after every contex
 9. **Agent wording.** Describe the verification agents everywhere as "no write tool; shell limited to build/test commands". Never call them "read-only". This applies to the agent files, steering, BUILD_LOG.md, README, docs/KIRO_USAGE.md, docs/DEVPOST_DESCRIPTION.md, the blog and social drafts, and COMPLETION_REPORT.md. PLAN.md itself stays unchanged.
 10. **Splitter abbreviations.** The splitter never ends a clause after these: `e.g.`, `i.e.`, `Inc.`, `Ltd.`, `Co.`, `Corp.`, `U.S.`, `No.`, `Sec.`, `etc.`, `vs.`. A paragraph break still splits. Add a unit test for each abbreviation used mid-sentence, plus one for `etc.` followed by a paragraph break.
 11. **LICENSE:** MIT, "Copyright (c) 2026 Soham Banerjee".
-12. **Phase 1 approval:** one stop per spec, after its design. At each stop, show the requirements and the design together and wait for approval before writing that spec's tasks and moving on.
+12. **Phase 1 approval:** one stop per spec, after its design. At each stop, show the requirements and the design together and wait for approval before writing that spec's tasks and moving on. (Changed for clause-analyzer only; see C10.1.)
 13. **Submission period:** open. Start Phase 0 immediately.
 
 ## C2. Remaining assumptions
@@ -185,6 +185,14 @@ These are fixtures, checked in both unit and E2E tests.
 6. Rewrite docs/KIRO_USAGE.md in his own words.
 7. Fill in and submit the Devpost form, using docs/DEVPOST_DESCRIPTION.md.
 8. Publish docs/BLOG_DRAFT.md and docs/SOCIAL_POST.md.
+
+## C10. Changes approved during Phase 1 (16 November 2026)
+
+1. **Approval stops.** clause-analyzer has two stops: after requirements and after design (the user's instruction at the start of Phase 1). llm-explainer and haunted-house-ui keep one stop each, showing requirements and design together (C1.12).
+2. **Exception markers extended.** The markers are now eight: `except`, `unless`, `other than`, `however`, `provided that`, `but`, `although`, `subject to`. Each marker has its own test. A test must show that "We do not sell your data, but we may share it with advertising partners." is not lowered to severity 0.
+3. **Room examples.** At least three positive and two negative example clauses per room, all listed in the clause-analyzer design, each with its own test (Requirement 2.7).
+4. **Haunt Score check.** The design must compute the score for a realistic long policy (about 150 clauses, mostly severity 0 and 1 findings) and, if long policies land at 95 or above, propose adjusted weights that keep the six properties and the sample bands. Outcome: see the clause-analyzer design, section "Haunt Score". The weights stay as in C4 until the user approves a change.
+5. **Splitter boundary rule.** The design must state which rule wins when an indented list item follows a paragraph break (Requirement 1, criteria 8 and 9).
 
 ## D. Task map (spec tasks.md files must match these ranges)
 
