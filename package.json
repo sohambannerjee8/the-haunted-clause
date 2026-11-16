@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "prebuild": "node -e \"console.log(\\\"precompute:samples not implemented until Task 21\\\")\"",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest --run",
     "test:coverage": "vitest --run --coverage",
@@ -16,7 +15,8 @@
     "check:rules": "node scripts/check-repo-rules.mjs",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:history": "node scripts/secret-scan.mjs --history",
-    "check:trace": "node scripts/check-traceability.mjs"
+    "check:trace": "node scripts/check-traceability.mjs",
+    "precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"
   },
   "dependencies": {
     "@google/genai": "^3.3.0",

@@ -4,10 +4,11 @@ import { SYSTEM_INSTRUCTION, renderClauses } from "./prompt";
 
 // @google/genai is mocked: no test makes a real network call (testing.md).
 const generateContent = vi.fn();
+const getModel = vi.fn();
 const ctorArgs: unknown[] = [];
 vi.mock("@google/genai", () => ({
   GoogleGenAI: class {
-    models = { generateContent };
+    models = { generateContent, get: getModel };
     constructor(opts: unknown) {
       ctorArgs.push(opts);
     }
@@ -15,7 +16,7 @@ vi.mock("@google/genai", () => ({
   ThinkingLevel: { LOW: "LOW" },
 }));
 
-const { createGeminiProvider, defaultModel, DEFAULT_MODEL, modelSource } = await import("./gemini");
+const { createGeminiProvider, defaultModel, DEFAULT_MODEL, fetchModel, modelSource } = await import("./gemini");
 
 const clauses: ExplainClause[] = [{ id: "c-0", room: "court", severity: 3, text: "You waive any class action." }];
 const fakeKey = () => "AI" + "za" + "x".repeat(35);
@@ -23,6 +24,7 @@ const signal = new AbortController().signal;
 
 beforeEach(() => {
   generateContent.mockReset();
+  getModel.mockReset();
   ctorArgs.length = 0;
   vi.stubEnv("GEMINI_API_KEY", fakeKey());
   vi.stubEnv("GEMINI_MODEL", "");
@@ -96,6 +98,19 @@ describe("createGeminiProvider (R4.2, R11.2)", () => {
   it("lets an SDK error reject (the handler maps it to a reason code)", async () => {
     generateContent.mockRejectedValue(new Error("network down"));
     await expect(createGeminiProvider().explain(clauses, { signal })).rejects.toThrow("network down");
+  });
+  it("getModel calls models.get once for the model, with the signal and the key read at call time (R16.12)", async () => {
+    getModel.mockResolvedValue({ name: "models/gemini-4-hydrogen" });
+    await expect(fetchModel("gemini-4-hydrogen", signal)).resolves.toEqual({ name: "models/gemini-4-hydrogen" });
+    expect(getModel).toHaveBeenCalledTimes(1);
+    expect(getModel).toHaveBeenCalledWith({ model: "gemini-4-hydrogen", config: { abortSignal: signal } });
+    expect(ctorArgs).toEqual([{ apiKey: fakeKey() }]);
+    expect(generateContent).not.toHaveBeenCalled();
+  });
+  it("getModel passes an SDK rejection through", async () => {
+    const err = Object.assign(new Error("not found"), { status: 404 });
+    getModel.mockRejectedValue(err);
+    await expect(fetchModel("nope", signal)).rejects.toBe(err);
   });
   it("rejects without calling Google when there is no key", async () => {
     vi.stubEnv("GEMINI_API_KEY", "  ");

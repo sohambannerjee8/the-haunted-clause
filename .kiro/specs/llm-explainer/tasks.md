@@ -86,8 +86,8 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Tests: importing `client.ts` makes no fetch (R14.3); success; 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; a network error gives `error`; the 20 s timeout gives `error`; no findings makes no fetch.
   - _Requirements: 14.1–14.3_
 
-- [ ] 21. Precompute sample explanations (manual command only; the build never calls Google)
-- [ ] 21.1 Write `scripts/precompute-samples.test.mts`, then `scripts/precompute-samples.mts`
+- [x] 21. Precompute sample explanations (manual command only; the build never calls Google)
+- [x] 21.1 Write `scripts/precompute-samples.test.mts`, then `scripts/precompute-samples.mts`
   - Pure `precompute()` core, plus `main()` with `loadEnvConfig` from `@next/env`.
   - Tests:
     - A mocked provider writes LLM entries with `model`.
@@ -96,7 +96,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - A second run gives byte-identical output.
     - Each summary line matches `precompute: <sample> source=<llm|rules> llmFindings=<n> model=<id or null>` and contains no finding quote from any sample (R16.6).
   - _Requirements: 16.3–16.7, 16.9–16.11_
-- [ ] 21.2 Add the model check (user request, PLAN_DECISIONS.md C10.13)
+- [x] 21.2 Add the model check (user request, PLAN_DECISIONS.md C10.13)
   - With a key, call `models.get` once before any sample call and print `precompute: model=<id> source=<GEMINI_MODEL|default>`.
   - Tests in `scripts/precompute-samples.test.mts` with a mocked `models.get`:
     - A 404 for an unknown model prints the ERROR block naming the model and the fix, exits 1 and leaves the file byte-for-byte unchanged.
@@ -105,7 +105,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - A failed sample call (after a passing check) names the sample and reason, and exits 1.
   - The real call needs the user's key. It is not run by the builder. It is listed in COMPLETION_REPORT.md as manual step 2, and the user records the printed model name in BUILD_LOG.md.
   - _Requirements: 16.12–16.15_
-- [ ] 21.3 Wire the npm script, keep the build offline, commit the rule-based file
+- [x] 21.3 Wire the npm script, keep the build offline, commit the rule-based file
   - Add `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"`. Remove the placeholder `prebuild` script from Phase 0.
   - Write `scripts/package-scripts.test.mts`: no script other than `precompute:samples` mentions `precompute-samples` or `@google/genai`, and no `prebuild`, `postinstall` or `build` hook runs it (C10.14).
   - Run `npm run precompute:samples` with no key and commit `src/lib/samples/sample-explanations.json`.

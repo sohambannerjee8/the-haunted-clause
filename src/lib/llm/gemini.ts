@@ -47,3 +47,12 @@ export function createGeminiProvider(): Provider {
     },
   };
 }
+
+/**
+ * One real `models.get` call, used by the precompute script's model check (R16.12, R16.13).
+ * Rejects with the SDK's ApiError (which carries `status`) when Google refuses the model or the key.
+ */
+export async function fetchModel(model: string, signal: AbortSignal): Promise<unknown> {
+  const ai = new GoogleGenAI({ apiKey: readKey() });
+  return ai.models.get({ model, config: { abortSignal: signal } });
+}
