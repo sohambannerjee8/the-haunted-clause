@@ -202,6 +202,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 5. WHEN the result has `source: "llm"`, THE app SHALL merge it (llm-explainer R12), update the ghosts, detail texts, badges, Lights on list and Haunt Score, announce "The medium has spoken.", and hide the button.
 6. WHEN the result has `source: "rules"`, THE app SHALL keep the rule reading and show a short message for the reason: `rate-limited` "The medium needs a rest. Try again in a minute."; `timeout` "The medium took too long. Showing the rule reading."; any other reason "The medium is silent right now. Showing the rule reading."; and SHALL re-enable the button except after `no-key`.
 7. THE request body SHALL contain only the text of flagged clauses (llm-explainer R13); THE app SHALL never send the request automatically.
+8. BECAUSE `llmAvailable` is read when the page is built, docs/DEPLOY.md SHALL state that adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy before the opt-in button appears or disappears.
 
 ### Requirement 15: Samples
 
@@ -209,8 +210,8 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 
 #### Acceptance Criteria
 
-1. WHEN the user opens a sample, THE house view SHALL use the sample's precomputed medium's reading when one exists (llm-explainer `sampleReading`) and the rule reading otherwise, and each finding's badge SHALL say which.
-2. WHEN a sample is open, THE app SHALL make no request to `/api/explain` at any point.
+1. WHEN the user opens a sample, THE house view SHALL take its medium's reading from the committed `src/lib/samples/sample-explanations.json` (llm-explainer `sampleReading`). FOR each finding, it SHALL show the medium's text when the file has an explanation for that finding's ID, and the rule text otherwise, and each finding's badge SHALL say which ("Medium's reading" or "Rule reading").
+2. WHEN a sample is open, THE app SHALL make no request to `/api/explain` at any point, and neither the app nor the build SHALL call Google for samples (PLAN_DECISIONS.md C10.14).
 3. THE house view SHALL say which sample is open, by company name, and that it is a fictional company.
 
 ### Requirement 16: Edge states
@@ -264,3 +265,14 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
    - the non-English notice.
 2. ALL text SHALL meet WCAG 2.2 AA contrast, using the palette in design-language.md.
 3. THE page SHALL have one `main` landmark, one `h1`, and room headings at one level below the house heading.
+
+### Requirement 20: Screenshots for the user's visual review
+
+**User Story:** As the owner, I want to judge the look myself before polishing starts, because the verification agents check function and accessibility, not taste.
+
+#### Acceptance Criteria
+
+1. AT Gate 4, THE builder SHALL save PNG screenshots to `docs/screenshots/` of these six states, each at 1440 × 900 and at 360 × 740 (12 files): the input screen; the house for the mild, average and terrible samples; an open ghost detail panel (the first severity 3 ghost of the terrible sample); and Lights on mode (terrible sample).
+2. THE files SHALL be named `<state>-<width>.png`, for example `house-terrible-1440.png` and `detail-360.png`, and SHALL be made by a Playwright spec, `e2e/screenshots.spec.ts`, that runs only through `npm run screenshots` and not as part of `npm run test:e2e`.
+3. EACH screenshot SHALL be taken with reduced motion on, so that ghosts are still and the images are repeatable, and with fonts loaded (`document.fonts.ready`).
+4. AFTER Gate 4 passes, THE builder SHALL show the screenshots to the user and SHALL NOT start Phase 5 until the user has reviewed them.

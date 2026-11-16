@@ -21,10 +21,10 @@ Re-read PLAN.md and this file at the start of every phase and after every contex
    - The app works fully with no key. In that case the button is hidden and a line of text explains that rule-based readings are shown.
    - Source: aistudio.google.com/docs/terms, "Unpaid Services". On the free tier, Google uses content to improve products and human reviewers may read it. Paid services do not.
 3. **Samples use precomputed explanations and never call the API at runtime.**
-   - `scripts/precompute-samples.mts` runs as an npm `prebuild` step and also as `npm run precompute:samples`.
+   - **Changed by C10.14:** `scripts/precompute-samples.mts` runs only as `npm run precompute:samples`, by hand. The build never calls Google and uses the committed JSON. (Original text: it ran as an npm `prebuild` step and also as `npm run precompute:samples`.)
    - When `GEMINI_API_KEY` is set, it runs each of the three samples through the same pipeline as the route: analyzer, flagged clauses, provider, Zod, then merge. It writes `src/lib/samples/sample-explanations.json` with `source: "llm"`.
-   - When no key is set, or on any failure, it writes or keeps the rule-based content (`source: "rules"`) and exits 0. The build must never fail because of this step.
-   - The committed version of the file holds the rule-based content, because the builder has no key. The user regenerates it after adding a key (see manual steps). On Vercel, the key is present at build time, so the deployed build gets Gemini explanations.
+   - When no key is set, it writes or keeps the rule-based content (`source: "rules"`) and exits 0. With a key, a rejected model or a failed sample call exits 1 (C10.13). The build cannot fail because of this script, since the build never runs it (C10.14).
+   - The committed version of the file holds the rule-based content, because the builder has no key. The user regenerates it after adding a key and commits it (see manual steps). The Vercel build uses the committed file as it is; it does not call Gemini (C10.14).
    - The JSON is validated against the Zod schema when it is imported. A consistency test checks that its clause IDs match the current analyzer output for each sample, so drift fails the tests.
    - A UI E2E test proves that picking a sample makes no request to `/api/explain`.
 4. **Rate limit.**
@@ -64,7 +64,7 @@ The analyzer runs in the browser, so pasted text never leaves the device unless 
 flowchart LR
   A[Paste text] --> B[analyze in browser<br/>splitter, classifier, score]
   S[Pick sample] --> B
-  S --> P[static sample-explanations.json<br/>precomputed at build]
+  S --> P[committed sample-explanations.json<br/>precomputed by hand]
   P --> C
   B --> C[House view: 8 rooms, ghosts, Haunt Score]
   B --> L[Lights on list]
@@ -178,7 +178,7 @@ These are fixtures, checked in both unit and E2E tests.
 ## C9. User's manual steps (do not do these; prepare for them)
 
 1. Get a Gemini API key (paid tier recommended) and put it in `.env.local`.
-2. Run `npm run precompute:samples`. It first makes one real `models.get` call and prints `precompute: model=<id>`; if Google rejects the model name or the key, it stops with an ERROR and exit code 1 and leaves the file alone (set `GEMINI_MODEL` and rerun). Then check `src/lib/samples/sample-explanations.json` (each entry should say `"source": "llm"` and name the model), record the model name in BUILD_LOG.md, and commit the file.
+2. Run `npm run precompute:samples` (the build never does this; the deployed samples use whatever file is committed). It first makes one real `models.get` call and prints `precompute: model=<id>`; if Google rejects the model name or the key, it stops with an ERROR and exit code 1 and leaves the file alone (set `GEMINI_MODEL` and rerun). Then check `src/lib/samples/sample-explanations.json` (each entry should say `"source": "llm"` and name the model), record the model name in BUILD_LOG.md, and commit the file.
 3. Create the public GitHub repository and push.
 4. Deploy to Vercel and set `GEMINI_API_KEY` (and `GEMINI_MODEL` if wanted), following docs/DEPLOY.md.
 5. Record the demo video from docs/VIDEO_SCRIPT.md and upload it to YouTube.
@@ -224,9 +224,21 @@ These are fixtures, checked in both unit and E2E tests.
 13. **Strict model check.**
     - `npm run precompute:samples` (strict mode) makes one real `models.get` call before the sample calls and prints the model name.
     - If Google rejects the model name or the key, it fails loudly with exit code 1 and leaves the file unchanged. A failed sample call in strict mode also exits 1.
-    - The `prebuild` step uses `--lenient`, which only warns and always exits 0, so the build never fails (C1.3).
+    - (Superseded by C10.14: there is no `prebuild` step and no lenient mode; the build never runs the script.)
     - The model name is stored in each LLM entry and recorded in BUILD_LOG.md by the user (C9 step 2).
     - The builder has no key, so the real call cannot be made during the build. It is covered by mocked tests and run by the user.
+14. **The build never calls Google (haunted-house-ui addition a).**
+    - The precompute script runs only as `npm run precompute:samples`, by hand. There is no `prebuild` step, and a test fails if any npm script other than `precompute:samples` runs it or uses `@google/genai`.
+    - `npm run build` reads the committed `src/lib/samples/sample-explanations.json` as it is.
+    - For each sample finding, the UI shows the medium's text when the JSON has an explanation for that finding's ID, and the rule text otherwise.
+    - DEPLOY.md: run `npm run precompute:samples` and commit the file before deploying.
+    - The strict and lenient modes of C10.13 are replaced by a single manual mode (strict).
+15. **Visual review at Gate 4 (addition b).**
+    - Save 12 screenshots to `docs/screenshots/`: input screen, the house for each sample, an open ghost detail panel and Lights on mode, each at 1440 px and 360 px wide, with reduced motion on.
+    - They are made by `npm run screenshots` (`e2e/screenshots.spec.ts`, kept out of the normal E2E run).
+    - After Gate 4 passes, show them to the user and stop before Phase 5. The agents check function and accessibility; the user judges the look.
+16. **Redeploy note.** `llmAvailable` is read when the page is built, so docs/DEPLOY.md must say that adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy.
+17. **haunted-house-ui requirements and design approved** on 16 November 2026, with additions 14–16.
 
 ## D. Task map (spec tasks.md files must match these ranges)
 

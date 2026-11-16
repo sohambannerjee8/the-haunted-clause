@@ -57,6 +57,8 @@ Motion, sound, layout, accessibility
 15. Does the axe scan in the E2E suite (`npx playwright test --grep "axe"`) report zero serious or critical issues in every state?
 16. (Gate 5) Do the edge states work in the browser: empty input shows a message, 50,000 characters are accepted and the 50,001st is blocked, non-English text shows the notice, and a policy with no risky clauses shows "No ghosts here"?
 
+You judge function and accessibility only. Do not pass or fail anything on visual taste (colours you dislike, layout preferences); the user reviews the look from `docs/screenshots/` (PLAN_DECISIONS.md C10.15). Report a visual problem only when it breaks a checklist item, for example clipped text or overlapping controls.
+
 The gate fails when any answer is No: the flow breaks, a ghost does not match its severity, keyboard or reduced-motion paths fail, or the layout breaks at 360 px. A check that cannot apply yet is answered "Yes (not due until Phase N)" with the reason.
 
 ## Output format

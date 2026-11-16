@@ -82,41 +82,44 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Tests: success; 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; a network error gives `error`; the 20 s timeout gives `error`; no findings makes no fetch.
   - _Requirements: 14.1–14.3_
 
-- [ ] 21. Precompute sample explanations
+- [ ] 21. Precompute sample explanations (manual command only; the build never calls Google)
 - [ ] 21.1 Write `scripts/precompute-samples.test.mts`, then `scripts/precompute-samples.mts`
-  - Pure `precompute()` core, plus `main()` with the `--lenient` flag and `loadEnvConfig` from `@next/env`.
+  - Pure `precompute()` core, plus `main()` with `loadEnvConfig` from `@next/env`.
   - Tests:
     - A mocked provider writes LLM entries with `model`.
-    - No key writes rules entries and exits 0 in both modes.
+    - No key writes rules entries, makes no call and exits 0.
     - A provider failure keeps a consistent existing entry; an inconsistent entry is replaced by rules.
-    - `HC_SKIP_PRECOMPUTE=1` makes no call.
     - A second run gives byte-identical output.
-  - _Requirements: 16.1–16.9_
-- [ ] 21.2 Add the strict model check (user request, PLAN_DECISIONS.md C10.13)
-  - In strict mode with a key, call `models.get` once before any sample call and print `precompute: model=<id> source=<GEMINI_MODEL|default>`.
+  - _Requirements: 16.3–16.7, 16.9–16.11_
+- [ ] 21.2 Add the model check (user request, PLAN_DECISIONS.md C10.13)
+  - With a key, call `models.get` once before any sample call and print `precompute: model=<id> source=<GEMINI_MODEL|default>`.
   - Tests with a mocked `models.get`:
     - A 404 for an unknown model prints the ERROR block naming the model and the fix, exits 1 and leaves the file byte-for-byte unchanged.
     - A 403 for a refused key prints the key message and exits 1.
     - Success prints the model line, and the LLM entries carry that model.
-    - Lenient mode with the same 404 prints `WARNING precompute:`, exits 0 and writes rules entries.
-    - Strict mode with a failed sample call (after a passing check) names the sample and reason, and exits 1.
+    - A failed sample call (after a passing check) names the sample and reason, and exits 1.
   - The real call needs the user's key. It is not run by the builder. It is listed in COMPLETION_REPORT.md as manual step 2, and the user records the printed model name in BUILD_LOG.md.
-  - _Requirements: 16.10–16.14_
-- [ ] 21.3 Wire the npm scripts and commit the rule-based file
-  - `"prebuild": "tsx --conditions=react-server scripts/precompute-samples.mts --lenient"` and `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"`.
-  - Run `npm run precompute:samples` with no key, commit `src/lib/samples/sample-explanations.json`, and write `src/lib/samples/explanations.ts` with Zod validation.
-  - Tests in `explanations.test.ts`: the committed file passes Zod, and every entry is consistent with the current analyzer output.
-  - Demo: `npm run build` with no key succeeds, and the file is unchanged afterwards (`git diff --exit-code`).
-  - _Requirements: 16.1, 16.4–16.8_
+  - _Requirements: 16.12–16.15_
+- [ ] 21.3 Wire the npm script, keep the build offline, commit the rule-based file
+  - Add `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"`. Remove the placeholder `prebuild` script from Phase 0.
+  - Write `scripts/package-scripts.test.mts`: no script other than `precompute:samples` mentions `precompute-samples` or `@google/genai`, and no `prebuild`, `postinstall` or `build` hook runs it (C10.14).
+  - Run `npm run precompute:samples` with no key and commit `src/lib/samples/sample-explanations.json`.
+  - Write `src/lib/samples/explanations.ts` with Zod validation and `sampleReading(id)`.
+  - Tests in `explanations.test.ts`:
+    - The committed file passes Zod, and every entry is consistent with the current analyzer output.
+    - A partial entry gives medium texts for its IDs and rule texts for the rest.
+    - An invalid file gives rule texts everywhere.
+  - Demo: `npm run build` with no key succeeds, the file is unchanged afterwards (`git diff --exit-code`), and the build log shows no precompute step.
+  - _Requirements: 16.1, 16.2, 16.7–16.10_
 
 - [ ] 22. Bundle check, audit and Gate 3
 - [ ] 22.1 Write `scripts/check-bundle.mjs`
-  - Build with a runtime-generated canary key and `HC_SKIP_PRECOMPUTE=1`, then search `.next/static/**` for the canary and for `GEMINI_API_KEY`, and exit 0 or 1.
+  - Build with a runtime-generated canary key (the build makes no call to Google), then search `.next/static/**` for the canary and for `GEMINI_API_KEY`, and exit 0 or 1.
   - Test it by running it, and once with a deliberately planted file under a temporary copy of `.next/static` to see it fail. Then remove the planted file.
   - _Requirements: 15.2, 15.3_
 - [ ] 22.2 Run the checks
   - `npm run check:bundle`, `npm audit --omit=dev --audit-level=high`, `npm run test:coverage` (lines ≥ 90% for `src/lib/llm/**`), `npm run typecheck` and `npm run lint`, all with zero errors.
-  - Draft the privacy, rate-limit and `store: false` paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R9.5, R17.3).
+  - Draft these paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R9.5, R17.3, C10.14, C10.16): privacy; the best-effort rate limit; `store: false` with the Google citation; samples come from the committed JSON, so run `npm run precompute:samples` and commit before deploying; `llmAvailable` is read at build time, so adding or changing the key on Vercel needs a redeploy.
   - _Requirements: 9.5, 15.3, 17.3_
 - [ ] 22.3 Run Gate 3
   - Run the `security-reviewer` and `test-verifier` sub-agents in parallel.

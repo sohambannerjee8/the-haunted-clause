@@ -91,6 +91,7 @@ stateDiagram-v2
 `page.tsx` is a server component that calls `isLlmAvailable()` from `server-only` code and passes the boolean (R14.1, C6). The page is prerendered, so the value is read at build time.
 - On Vercel, environment variables exist at build time, and changing one triggers a redeploy, so this is correct.
 - In E2E, each server is built with its own environment (see "E2E setup").
+- Because the value is fixed at build time, docs/DEPLOY.md says that adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy (R14.8).
 - Task 23 confirms that reading the variable in a prerendered page works with Cache Components on. If Next.js refuses, the fallback is to read it after `await connection()` inside a small `<Suspense>` boundary around the opt-in area only.
 
 ## Input screen (R2, R16.1, R16.2)
@@ -168,7 +169,7 @@ stateDiagram-v2
   2. Call `requestExplanations(ruleFindings)` from llm-explainer (R14.4). It is called only from this button's handler. There is no effect hook or timer that could call it (R14.7).
   3. On `llm`: `findings = mergeFindings(ruleFindings, result.findings)`, `medium: "spoken"`, announce, hide the button (R14.5).
   4. On `rules`: keep the findings, `medium: { failed: reason }`, show the message, re-enable unless `no-key` (R14.6).
-- **Samples:** `loadSample(id)` dynamically imports the sample text and `sampleReading(id)`. `findings = mergeFindings(analyze(text).findings, reading.llmFindings)`. Badges follow `source` on each finding (R15.1). The toolbar shows "Sample: <company> (a fictional company)" (R15.3).
+- **Samples:** `loadSample(id)` dynamically imports the sample text and `sampleReading(id)`, which reads the committed `sample-explanations.json` (it is never generated during the build, C10.14). `findings = mergeFindings(analyze(text).findings, sampleReading(id))`. A finding with no explanation in the file keeps its rule text and the "Rule reading" badge, so badges follow `source` on each finding (R15.1). The toolbar shows "Sample: <company> (a fictional company)" (R15.3).
 - **No fetch for samples:** no fetch happens on any sample path (R15.2).
 
 ## Sound (R11)
@@ -219,7 +220,7 @@ Playwright runs two production servers:
 | Project | Port | Build | Purpose |
 | --- | --- | --- | --- |
 | `no-key` | 3100 | `.next`, `GEMINI_API_KEY` empty | Every flow, samples, keyboard, motion, layout, axe, edge states, performance, the no-key route |
-| `llm-ui` | 3101 | `HC_DIST_DIR=.next-e2e-llm`, `GEMINI_API_KEY=placeholder-e2e-not-a-real-key`, `HC_SKIP_PRECOMPUTE=1` | The opt-in UI with `llmAvailable` true. Every `/api/explain` call is answered by `page.route` stubs in the browser, so the server never contacts Google |
+| `llm-ui` | 3101 | `HC_DIST_DIR=.next-e2e-llm`, `GEMINI_API_KEY=placeholder-e2e-not-a-real-key` (the build never calls Google, C10.14) | The opt-in UI with `llmAvailable` true. Every `/api/explain` call is answered by `page.route` stubs in the browser, so the server never contacts Google |
 
 - `next.config.ts` gets `distDir: process.env.HC_DIST_DIR || ".next"`, so the second build does not overwrite the first.
 - The placeholder value starts with "placeholder", so the secret scanner's placeholder rule ignores it, and it is not key-shaped.
@@ -263,6 +264,20 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 | `perf.spec.ts` (Phase 5) | no-key | A CDP session with `Network.emulateNetworkConditions` (latency 150 ms, download 200,000 B/s, upload 93,750 B/s) and the cache disabled: the textarea accepts typing within 5 s; the sum of `encodedDataLength` for JS responses before any action is ≤ 200 kB, and is printed | R18 |
 
 Coverage target: 80% of lines for `src/` outside the analyzer and llm folders, enforced in `vitest.config.mts`.
+
+## Screenshots for visual review (R20)
+
+- `e2e/screenshots.spec.ts` is tagged `@screenshots`.
+  - `npm run test:e2e` uses `--grep-invert @screenshots`, so the normal suite never rewrites the images.
+  - `npm run screenshots` runs `playwright test --grep @screenshots --project=no-key`.
+- For each viewport (1440 × 900, 360 × 740), it uses `reducedMotion: "reduce"`, waits for `document.fonts.ready` and visits six states:
+  1. Input screen → `input-<w>.png`.
+  2.–4. Each sample's house → `house-mild-<w>.png`, `house-average-<w>.png`, `house-terrible-<w>.png`.
+  5. The terrible sample with its first severity 3 ghost opened → `detail-<w>.png`.
+  6. The terrible sample in Lights on mode → `lights-on-<w>.png`.
+- Each state is captured with `page.screenshot({ fullPage: true })`. The open dialog is captured in the viewport only, since it is modal.
+- The 12 PNGs are committed under `docs/screenshots/`. They are images of the app's own art and fictional samples, with no third-party marks.
+- After Gate 4 passes, the builder registers the 12 images as artifacts, shows them to the user and waits (C10.15).
 
 ## Error handling summary
 

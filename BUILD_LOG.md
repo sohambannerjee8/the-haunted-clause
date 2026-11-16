@@ -285,3 +285,19 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - Two Playwright projects: a no-key build, and a second build with a placeholder key so the opt-in UI can be tested with in-browser stubs.
   - The E2E and component test plan.
 - Status: waiting for the user's approval of requirements and design together.
+
+### haunted-house-ui: approved with additions; tasks written
+- The user approved the requirements and design with two additions and a DEPLOY.md note. They are recorded in PLAN_DECISIONS.md C10.14–C10.17, and C1.3 is corrected.
+- **(a) The build never calls Google.** This changed an approved llm-explainer requirement:
+  - R16 was rewritten. The precompute runs only as `npm run precompute:samples`. There is no `prebuild` step and no lenient mode, and a new `package-scripts.test.mts` will fail if any other npm script runs the script or uses `@google/genai`.
+  - The build reads the committed JSON. For each sample finding the UI shows the medium's text when the JSON has it and the rule text otherwise, so a partial or stale file degrades one finding at a time.
+  - Updated to match: the llm-explainer design, the llm-explainer Tasks 21–22, haunted-house-ui R15.1–R15.2, `tech.md` and `product.md`.
+  - The removal of `HC_SKIP_PRECOMPUTE` follows from this, because nothing in a build runs the script any more.
+- **(b) Visual review.**
+  - New R20: 12 screenshots (input screen, three sample houses, an open detail panel, Lights on, each at 1440 and 360 px), taken with reduced motion and fonts loaded.
+  - They come from `e2e/screenshots.spec.ts`, which runs only through `npm run screenshots`.
+  - After Gate 4 the builder shows them and stops before Phase 5 (Task 31.5).
+  - `ui-a11y-reviewer.md` now says it judges function and accessibility only, not taste.
+- **Redeploy note:** new haunted-house-ui R14.8. DEPLOY.md must say that adding, changing or removing the key on Vercel needs a redeploy, because `llmAvailable` is read at build time. It was added to the DEPLOY.md draft list in llm-explainer Task 22.2.
+- `.kiro/specs/haunted-house-ui/tasks.md` written for Tasks 23–33 (Phase 4: 23–31; Phase 5: 32–33).
+- All three specs now have requirements, design and tasks. Next: Gate 1 (spec-reviewer).

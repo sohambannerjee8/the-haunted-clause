@@ -4,7 +4,7 @@
 
 The LLM explainer is the optional second reading of a policy. After the rule-based analyzer has produced its findings, the explainer can send the flagged clauses, and only those, to Google Gemini through one server route. Gemini rewrites each explanation in plain English and may raise or confirm a severity. Its output is checked against a Zod schema. If anything goes wrong (no key, a timeout, bad output, an error or the rate limit), the app keeps the rule-based result and keeps working.
 
-For pasted text, the call happens only after the user opts in. The three fictional samples never call the route at runtime. Their explanations are computed once, at build time, by a script that uses the same pipeline.
+For pasted text, the call happens only after the user opts in. The three fictional samples never call the route, and the build never calls Google. Their explanations are computed by a script the user runs by hand, which uses the same pipeline, and the result is committed as `src/lib/samples/sample-explanations.json`.
 
 Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C5 and C8; the clause-analyzer spec (types `Finding`, `RoomId`, `Severity`).
 
@@ -182,26 +182,27 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 2. THE project SHALL NOT define any `NEXT_PUBLIC_` variable that holds the key or any part of it.
 3. WHEN the app is built with `GEMINI_API_KEY` set to a canary value, `npm run check:bundle` SHALL find neither the canary value nor the string `GEMINI_API_KEY` in any file under `.next/static`, and SHALL exit non-zero if it finds either.
 
-### Requirement 16: Precompute sample explanations at build time
+### Requirement 16: Precompute sample explanations by hand, never during the build
 
-**User Story:** As a judge, I want the samples to show the medium's reading instantly and for free, without the app calling the API while I click.
+**User Story:** As a judge, I want the samples to show the medium's reading instantly and for free, without the app or the build calling the API.
 
 #### Acceptance Criteria
 
-1. THE script `scripts/precompute-samples.mts` SHALL run as the npm `prebuild` step in lenient mode (`--lenient`) and as `npm run precompute:samples` in strict mode (the default).
-2. WHEN a key is set, THE script SHALL, for each of the three samples, run the analyzer, build the explain request with Requirement 13, call the Gemini provider with the 15-second timeout, validate the output with Requirement 6, and write that sample's entry with `source: "llm"`, the model ID and the validated LLM findings.
-3. WHEN a key is set and the call for a sample fails in any way, THE script SHALL keep that sample's existing entry if it is valid and consistent (criterion 6), and otherwise write the sample's rule-based entry.
-4. WHEN there is no key, or the environment variable `HC_SKIP_PRECOMPUTE=1` is set, THE script SHALL make no network call; it SHALL keep each existing entry that is valid and consistent and write the rule-based entry for any other sample.
-5. WHEN run as the `prebuild` step (lenient mode), THE script SHALL exit with code 0 in every case, so that the build never fails because of it. It SHALL print one summary line per sample with the sample ID, source and number of findings, and no clause text.
-6. EACH entry in the sample explanations file SHALL hold `source`, `model` (`null` for rules), `findingIds` (the analyzer's finding IDs for that sample, in order) and `llmFindings` (empty for rules). An entry is "consistent" when its `findingIds` equal the analyzer's current finding IDs for that sample and every `llmFindings` ID is in `findingIds`. THE file SHALL be validated with Zod when the app imports it, and a test SHALL fail when any entry is not consistent, so that changing a sample or a rule without regenerating the file fails the tests.
-7. THE rule-based entry for a sample SHALL have `source: "rules"`, `model: null`, the analyzer's finding IDs and `llmFindings: []`; the UI then shows the analyzer's own texts.
-8. THE committed sample explanations file SHALL contain rule-based entries until the user regenerates it with a key (PLAN_DECISIONS.md C9 step 2).
-9. THE script output SHALL be deterministic for the same model output: no timestamps, findings in analyzer order, keys in a fixed order and a trailing newline.
-10. WHEN run as `npm run precompute:samples` (strict mode) with a key set, THE script SHALL first make one real call, `models.get` for the configured model, before any sample call, and SHALL print the line `precompute: model=<model ID> source=<GEMINI_MODEL or default>`.
-11. WHEN, in strict mode, that call is rejected (for example HTTP 400 or 404 because the model name is unknown, or 401 or 403 because the key is refused), THE script SHALL print a loud error naming the model, the HTTP status and the fix (set `GEMINI_MODEL` to a current model ID), SHALL NOT change the sample explanations file, and SHALL exit with code 1.
-12. WHEN, in strict mode, any sample call fails after the model check passed, THE script SHALL report which sample failed and why (reason code only), keep or write that sample's entry as in criterion 3, and exit with code 1, so that a manual run never silently commits rule-based readings.
-13. WHEN, in lenient mode, the model check or a sample call fails, THE script SHALL print a warning line that starts with `WARNING precompute:` and names the model, and continue as in criteria 3 and 5.
-14. THE model ID used SHALL be stored in each LLM entry's `model` field, so that the committed file records which model wrote it.
+1. THE script `scripts/precompute-samples.mts` SHALL run only as `npm run precompute:samples`, started by hand. No npm lifecycle script (`prebuild`, `postinstall`, `build` or any other) SHALL run it.
+2. `npm run build` SHALL make no call to Google and SHALL read the committed `src/lib/samples/sample-explanations.json` as it is; a test SHALL fail if any script in `package.json` other than `precompute:samples` references the precompute script or `@google/genai`.
+3. WHEN a key is set, THE script SHALL, for each of the three samples, run the analyzer, build the explain request with Requirement 13, call the Gemini provider with the 15-second timeout, validate the output with Requirement 6, and write that sample's entry with `source: "llm"`, the model ID and the validated LLM findings.
+4. WHEN a key is set and the call for a sample fails in any way, THE script SHALL keep that sample's existing entry if it is valid and consistent (criterion 7), and otherwise write the sample's rule-based entry.
+5. WHEN there is no key, THE script SHALL make no network call; it SHALL keep each existing entry that is valid and consistent, write the rule-based entry for any other sample, print `precompute: no GEMINI_API_KEY; writing rule-based readings` and exit with code 0.
+6. THE script SHALL print one summary line per sample with the sample ID, source, number of LLM findings and model, and no clause text.
+7. EACH entry in the sample explanations file SHALL hold `source`, `model` (`null` for rules), `findingIds` (the analyzer's finding IDs for that sample, in order) and `llmFindings` (empty for rules). An entry is "consistent" when its `findingIds` equal the analyzer's current finding IDs for that sample and every `llmFindings` ID is in `findingIds`. A test SHALL fail when any entry is not consistent, so that changing a sample or a rule without rerunning the script fails the tests.
+8. AT runtime, `sampleReading(id)` SHALL validate the file with Zod and return the entry's LLM findings, or none when the file or entry is invalid. FOR each finding of the sample, THE UI SHALL show the medium's text when the file has an LLM finding with that finding's ID, and the rule text otherwise (merge, Requirement 12). It SHALL never fetch.
+9. THE rule-based entry for a sample SHALL have `source: "rules"`, `model: null`, the analyzer's finding IDs and `llmFindings: []`.
+10. THE committed sample explanations file SHALL contain rule-based entries until the user regenerates it with a key and commits it (PLAN_DECISIONS.md C9 step 2).
+11. THE script output SHALL be deterministic for the same model output: no timestamps, findings in analyzer order, keys in a fixed order and a trailing newline.
+12. WHEN a key is set, THE script SHALL first make one real call, `models.get` for the configured model, before any sample call, and SHALL print the line `precompute: model=<model ID> source=<GEMINI_MODEL or default>`.
+13. WHEN that call is rejected (for example HTTP 400 or 404 because the model name is unknown, or 401 or 403 because the key is refused), THE script SHALL print a loud error naming the model, the HTTP status and the fix (set `GEMINI_MODEL` to a current model ID), SHALL NOT change the sample explanations file, and SHALL exit with code 1.
+14. WHEN any sample call fails after the model check passed, THE script SHALL report which sample failed and why (reason code only), keep or write that sample's entry as in criterion 4, and exit with code 1, so that a manual run never silently commits rule-based readings.
+15. THE model ID used SHALL be stored in each LLM entry's `model` field, so that the committed file records which model wrote it.
 
 ### Requirement 17: Honest privacy wording
 

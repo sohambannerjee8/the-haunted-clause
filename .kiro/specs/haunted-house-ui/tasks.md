@@ -1,0 +1,189 @@
+# Implementation Plan: haunted-house-ui
+
+Tasks 23–33 of the build plan (PLAN_DECISIONS.md section D). Tasks 23–31 are Phase 4. Tasks 32–33 are Phase 5, which starts only after the user has reviewed the Gate 4 screenshots (C10.15).
+
+Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
+
+- [ ] 23. Design tokens, fonts, page shell
+- [ ] 23.1 Commit the fonts
+  - Download Creepster Regular and Atkinson Hyperlegible Regular and Bold, with their `OFL.txt` files, from the official `google/fonts` repository (`ofl/creepster`, `ofl/atkinsonhyperlegible`) into `src/app/fonts/`.
+  - Record the source URLs and licence in BUILD_LOG.md.
+  - _Requirements: 1.4_
+- [ ] 23.2 Write `Footer.test.tsx` and a shell E2E with axe, then the layout
+  - `layout.tsx`: `next/font/local` for both fonts, `<html lang="en">`, title, the "Skip to content" link, `<main id="content">` and `<Footer>`.
+  - `globals.css`: the Tailwind v4 `@theme` tokens for the design-language palette, the ghost level custom properties, the focus ring and the reduced-motion rule.
+  - Tests:
+    - The footer shows "Not legal advice".
+    - The skip link is the first focusable element and moves focus to `main`.
+    - The page requests no font or image from another origin (E2E request listener).
+    - axe finds no serious or critical issue on the empty page.
+  - _Requirements: 1.1–1.6, 13.1, 19.2, 19.3_
+- [ ] 23.3 Wire `page.tsx` to `isLlmAvailable()` and pass only the boolean to `HauntedApp`
+  - Confirm that the prerendered page reads the variable with Cache Components on. If Next.js refuses, use the `connection()` + `<Suspense>` fallback from the design and log which one was used.
+  - Add `next.config.ts` `distDir: process.env.HC_DIST_DIR || ".next"`, and add `.next-e2e-llm` to `.gitignore`.
+  - Add the second Playwright project (`llm-ui`, port 3101, placeholder key), with the guard test that fails on any request to a host other than localhost.
+  - _Requirements: 14.1, 14.2, 14.8_
+
+- [ ] 24. Input screen and sample cards
+- [ ] 24.1 Write `InputScreen.test.tsx` and `SampleCards.test.tsx`, then the components
+  - Tests:
+    - The label and the counter format.
+    - `maxLength` 50,000.
+    - A paste that would pass the cap is cut, with the notice.
+    - Empty or whitespace text shows the message, with `aria-invalid` and `aria-describedby`.
+    - Three cards, with buttons named by company.
+    - `src/lib/samples/meta.ts` holds no policy text.
+  - _Requirements: 2.1–2.6_
+- [ ] 24.2 Write `HauntedApp` with the state machine, the lazy `HouseView` with a retryable import, `Suspense` "Opening the house…" and the error boundary
+  - E2E `flow.spec.ts` (first part):
+    - Opening each sample shows the house view.
+    - No request goes to `/api/explain`.
+    - Pasted text is analyzed in the browser, and no request carries it.
+  - _Requirements: 3.1–3.4, 15.2, 17.1, 17.2, 17.4_
+
+- [ ] 25. House, rooms, ghosts and the Haunt Score
+- [ ] 25.1 Write `houseModel.test.ts` and `houseModel.property.test.ts`, then `src/lib/ui/houseModel.ts`
+  - Functions: `buildHouseModel`, `bandFor`, `severityLabel`, `ghostLabel`, `roomLabel`.
+  - Properties U1, U2 and U4.
+  - _Requirements: 4.1, 4.4, 4.5, 5.2, 7.1, 8.3_
+- [ ] 25.2 Write `Ghost.test.tsx`, `Room.test.tsx` and `ScoreBadge.test.tsx`, then `GhostArt`, `Ghost`, `Room`, `House` and `ScoreBadge`
+  - Tests:
+    - Each level 0–3 has `data-severity`, the aria-label, the numeral, the level class and a 44 px minimum size.
+    - Quiet rooms show "Quiet" and have no buttons.
+    - The status line and the group label are right.
+    - The score shows "N · band" with no "/100", and the announcement happens only on change.
+  - _Requirements: 4.1–4.6, 5.1–5.6, 7.1–7.3_
+- [ ] 25.3 E2E `flow.spec.ts` (second part), for all three samples
+  - 8 rooms in order.
+  - Per-room ghost and wisp counts, and each `data-severity`, equal the analyzer's output.
+  - The score equals `hauntScore`.
+  - _Requirements: 4, 5, 7, 15.1_
+
+- [ ] 26. Ghost detail panel
+- [ ] 26.1 Write `DetailDialog.test.tsx`, then `DetailDialog`
+  - Tests:
+    - All fields are shown.
+    - Both mitigation notes appear when they apply.
+    - The medium-raised note appears when it applies.
+    - A quote containing `<b>` shows as literal text.
+    - Close returns focus to the opener.
+  - _Requirements: 6.1–6.7, 13.1_
+- [ ] 26.2 E2E: clicking a ghost opens the panel
+  - The quote equals `text.slice(start, end)` exactly, with the right source badge, for at least one finding per sample.
+  - Escape closes the panel.
+  - _Requirements: 6.2, 6.6_
+- [ ] 26.3 Write `sound.test.ts` with a mocked `AudioContext`, then `src/lib/ui/sound.ts`
+  - Tests: no context before `enable()`; pitch per severity; duration ≤ 600 ms.
+  - Wire the call into the dialog open path.
+  - _Requirements: 11.1, 11.3, 11.4_
+
+- [ ] 27. Roving-tabindex keyboard navigation (C1.8)
+- [ ] 27.1 Write `roving.test.ts` and `roving.property.test.ts` (U3), then `src/lib/ui/roving.ts`
+  - _Requirements: 9.3_
+- [ ] 27.2 Extend `Room.test.tsx`, then wire `Room` to `nextIndex`
+  - Tests:
+    - Exactly one `tabindex="0"` per room.
+    - Arrows, Home and End move focus, wrapping around.
+    - The last-focused ghost keeps `tabindex="0"`.
+  - _Requirements: 9.1–9.4_
+- [ ] 27.3 E2E `keyboard.spec.ts` on the terrible sample
+  - Tab visits the 8 rooms in order, with one stop each.
+  - Arrows, Home and End reach every ghost in each room.
+  - Enter opens the panel; Escape closes it and returns focus to the same ghost.
+  - Tab after a ghost goes to the next room.
+  - The skip link and toolbar come first in tab order.
+  - _Requirements: 9.1–9.7_
+
+- [ ] 28. Lights on mode
+- [ ] 28.1 Write `LightsOnList.test.tsx`, then `LightsOnList` and the Toolbar toggle
+  - Tests:
+    - Same findings as the model.
+    - Quiet rooms shown.
+    - No SVG and no animation classes.
+    - The notice at the top.
+    - `aria-pressed` toggles, and focus stays on the toggle.
+  - _Requirements: 8.1–8.5, 13.1_
+- [ ] 28.2 E2E `lights.spec.ts`
+  - For all three samples, the list holds the same finding IDs, severities and quotes as the house.
+  - axe passes in both modes.
+  - _Requirements: 8.3, 19.1_
+
+- [ ] 29. Asking the medium about pasted text
+- [ ] 29.1 Write `OptInPanel.test.tsx`, then `OptInPanel` and the `Notices` "no medium" line
+  - Tests:
+    - Hidden when `llmAvailable` is false, with the line shown.
+    - Hidden for samples.
+    - Shows `OPT_IN_NOTICE` and the terms link.
+    - Listening state.
+    - The success merge updates the findings and the score.
+    - Each failure message, and re-enabling except after `no-key`.
+    - No call without a press.
+  - _Requirements: 14.1–14.7_
+- [ ] 29.2 E2E `optin.spec.ts` (llm-ui project, `page.route` stubs) and `optin-hidden.spec.ts` (no-key project)
+  - Success updates the badges and the score.
+  - `rate-limited`, `timeout` and a network abort keep the rules and show the messages.
+  - The request body holds only flagged-clause text, and unflagged sentences are absent.
+  - No request is sent before the press.
+  - The button is absent with no key.
+  - _Requirements: 14.1–14.7, 15.2_
+
+- [ ] 30. Motion and sound settings
+- [ ] 30.1 Add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the fades. Add the Sound toggle (off by default)
+  - E2E `motion.spec.ts`:
+    - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s.
+    - Without it, level 3 ghosts are animated.
+    - Sound is off on load, and no `AudioContext` is constructed.
+  - _Requirements: 10.1–10.4, 11.1, 11.2_
+
+- [ ] 31. Responsive layout, Gate 4 and the visual review
+- [ ] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
+  - Input screen, each sample house, an open dialog and Lights on: no horizontal scroll, and 2 or 4 grid columns.
+  - The dialog fits within the viewport and scrolls inside.
+  - _Requirements: 4.2, 12.1–12.3_
+- [ ] 31.2 E2E `a11y.spec.ts`
+  - An axe scan of every state in R19.1 (both projects), failing on serious or critical issues.
+  - _Requirements: 19.1–19.3_
+- [ ] 31.3 Write `e2e/screenshots.spec.ts` (`@screenshots`) and the `npm run screenshots` script
+  - Exclude it from `npm run test:e2e` with `--grep-invert @screenshots`.
+  - _Requirements: 20.1–20.3_
+- [ ] 31.4 Run Gate 4
+  - Run `npm run test:coverage`, `npm run test:e2e`, `npm run typecheck` and `npm run lint`.
+  - Start `next start -p 3100` and run the `ui-a11y-reviewer` (Playwright MCP) and `test-verifier` sub-agents.
+  - Save each report unchanged to `docs/gate-reports/phase-4-<agent>-attempt-N.md`, and log the results.
+  - Pass when Playwright covers the full flow for all three samples and axe shows no serious issues.
+- [ ] 31.5 Visual review stop (C10.15)
+  - After Gate 4 passes, run `npm run screenshots` and commit the 12 PNGs in `docs/screenshots/`.
+  - Show them to the user as artifacts, and **stop**. Phase 5 starts only after the user has reviewed the look.
+  - _Requirements: 20.4_
+
+- [ ] 32. Edge cases, loading and error states (Phase 5)
+- [ ] 32.1 E2E `edge.spec.ts`, then any fixes
+  - Empty input.
+  - Exactly 50,000 characters analyzed.
+  - The 50,001st character blocked.
+  - A 60,000-character paste cut, with the notice.
+  - Spanish and Japanese paragraphs show the English-only notice.
+  - A policy with no risky clauses shows "No ghosts here" and "0 · Mostly quiet".
+  - A wisps-only policy shows "Only calm wisps here".
+  - The analyzer `too-long` path, through a unit test of `HauntedApp`.
+  - _Requirements: 2.2–2.4, 16.1–16.6_
+- [ ] 32.2 E2E `loading.spec.ts`, then any fixes
+  - The house chunk is blocked, and the error and "Try again" are shown.
+  - After unblocking and retrying, the house opens and the text is kept.
+  - A render error shows the error boundary message.
+  - Polish the loading, error and empty states in the browser.
+  - _Requirements: 17.1–17.5_
+
+- [ ] 33. Performance, clean clone and Gate 5 (Phase 5)
+- [ ] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
+  - The textarea accepts typing within 5 s.
+  - The JS transferred before any action is at most 200 kB.
+  - Record the measured values in tech.md (replacing "to be confirmed") and in BUILD_LOG.md.
+  - _Requirements: 18.1, 18.2_
+- [ ] 33.2 Clean clone
+  - `git clone` into `/tmp`, then run `npm ci`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run test:e2e`, all with zero errors and no skipped tests.
+  - Log the commands and results.
+- [ ] 33.3 Run Gate 5
+  - Run all five agents (`spec-reviewer`, `test-verifier`, `security-reviewer`, `ui-a11y-reviewer`, `rules-auditor`) as sub-agents.
+  - Save each report to `docs/gate-reports/phase-5-<agent>-attempt-N.md`, and log the results.
+  - Pass when each returns PASS.

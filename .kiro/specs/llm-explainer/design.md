@@ -6,9 +6,9 @@ The explainer adds an optional plain-English reading to the analyzer's findings:
 - One Next.js route, `POST /api/explain`, receives flagged clauses only.
 - The route checks the request, applies a per-IP rate limit, calls Gemini with a 15-second timeout, validates the JSON answer with Zod, and returns either the medium's reading or a reason why it fell back to rules.
 - A small client module builds the request and handles every failure quietly.
-- A build-time script precomputes the samples' readings with the same code, so samples never call the route.
+- A script the user runs by hand (`npm run precompute:samples`) precomputes the samples' readings with the same code. The result is committed, the build reads it as it is, and neither the build nor the samples ever call Google (C10.14).
 
-Requirements: `.kiro/specs/llm-explainer/requirements.md` ("R4.2" means Requirement 4, criterion 2). Decisions: PLAN_DECISIONS.md C1.1–C1.4, C3, C5, C8, C9 and C10.10–C10.13. Status: requirements and design approved on 16 November 2026, with additions (a) Origin check against the request's own host, (b) privacy wording, and the strict model check.
+Requirements: `.kiro/specs/llm-explainer/requirements.md` ("R4.2" means Requirement 4, criterion 2). Decisions: PLAN_DECISIONS.md C1.1–C1.4, C3, C5, C8, C9 and C10.10–C10.13. Status: requirements and design approved on 16 November 2026, with additions (a) Origin check against the request's own host, (b) privacy wording, and the strict model check. R16 changed on 16 November 2026 (C10.14): the precompute runs by hand only, and the build never calls Google.
 
 ## Research behind the choices (16 November 2026)
 
@@ -90,8 +90,9 @@ sequenceDiagram
 | `src/app/api/explain/route.ts` | yes (route) | Wires the real provider and limiter. Exports `POST` and `maxDuration = 30` | R1 |
 | `src/lib/samples/sample-explanations.json` | no | Precomputed sample readings | R16 |
 | `src/lib/samples/explanations.ts` | no | Imports the JSON, validates it with Zod, and exposes `sampleReading(id)` | R16.6 |
-| `scripts/precompute-samples.mts` | build-time | Precompute script | R16 |
-| `scripts/check-bundle.mjs` | build-time | Canary bundle check | R15.3 |
+| `scripts/precompute-samples.mts` | manual only | Precompute script, run by `npm run precompute:samples` | R16 |
+| `scripts/check-bundle.mjs` | check script | Canary bundle check | R15.3 |
+| `scripts/package-scripts.test.mts` | test | No npm script except `precompute:samples` runs the precompute script or uses `@google/genai` | R16.1, R16.2 |
 
 The client-side modules (`schema`, `merge`, `request`, `parse`, `client`, `prompt`, `provider`) never read the environment. Only `gemini.ts` and `availability.ts` read `GEMINI_API_KEY` (R4.5, R15.1).
 
@@ -330,13 +331,12 @@ The Cache Components setting means a static page reads it at build time. On Verc
 
 ## Precompute script (`scripts/precompute-samples.mts`)
 
-- **Commands:**
-  - `"prebuild": "tsx --conditions=react-server scripts/precompute-samples.mts --lenient"`
-  - `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"` (strict, the default)
+- **Command:** `"precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"`. There is no `prebuild` script. The placeholder `prebuild` from Phase 0 is removed in Task 21.3, and `package-scripts.test.mts` keeps it that way (R16.1, R16.2).
   - The `react-server` condition lets the script import `gemini.ts`: `server-only` resolves to an empty module.
-  - It loads `.env.local` with `loadEnvConfig` from `@next/env` (ships with Next.js), so `npm run precompute:samples` sees the key there.
-- **Pure core:** the script exports `precompute({ samples, analyze, provider | null, existing, mode })`. It returns `{ file, lines, exitCode, wrote }` and does no I/O. `main()` does the I/O: it reads the existing file, runs the model check, calls `precompute`, writes the file only when `wrote` is true and the content changed, prints the lines and exits with `exitCode`.
-- **Model check (strict mode, key set; R16.10–R16.11):**
+  - It loads `.env.local` with `loadEnvConfig` from `@next/env` (ships with Next.js), so it sees the key there.
+- **Pure core:** the script exports `precompute({ samples, analyze, provider | null, existing })`. It returns `{ file, lines, exitCode, wrote }` and does no I/O. `main()` does the I/O: it reads the existing file, runs the model check, calls `precompute`, writes the file only when `wrote` is true and the content changed, prints the lines and exits with `exitCode`.
+- **No key (the builder's case):** make no network call, keep consistent entries, write rule-based entries for the rest, print `precompute: no GEMINI_API_KEY; writing rule-based readings`, and exit 0 (R16.5).
+- **Model check (key set; R16.12–R16.13):**
   1. Print `precompute: model=<id> source=<GEMINI_MODEL|default>`.
   2. Call `ai.models.get({ model: id })` once, through `withTimeout` with 15 s.
   3. If it rejects, print this block and exit 1 without touching the file:
@@ -347,15 +347,12 @@ The Cache Components setting means a static page reads it at build time. On Verc
      ```
 
      A 401 or 403 says the key was refused instead.
-  - In lenient mode the same failure prints `WARNING precompute: …` and the script continues with rule-based or existing entries (R16.13).
-- **Per sample:**
-  1. Analyze the sample.
-  2. `findingIds` = the analyzer's IDs.
-  3. If there is a provider and no `HC_SKIP_PRECOMPUTE`: build the request, call the provider through `withTimeout` with 15 s, and parse. On success the entry is `{ source: "llm", model: id, findingIds, llmFindings }` (R16.14). On failure, keep the existing entry if it is consistent, or else use the rule-based entry. In strict mode, set `exitCode = 1` and print `ERROR precompute: sample <id> failed (<reason>)` (R16.12).
-  4. If there is no provider: keep the existing entry if it is consistent, or else use the rule-based entry.
-- **Summary lines** (no clause text): `precompute: mild source=llm findings=9 model=gemini-4-hydrogen`.
-- **No key in strict mode:** print `precompute: no GEMINI_API_KEY; writing rule-based readings` and exit 0. There is nothing to check, and this is the builder's normal case.
-- **File shape** (R16.6, R16.9):
+- **Per sample (key set, check passed):**
+  1. Analyze the sample, build the request, call the provider through `withTimeout` with 15 s, and parse.
+  2. On success the entry is `{ source: "llm", model: id, findingIds, llmFindings }` (R16.3, R16.15).
+  3. On failure, keep the existing entry if it is consistent, or else use the rule-based entry. Set `exitCode = 1` and print `ERROR precompute: sample <id> failed (<reason>)` (R16.4, R16.14).
+- **Summary lines** (no clause text): `precompute: mild source=llm llmFindings=9 model=gemini-4-hydrogen` (R16.6).
+- **File shape** (R16.7, R16.11):
 
 ```json
 {
@@ -369,14 +366,18 @@ The Cache Components setting means a static page reads it at build time. On Verc
 ```
 
   Keys are always written in this order, findings follow analyzer order, there are no timestamps, and it is written with `JSON.stringify(file, null, 2) + "\n"`.
-- **At runtime** (`explanations.ts`): `sampleReading(id)` validates the JSON once with Zod. If an entry is valid and its source is `llm`, it returns the LLM findings for the UI to merge. Otherwise it returns no LLM findings, and the UI shows the rule texts. It never fetches (C1.3).
-- **Why the build cannot break:** `prebuild` uses lenient mode, which always exits 0 (R16.5). Strict mode is only for the manual run, where failing loudly is wanted. The consistency test runs in `npm test`, not in the build.
-- **The real model check runs only when the user has a key.** The builder has none, so tests cover it with a mocked `models.get` (HTTP 404 → exit 1 and file untouched; success → model line printed). The user runs the real check as manual step 2 (PLAN_DECISIONS.md C9), and the printed model name goes into BUILD_LOG.md.
+- **At runtime** (`explanations.ts`, R16.8):
+  - `sampleReading(id)` validates the JSON once with Zod and returns that sample's `llmFindings`, or `[]` if the file or entry is invalid.
+  - The UI merges them with `mergeFindings`. A finding with no LLM finding of the same ID keeps its rule text and the "Rule reading" badge, so a partial or stale file degrades one finding at a time.
+  - It never fetches (C1.3).
+- **Why the build never calls Google:** nothing in the build runs this script (R16.1). The build only imports the committed JSON. The consistency test (R16.7) runs in `npm test`, so a stale file fails the tests, never the deploy.
+- **The real model check runs only when the user has a key.** Tests cover it with a mocked `models.get` (HTTP 404 → exit 1 and file untouched; success → model line printed). The user runs the real check as manual step 2 (C9) and records the printed model name in BUILD_LOG.md.
+- **On Vercel:** because the build does not call Gemini, the deployed samples show whatever is committed. The user must run `npm run precompute:samples` locally and commit the file before deploying (C9 steps 2–4, DEPLOY.md).
 
 ## Bundle check (`scripts/check-bundle.mjs`)
 
 1. Build a canary from runtime parts: `"hc-canary-" + randomUUID()`. The canary is not key-shaped, so the secret guard does not flag it.
-2. Run `next build` with `GEMINI_API_KEY=<canary>` and `HC_SKIP_PRECOMPUTE=1`, so no network call happens.
+2. Run `next build` with `GEMINI_API_KEY=<canary>`. The build makes no network call to Google (R16.2).
 3. Walk `.next/static/**` and search every file for the canary and for the literal `GEMINI_API_KEY`.
 4. Print `PASS` with the file count, or `FAIL` with the matching paths, and exit 0 or 1 (R15.3).
 5. Afterwards, rebuild normally so later E2E runs use a no-key build (the Playwright config already builds before E2E).
@@ -414,7 +415,9 @@ All LLM tests use mock providers. No test makes a real network call (testing.md)
 | `handler.test.ts` | Unit, mocked provider | The four required cases (good output, malformed output, timeout, no key), plus provider error, rate limit, oversized body, bad JSON, schema mismatch, Origin mismatch; `Cache-Control: no-store`; status codes; the provider is not called on every rejected path; one log line; **a `console` spy proves no clause text, model text, IP or key is logged** (R10) |
 | `client.test.ts` | Unit, mocked fetch | Success; HTTP 429 keeps `rate-limited`; 500 with a bad body gives `invalid`; network error gives `error`; the 20 s timeout gives `error`; no findings gives no fetch |
 | `route.test.ts` | Unit | `route.ts` exports `POST` and `maxDuration === 30` and no `runtime` |
-| `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries with `model`; no key writes rules entries and exits 0 in both modes; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; `HC_SKIP_PRECOMPUTE` makes no call; output is byte-identical on a second run; strict mode with a model check rejected (404, and 403) prints the ERROR block naming the model, exits 1 and leaves the file untouched; lenient mode with the same rejection prints `WARNING precompute:` and exits 0; strict mode with a failed sample call exits 1; the model line is printed |
+| `scripts/precompute-samples.test.mts` | Unit | Mocked provider writes LLM entries with `model`; no key writes rules entries, makes no call and exits 0; provider failure keeps a consistent existing entry; an inconsistent existing entry is replaced by rules; output is byte-identical on a second run; a model check rejected with 404 (and with 403) prints the ERROR block naming the model, exits 1 and leaves the file untouched; a failed sample call after a passing check exits 1; the model line is printed |
+| `scripts/package-scripts.test.mts` | Unit | No `prebuild`, `postinstall` or `build` script, nor any script other than `precompute:samples`, mentions `precompute-samples` or `@google/genai` |
+| `src/lib/samples/explanations.test.ts` (extra) | Unit | An entry whose `llmFindings` cover only some findings gives medium texts for those and rule texts for the rest; an invalid file gives rule texts everywhere |
 | `origin.test.ts` | Unit | The ten Origin and Host cases in the "Origin check" table |
 | `privacy.test.ts` | Unit | Required phrases and banned claims in `OPT_IN_NOTICE`; README.md contains it word for word (from Task 34, when the README is finished) |
 | `src/lib/samples/explanations.test.ts` | Unit | The committed JSON passes Zod; every entry is consistent with the current analyzer output (R16.6) |
