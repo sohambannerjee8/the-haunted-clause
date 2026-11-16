@@ -522,3 +522,11 @@ The two rejected names also appeared in the clause-analyzer design ("Samples"), 
 - The first `npm run test:coverage` run failed: "Coverage for lines (75%) does not meet `!src/lib/{analyzer,llm}/**` threshold (80%)". The cause was the scaffold's `src/app/layout.tsx` at 0%, with no test. The threshold was kept, and `layout.test.tsx` (2 tests: `lang="en"`, the `<body>` wrapper, the title and the not-legal-advice description) was added. This is a test written after the code, because the layout came from the scaffold in Phase 0.
 - `npm run lint` then reported two warnings in the generated `coverage/` HTML report. `coverage/**` was added to the ESLint ignores; it was already git-ignored.
 - Result: 21 files, 289 tests pass. Line coverage is 100% (159 of 159) overall and 100% for the analyzer. Type-check and lint are clean.
+
+### Gate 2 (Task 16.2)
+- Before the gate, the builder ran `CI=1 npm run test:e2e` once (fresh production build, 1 smoke test passed) to make sure the gate would not fail on a stale server. This was a pre-check, not the gate.
+- The `test-verifier` custom agent ran as a sub-agent with fresh context. Report saved unchanged to `docs/gate-reports/phase-2-test-verifier-attempt-1.md`.
+- **Verdict: PASS on attempt 1.** All 12 checklist items answered Yes (items 6, 7 and 12 partly "not due until Phase 3" for the llm parts). It ran typecheck, lint, `test:coverage` (21 files, 289 tests), build, `test:e2e` (1 test) and `check:trace` (236 rows), all exit 0. 16 `fc.assert` calls, all at 1,000 runs. Line coverage: analyzer 100%, rest of `src/` 100%. It found no weakened test or threshold since the Gate 1 commit, and confirmed the Gate 1 open item CA-R1.12/R1.6.
+- Problems reported: none.
+
+**Phase 2 complete.**

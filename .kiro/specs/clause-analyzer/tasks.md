@@ -125,12 +125,12 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Print each sample's score and ghosts per room in the test output.
   - _Requirements: 11.1–11.8_
 
-- [ ] 16. Coverage thresholds and Gate 2
+- [x] 16. Coverage thresholds and Gate 2
 - [x] 16.1 Enforce coverage in `vitest.config.mts`
   - Thresholds: lines ≥ 90% for `src/lib/analyzer/**` and ≥ 80% for the rest of `src/`.
   - Run `npm run test:coverage`, `npm run typecheck` and `npm run lint` with zero errors.
   - _Requirements: all (testing.md)_
-- [ ] 16.2 Run Gate 2
+- [x] 16.2 Run Gate 2
   - Run the `test-verifier` sub-agent.
   - Save its report unchanged to `docs/gate-reports/phase-2-test-verifier-attempt-N.md`.
   - Append the result to BUILD_LOG.md.
