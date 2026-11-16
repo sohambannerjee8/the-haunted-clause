@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Rules guard",
+      "trigger": "PostFileSave",
+      "description": "When .gitignore or LICENSE changes, re-check the repository rules: nothing in .kiro is ignored, the MIT LICENSE is present, .env files are ignored and .env.example is tracked with no values.",
+      "matcher": "(^|/)(\\.gitignore|LICENSE)$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/check-repo-rules.mjs",
+        "timeout": 30
+      }
+    }
+  ]
+}

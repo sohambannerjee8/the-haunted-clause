@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Test on save",
+      "trigger": "PostFileSave",
+      "description": "When a TypeScript source file under src/ is saved, run the Vitest tests related to that file (vitest related --run). Failures are reported back to the agent.",
+      "matcher": "(^|/)src/.*\\.(ts|tsx)$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/test-related.mjs",
+        "timeout": 180
+      }
+    }
+  ]
+}
