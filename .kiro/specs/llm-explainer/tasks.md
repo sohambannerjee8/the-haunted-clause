@@ -3,7 +3,7 @@
 Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. No test makes a real network call. Commit after each task.
 
 - [ ] 17. Schemas, parsing, merge and the request builder
-- [ ] 17.1 Write `schema.test.ts`, then `src/lib/llm/schema.ts`
+- [x] 17.1 Write `schema.test.ts`, then `src/lib/llm/schema.ts`
   - Add the `ExplainRequest`, `LlmFinding`, `LlmOutput`, `ExplainResponse` and sample-explanations file schemas, `ROOM_IDS` and `REASONS`.
   - Add the looser Gemini output JSON Schema, built with `z.toJSONSchema` with `$schema` removed.
   - Tests:
@@ -11,19 +11,19 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The response schema rules (`reason` present only for `rules`).
     - The Gemini JSON Schema uses only supported keywords.
   - _Requirements: 2.3, 6.1, 8.1, 16.7_
-- [ ] 17.2 Write `parse.test.ts` and `parse.property.test.ts`, then `parse.ts`
+- [x] 17.2 Write `parse.test.ts` and `parse.property.test.ts`, then `parse.ts`
   - Unit tests: good output; not JSON; schema mismatch; text over 400 characters; trimming; unknown IDs dropped; the first duplicate kept; nothing left gives invalid.
   - Property E4 (parser part): `fc.anything()`, `fc.jsonValue()` and `fc.string({ unit: "binary" })` never throw.
   - _Requirements: 6.1–6.3, 6.5_
-- [ ] 17.3 Write `merge.test.ts` and `merge.property.test.ts`, then `merge.ts`
+- [x] 17.3 Write `merge.test.ts` and `merge.property.test.ts`, then `merge.ts`
   - Unit tests: a raise from 1 to 3; an LLM trying to lower 3 to 1 keeps 3; an unknown ID is ignored; no LLM finding keeps the rule texts with `source: "rules"`.
   - Properties: E1 (never lowers a severity), E2 (never changes `quote`, `start`, `end`, `room` or `id`), E3 (same IDs in the same order).
   - _Requirements: 12.1–12.5_
-- [ ] 17.4 Write `request.test.ts` and `request.property.test.ts`, then `request.ts`
+- [x] 17.4 Write `request.test.ts` and `request.property.test.ts`, then `request.ts`
   - Unit tests: no findings gives `null`; 41 findings keep the top 40 by severity in input order; a 1,600-character quote is cut to 1,500; a cut that would split a surrogate pair backs off by one.
   - Property E6, on `analyze()` output from the analyzer's `policyLike` generator.
   - _Requirements: 13.1–13.4_
-- [ ] 17.5 Write `privacy.test.ts` and the README part of `scripts/docs.test.mts`, then `privacy.ts` and the README "Privacy" section
+- [x] 17.5 Write `privacy.test.ts` and the README part of `scripts/docs.test.mts`, then `privacy.ts` and the README "Privacy" section
   - Add `OPT_IN_NOTICE` and `GEMINI_TERMS_URL`.
   - Test the required phrases ("does not store", "flagged clauses", "Google", "terms") and the banned claims.
   - Add a "Privacy" section to README.md now, containing `OPT_IN_NOTICE` word for word and the terms link. `docs.test.mts` checks it from this task onward.

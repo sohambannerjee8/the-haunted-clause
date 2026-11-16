@@ -17,7 +17,8 @@ export default defineConfig({
       // Line coverage targets from .kiro/steering/testing.md.
       thresholds: {
         "src/lib/analyzer/**": { lines: 90 },
-        // Everything else in src/ (the llm/ target is added with Phase 3's first llm file).
+        "src/lib/llm/**": { lines: 90 },
+        // Everything else in src/.
         "!src/lib/{analyzer,llm}/**": { lines: 80 },
       },
     },

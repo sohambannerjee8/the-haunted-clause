@@ -20,6 +20,16 @@ cp .env.example .env.local   # optional; the app works with no key
 npm run dev
 ```
 
+## Privacy
+
+The analysis runs in your browser. Pasted text is processed and discarded; there is no login and no database. The three sample policies never call any API.
+
+If the site has a Gemini key and you choose to ask for the medium's reading of pasted text, the app shows this notice first:
+
+> This app does not store your text. If you continue, only the flagged clauses are sent to Google Gemini for a plain-English reading. Google processes them under its own terms.
+
+Google's terms: [Gemini API terms](https://ai.google.dev/gemini-api/terms).
+
 ## License
 
 MIT, see [LICENSE](./LICENSE).

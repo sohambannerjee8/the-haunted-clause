@@ -535,3 +535,14 @@ The two rejected names also appeared in the clause-analyzer design ("Samples"), 
 ---
 ## Phase 3: LLM explainer (started 16 November 2026)
 PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with the llm-explainer requirements, design and tasks.
+
+### Task 17: schemas, parsing, merge, request builder, privacy wording (llm-explainer spec)
+Each sub-task was test first: the test file was written and run, it failed because the module did not exist, then the module was written and the tests passed.
+- **17.1:** `schema.test.ts` (34 tests), then `schema.ts`. The tests cover 0, 1, 40 and 41 clauses; text of 1,500 and 1,501 characters; six bad IDs; a duplicate ID; extra properties; trimming and the 400-character limit; the response rule that `reason` appears only with `rules`; and the sample explanations file shape. `ROOM_IDS` is a literal tuple (Zod's `z.enum` needs one), and a test checks it equals the analyzer's room list. The JSON Schema sent to Gemini is generated with `z.toJSONSchema` from a looser twin without length limits, with `$schema` removed; a test walks it and finds only supported keywords.
+- **17.2:** `parse.test.ts` (9 tests) and `parse.property.test.ts` (E4, parser part: `fc.anything()` raw and stringified, `fc.jsonValue()`, `fc.string({ unit: "binary" })`, and a "nearly valid" generator, each at 1,000 runs), then `parse.ts`. `parseLlmOutput` takes `unknown`, so a non-string value fails cleanly instead of throwing (R6.5). The nearly-valid property also asserts that the success branch was reached at least once, so it is not vacuous.
+- **17.3:** `merge.test.ts` (7 tests) and `merge.property.test.ts` (E1, E2, E3 at 1,000 runs, with up to 60 findings and LLM IDs drawn from the real IDs and random strings), then `merge.ts`.
+- **17.4:** `request.test.ts` (8 tests: no findings, 41 findings by severity and by tie, a 1,600-character quote, and two surrogate-pair cuts) and `request.property.test.ts` (E6 at 1,000 runs on `policyLike`, and again on `bigString`), then `request.ts`.
+  - I checked whether E6 reaches the hard paths. Over 1,000 samples, `policyLike` never gave more than 40 findings or a quote over 1,500 characters. So E6 also runs on `bigString`, where 205 of 1,000 inputs gave more than 40 findings and 229 had a quote over 1,500 characters.
+- **17.5:** `privacy.test.ts` (10 tests) and the README part of `scripts/docs.test.mts` (7 tests), then `privacy.ts` (`OPT_IN_NOTICE`, `GEMINI_TERMS_URL`). The docs test then failed 7 times because README.md had no Privacy section. The section was added, with the notice word for word and the terms link, and the tests passed. The DEPLOY.md part of `docs.test.mts` is written in Task 22.2.
+- `vitest.config.mts` now also enforces 90% line coverage for `src/lib/llm/**`, as planned in Task 16.1.
+- Full suite: 30 files, 374 tests pass; line coverage 100% (211 of 211). Type-check and lint are clean.
