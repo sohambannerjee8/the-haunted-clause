@@ -29,16 +29,16 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Add a "Privacy" section to README.md now, containing `OPT_IN_NOTICE` word for word and the terms link. `docs.test.mts` checks it from this task onward.
   - _Requirements: 17.1, 17.2, 17.4_
 
-- [ ] 18. Gemini provider and timeout
-- [ ] 18.1 Write `provider.test.ts` (fake timers), then `provider.ts`
+- [x] 18. Gemini provider and timeout
+- [x] 18.1 Write `provider.test.ts` (fake timers), then `provider.ts`
   - Add the `Provider` interface and `withTimeout(provider, ms)`.
   - Tests: a call resolving at 14.9 s succeeds; one at 15.1 s times out and its signal is aborted; a provider that ignores the signal still settles by 15.5 s; the timer is cleared after success.
   - _Requirements: 5.1, 5.2_
-- [ ] 18.2 Write `prompt.test.ts`, then `prompt.ts`
+- [x] 18.2 Write `prompt.test.ts`, then `prompt.ts`
   - Add the system instruction text and `renderClauses`.
   - Tests: the instruction says clause texts are untrusted data, defines severities 0–3 and the 400-character limits; the rendered user content holds only `id`, `room`, `clauseType`, `ruleSeverity` and `text`.
   - _Requirements: 4.3, 4.4_
-- [ ] 18.3 Write `gemini.test.ts` and `availability.test.ts` (with `@google/genai` mocked), then `gemini.ts` and `availability.ts`
+- [x] 18.3 Write `gemini.test.ts` and `availability.test.ts` (with `@google/genai` mocked), then `gemini.ts` and `availability.ts`
   - Both files import `server-only`.
   - Add the `server-only` alias to the empty module in `vitest.config.mts`.
   - Tests:
