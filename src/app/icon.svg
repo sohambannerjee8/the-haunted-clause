@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Ghost icon drawn for The Haunted Clause (MIT, same as the project). -->
+  <rect width="64" height="64" rx="14" fill="#1e1024"/>
+  <path d="M32 9c-11 0-19 8.5-19 19.5V53l6.3-4.6L25.6 53 32 48.4 38.4 53l6.3-4.6L51 53V28.5C51 17.5 43 9 32 9z" fill="#a6e86b"/>
+  <circle cx="25" cy="29" r="4" fill="#0d0a10"/>
+  <circle cx="39" cy="29" r="4" fill="#0d0a10"/>
+  <ellipse cx="32" cy="40" rx="4" ry="5" fill="#0d0a10"/>
+</svg>

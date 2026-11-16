@@ -38,6 +38,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Playwright MCP snapshots and console logs
+/.playwright-mcp/
+
+# Local record of hook runs, written by scripts/lib/hook-log.mjs
+/.hook-runs/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

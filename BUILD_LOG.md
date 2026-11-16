@@ -22,7 +22,7 @@ Kiro app used: Kiro IDE.
 
 ### Dependencies
 - Runtime: `zod` 4.6.7, `motion` 14.14.0, `@google/genai` 3.3.0, `server-only` 0.0.1.
-- Dev: `vitest` 5.1.0, `@vitest/coverage-v8` 5.1.0, `fast-check` 4.10.2, `@playwright/test` 1.65.1, `@axe-core/playwright` 4.14.0, Testing Library (react 16.3.3, dom 10.4.2, jest-dom 7.0.1, user-event 14.6.12), `jsdom` 31.0.1, `@vitejs/plugin-react` 6.3.0, `vite-tsconfig-paths` 6.1.1, `tsx` 4.23.15, `license-checker` 25.0.1.
+- Dev: `vitest` 5.1.0, `@vitest/coverage-v8` 5.1.0, `fast-check` 4.10.2, `@playwright/test` 1.65.1, `@axe-core/playwright` 4.14.0, Testing Library (react 16.3.3, dom 10.4.2, jest-dom 7.0.1, user-event 14.6.12), `jsdom` 31.0.1, `@vitejs/plugin-react` 6.3.0, `tsx` 4.23.15, `license-checker` 25.0.1. (`vite-tsconfig-paths` 6.1.1 was installed and later removed; see Task 3.)
 - Framer Motion is now published as `motion` (MIT, imported from `motion/react`), so `motion` is used.
 
 ### What failed and how it was fixed
@@ -74,6 +74,46 @@ Kiro app used: Kiro IDE.
 - Planned servers, versions checked with `npm view`: Context7 `@upstash/context7-mcp@4.7.0` (MIT) and Playwright MCP `@playwright/mcp@0.0.85` (Apache-2.0), with no API keys.
 - Writing `.kiro/settings/mcp.json` from the agent was blocked by a Kiro permission rule (`deny fs_write matching … .kiro/settings/ …`, source `kiro-scope`). This is Kiro protecting its own settings folder, so the file has to be created by the user (see the Phase 0 report to the user).
 
+### Second session (16 November 2026, after the user created mcp.json)
+The user created `.kiro/settings/mcp.json` by hand with the planned content and started a new Kiro session. PLAN.md and BUILD_LOG.md were re-read first. The file was checked: identical to the planned config, valid JSON.
+
+**MCP: Playwright MCP**
+- Its tools were available to the agent in the new session as `playwright::*`.
+- With `next start -p 3100` running, `browser_navigate` to `http://localhost:3100` returned page title "The Haunted Clause". The accessibility snapshot showed `heading "The Haunted Clause" [level=1]` and the paragraph text. Result: working.
+- The console log it captured showed one error: `404 … /favicon.ico`, because the scaffold favicon had been removed. Fixed by adding a project-made ghost icon at `src/app/icon.svg` (Next.js `icon` file convention, read in the bundled docs `01-metadata/app-icons.md`). The production build now emits `icon.svg`.
+- Playwright MCP writes snapshots to `.playwright-mcp/`; that folder was added to `.gitignore`.
+
+**MCP: Context7**
+- **Failure:** no Context7 tools were exposed to the agent in the new session (`tool_load context7::*` returned not found).
+- Cause, found by running the server command by hand: `npx -y @upstash/context7-mcp@4.7.0` failed with `ENOENT … ~/.npm/_npx/b1d96260f5137ffc/package.json`. The npx cache folder for that package held `node_modules` but no `package.json`, a half-written cache entry from 20:58–20:59, when Kiro first started the server at session start (the two servers' `npx -y` installs ran at the same time).
+- Fix: removed that one cache folder (`~/.npm/_npx/b1d96260f5137ffc`) and ran the command again. The server started ("Context7 Documentation MCP Server v4.7.0 running on stdio") and answered over stdio JSON-RPC:
+  - `tools/list` returned `resolve-library-id(query, libraryName)` and `query-docs(libraryId, query, language)`.
+  - `resolve-library-id` for "next.js" returned `/vercel/next.js` with versions up to `v16.4.5`.
+  - `query-docs` on `/vercel/next.js/v16.4.5` for "route handler segment config maxDuration and runtime nodejs" returned 4,760 characters from the v16.4.5 docs, including `export const maxDuration = 5` and the note that `nodejs` is the default runtime and `edge` is deprecated.
+- So the server and its config work. The Kiro session that was already running did not reconnect to it, so Context7 has been used from the shell, not yet through Kiro's MCP tool interface. The user is asked to reconnect it from the MCP Server view (or start a new session) so later phases can use it through Kiro.
+
+**Hooks fired by Kiro (confirmed)**
+- To prove that Kiro (not a manual run) fired the hooks, `scripts/lib/hook-log.mjs` was added, test first: `scripts/hook-log.test.mts` failed with "Cannot find module", then passed 5 tests. The three command hooks now append one line per run to `.hook-runs/hook-runs.log` (git-ignored). Each line holds time, hook name, exit code, and the saved path plus the event's key names. It never holds file contents.
+- The hook event JSON from Kiro has the keys `session_id`, `hook_event_name`, `cwd` and `file_path`. So the saved path arrives as `file_path`, which `hook-input.mjs` already reads.
+- Real entries written by Kiro in this session (timestamps UTC):
+  - `15:38:52.350Z  secret-guard  exit=1  .playwright-mcp/hook-probe.ts`: the agent saved a temporary probe file holding a fake Google-format key, and Secret guard caught it. The probe was then deleted, and it was never tracked because `.playwright-mcp/` is ignored.
+  - `15:38:52.646Z  secret-guard  exit=0  src/app/page.tsx`
+  - `15:38:53.657Z  test-on-save  exit=0  src/app/page.tsx`: Test on save ran the related tests after `page.tsx` was edited, and they passed.
+  - `15:38:38.013Z` and `15:38:52.678Z  rules-guard  exit=0  .gitignore failed=none`: Rules guard ran after `.gitignore` was edited.
+  - Secret guard also fired on every other agent save (`scripts/*.mjs`, `.gitignore`), with exit 0.
+  - The agent's file tools did not show the hooks' STDOUT/STDERR in their results. The log file is the evidence.
+- Spec sync (`PostTaskExec`) cannot fire until spec tasks exist in Phase 1 and are executed in Phase 2. It is still to be observed.
+
+**Checks after these changes**
+- `npm test`: 6 files, 33 tests passed.
+- `npm run typecheck` and `npm run lint`: exit 0.
+- `npm run check:secrets` (44 tracked files), `npm run check:history`, `npm run check:rules` (6 of 6): all exit 0.
+- `CI=1 npm run test:e2e`: 1 passed.
+- `git check-ignore .kiro/settings/mcp.json .kiro/steering/x.md` printed nothing.
+
 ### Kiro features used so far
 - Kiro planning session with web fetch (rules, Gemini terms, Kiro docs).
-- Steering: AGENTS.md from the scaffold was loaded by Kiro as a workspace rule and was followed (bundled Next.js docs read before writing config and scripts).
+- Steering: six project steering files, plus AGENTS.md from the scaffold, loaded by Kiro as workspace rules. AGENTS.md was followed: the bundled Next.js docs were read before writing config, scripts and the icon.
+- Hooks: four hooks created with `createHook`. Test on save, Secret guard and Rules guard were confirmed firing on agent saves in the second session. Spec sync is not yet triggered.
+- MCP: Playwright MCP used through Kiro to open and snapshot the app. Context7 verified from the shell after repairing a broken npx cache entry.
+- Custom agents: five created. First use is Gate 0 below.

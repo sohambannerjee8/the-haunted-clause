@@ -16,6 +16,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractPaths, readStdinJson, toRepoRelative } from "./lib/hook-input.mjs";
+import { logHookRun } from "./lib/hook-log.mjs";
 
 const RULES = [
   { rule: "google-api-key", re: /AIza[0-9A-Za-z_-]{35}/g },
@@ -112,11 +113,14 @@ async function main(argv) {
   if (mode === "--hook") {
     const event = await readStdinJson();
     const paths = event ? extractPaths(event) : [];
-    if (paths.length === 0) {
-      console.log("secret-scan: hook event had no file path; nothing to scan.");
-      return 0;
-    }
-    return report(paths.flatMap((p) => scanFile(p, root)), paths.map((p) => toRepoRelative(p, root)).join(", "));
+    const label = paths.map((p) => toRepoRelative(p, root)).join(", ");
+    const code =
+      paths.length === 0
+        ? (console.log("secret-scan: hook event had no file path; nothing to scan."), 0)
+        : report(paths.flatMap((p) => scanFile(p, root)), label);
+    const keys = event && typeof event === "object" ? Object.keys(event).join(",") : "none";
+    logHookRun(root, { hook: "secret-guard", exitCode: code, detail: `${label || "(no path)"} keys=${keys}` });
+    return code;
   }
   const files = [mode, ...rest].filter(Boolean);
   if (files.length === 0) {

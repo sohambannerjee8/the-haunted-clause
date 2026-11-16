@@ -10,6 +10,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { extractPaths, readStdinJson, toRepoRelative } from "./lib/hook-input.mjs";
+import { logHookRun } from "./lib/hook-log.mjs";
 
 function git(dir, args, input) {
   try {
@@ -98,10 +100,17 @@ export function checkRepo(dir = process.cwd()) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const dir = resolve(process.argv[2] ?? process.cwd());
+  // When Kiro runs this as the Rules guard hook, the event JSON arrives on STDIN.
+  const event = await readStdinJson(1000);
   const results = checkRepo(dir);
   const failed = results.filter((r) => !r.ok);
   const lines = results.map((r) => `${r.ok ? "PASS" : "FAIL"}  ${r.name}: ${r.detail}`).join("\n");
-  if (failed.length) {
+  const code = failed.length ? 1 : 0;
+  if (event) {
+    const saved = extractPaths(event).map((p) => toRepoRelative(p, dir)).join(", ") || "(no path)";
+    logHookRun(dir, { hook: "rules-guard", exitCode: code, detail: `${saved} failed=${failed.map((r) => r.name).join(",") || "none"}` });
+  }
+  if (code) {
     console.error(`check-repo-rules: ${failed.length} rule(s) failed\n${lines}`);
     process.exit(1);
   }
