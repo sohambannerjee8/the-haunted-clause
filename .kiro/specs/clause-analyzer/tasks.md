@@ -60,8 +60,8 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Implement applied and cancelled mitigations, including the R3.11 masking rule (`min(raw, max(masked, 1))`).
   - _Requirements: 3.1–3.11_
 
-- [ ] 13. Haunt Score
-- [ ] 13.1 Write `score.test.ts`, then `score.ts`
+- [x] 13. Haunt Score
+- [x] 13.1 Write `score.test.ts`, then `score.ts`
   - Export `SEVERITY_WEIGHTS`, `ROOM_CAPS` and `MAX_REACHABLE_SCORE = 97`, and `hauntScore(findings)` with the per-room cap formula.
   - Tests:
     - No findings gives 0, and all severity 0 gives 0.
@@ -71,7 +71,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The four long-policy scenarios from the design give 80, 44, 31 and 31.
     - Rounding at an exact .5.
   - _Requirements: 5.1, 5.3, 5.4_
-- [ ] 13.2 Write `score.property.test.ts`
+- [x] 13.2 Write `score.property.test.ts`
   - P1: the score is a whole number from 0 to 100 (and at most `MAX_REACHABLE_SCORE`).
   - P7: shuffling the findings does not change the score.
   - Generator: arrays of up to 400 `{ room, severity }`.

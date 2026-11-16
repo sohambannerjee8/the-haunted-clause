@@ -452,3 +452,15 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - Cause: a paragraph break at the very start of the input put a boundary at the end of the leading blank line, which left a first clause made only of whitespace. None of the 45 unit tests started with a blank line.
   - Fix, test first: a regression test with three such inputs was added and failed, then the splitter merged a whitespace-only first clause into the next. Result: 54 analyzer tests pass, including P6 and P8 at 1,000 runs each, on normal and over-cap inputs.
 - Spec task status: Tasks 11, 11.1, 11.2 and 11.3 were marked `[x]` by editing `tasks.md`. Kiro's Spec sync hook is a `PostTaskExec` trigger, which fires when a task is run from Kiro's spec task interface, not when the checkbox is edited by hand. So it did not fire, and this entry was written by the builder.
+
+### Task 12: rule table, classifier, mitigations
+- **12.1:** `rules.test.ts` (27 tests) failed (no module), then `rules.ts`, and all 27 passed. The table holds 40 rules (five per room), 11 mitigations and `EXCEPTION_MARKER` with the eight markers. Every rule has its own plain-English explanation and "why it matters" text.
+  - While writing the test, I removed one case I had included by mistake: `however-ish` does contain the whole word "however", so asserting a match for it said nothing useful. It was replaced by two genuine non-matches, `buttress` and `excepted`.
+- **12.2:** `classifier.test.ts` (56 tests) failed (no module), then `classifier.ts` (without mitigations), and all 56 passed. The tests cover:
+  - all 28 positive examples (room, severity, rule);
+  - all 16 negative examples, which give no finding at all;
+  - per-room example counts;
+  - room and rule tie-breaks, case-insensitivity and whitespace-only clauses;
+  - trimmed spans, clause IDs, and rule texts in findings.
+- **12.3:** `mitigation.test.ts` (20 tests) was written before the mitigation logic. 19 failed and 1 passed: the "never raises a severity" case, which holds trivially with no mitigations. Then applied and cancelled mitigations and the R3.11 masking rule were added, and all 20 passed. The user's three R3.10 cases gave 1, 3 and 1, as designed.
+- Analyzer total: 157 tests pass; lint and type-check are clean.
