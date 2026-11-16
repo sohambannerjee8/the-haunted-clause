@@ -14,6 +14,12 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.test-util.ts", "src/**/*.d.ts"],
       reporter: ["text", "json-summary", "html"],
+      // Line coverage targets from .kiro/steering/testing.md.
+      thresholds: {
+        "src/lib/analyzer/**": { lines: 90 },
+        // Everything else in src/ (the llm/ target is added with Phase 3's first llm file).
+        "!src/lib/{analyzer,llm}/**": { lines: 80 },
+      },
     },
   },
 });

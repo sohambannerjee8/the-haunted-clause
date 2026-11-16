@@ -126,7 +126,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - _Requirements: 11.1–11.8_
 
 - [ ] 16. Coverage thresholds and Gate 2
-- [ ] 16.1 Enforce coverage in `vitest.config.mts`
+- [x] 16.1 Enforce coverage in `vitest.config.mts`
   - Thresholds: lines ≥ 90% for `src/lib/analyzer/**` and ≥ 80% for the rest of `src/`.
   - Run `npm run test:coverage`, `npm run typecheck` and `npm run lint` with zero errors.
   - _Requirements: all (testing.md)_
