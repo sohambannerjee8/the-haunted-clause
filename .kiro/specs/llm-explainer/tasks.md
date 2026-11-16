@@ -122,7 +122,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Build with a runtime-generated canary key (the build makes no call to Google), then search `.next/static/**` for the canary and for `GEMINI_API_KEY`, and exit 0 or 1.
   - Test it by running it, and once with a deliberately planted file under a temporary copy of `.next/static` to see it fail. Then remove the planted file.
   - _Requirements: 15.2, 15.3_
-- [ ] 22.2 Run the checks
+- [x] 22.2 Run the checks
   - `npm run check:bundle`, `npm audit --omit=dev --audit-level=high`, `npm run test:coverage` (lines ≥ 90% for `src/lib/llm/**`), `npm run typecheck` and `npm run lint`, all with zero errors.
   - Draft these paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R5.3, R9.5, R17.3, C10.10, C10.14, C10.16):
     - Privacy.
