@@ -64,10 +64,10 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - _Requirements: 9.1–9.5_
 
 - [ ] 20. The `/api/explain` route
-- [ ] 20.1 Write `origin.test.ts`, then `origin.ts`
+- [x] 20.1 Write `origin.test.ts`, then `origin.ts`
   - Write the ten cases from the design's "Origin check" table: localhost, a Vercel preview host and a production host, each matching and mismatched; upper case; `Origin: null`; no Origin; no Host header.
   - _Requirements: 2.4_
-- [ ] 20.2 Write `handler.test.ts` and `handler.property.test.ts` (mocked provider and clock), then `handler.ts`
+- [x] 20.2 Write `handler.test.ts` and `handler.property.test.ts` (mocked provider and clock), then `handler.ts`
   - The four required cases: good output → `llm`; malformed output → `invalid`; timeout → `timeout`; no key → `no-key` with the provider not called.
   - Also: provider error → `error`; the 11th request → 429 `rate-limited` with `Retry-After`; a body over 256,000 bytes → 400; bad JSON → 400; schema mismatch → 400; Origin mismatch → 403.
   - Every response has `Cache-Control: no-store`, and the provider is not called on any rejected path.
