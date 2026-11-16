@@ -403,3 +403,29 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase.
   - test-verifier gained item 11 (`check:trace` and open items).
   - `testing.md` gained rule 6 (keep the matrix in step with the specs).
 - Checks after the fixes: `npm test` 7 files, 47 tests passed; typecheck, lint and `check:rules` exit 0.
+
+### Gate 1: spec-reviewer, attempt 4: PASS
+- Ran a fresh `spec-reviewer` sub-agent under the updated item 4 (C10.21). Full report: `docs/gate-reports/phase-1-spec-reviewer-attempt-4.md`.
+- **Verdict: PASS** on all 15 items.
+  - The agent ran `npm run check:trace` itself (exit 0, "all 236 criteria … 236 rows").
+  - Its spot check of 30 entries (10 per spec) found every named test listed in one of that entry's tasks.
+  - 12 of the 13 attempt 3 problems were resolved; R19.3 was partly resolved.
+  - It reported no CONFLICT and no SCOPE problem.
+- **Open items** (TRACEABILITY or MINOR). Under C10.21 there is no fifth round. Each item was added to the task that will build it, and the matrix was updated (`npm run check:trace` still passes). test-verifier item 11 enforces them as each task is built:
+  - HU-R19.3: the Lights on `h2` (`lights.spec.ts`, Task 28.2) and the dialog `h2` (`DetailDialog.test.tsx`, Task 26.1).
+  - HU-R8.1: the matrix named the wrong file. The toggle is checked in `Toolbar.test.tsx` (Task 28.1) and `lights.spec.ts`.
+  - HU-R5.4: the computed ghost size, opacity and colour per level go in `flow.spec.ts` (Task 25.3), because jsdom does not apply CSS.
+  - HU-R17.5: the render-error case moved to `HauntedApp.test.tsx`, with a throwing `HouseView` mock (Task 32.2).
+  - HU-R10.3: `motion.spec.ts` checks that no element has a running repeating animation under reduced motion, and `HauntedApp.test.tsx` checks `MotionConfig reducedMotion="user"` (Task 30.1).
+  - LE-R11.1: `no-storage.test.ts` also bans `"use cache"`, `unstable_cache` and `cacheTag` in llm and api code (Task 23.2), and `rateLimit.test.ts` checks the limiter holds only IP keys and timestamps (Task 19.1).
+  - LE-R4.5: `server-only.test.ts` checks that only `gemini.ts` and `availability.ts` contain the key name (Task 18.3).
+  - CA-R1.12 and R1.6: P8 also runs on `overCapString` (Task 11.3).
+  - LE-R9.5: `docs.test.mts` also checks "not shared" (Task 22.2).
+  - MINOR:
+    - The haunted-house-ui design test rows now match the tasks (`flow.spec.ts` loading check, `Toolbar.test.tsx` toggles, `loading.spec.ts` note).
+    - The HU-R12.1 matrix row no longer gives a state count.
+    - Every room `section` now carries the accessible name, so quiet rooms say "<Room>, quiet" (C1.8).
+    - spec-reviewer "Tool limits" text and PLAN_DECISIONS.md C8 now list `npm run check:trace` and `git diff`.
+- Gate 1 history: attempt 1 FAIL, attempt 2 FAIL, attempt 3 FAIL (stopped and asked the user), attempt 4 PASS.
+
+**Phase 1 complete.** All three specs have approved requirements and designs, a task list, and full traceability.

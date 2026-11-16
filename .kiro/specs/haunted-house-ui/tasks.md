@@ -18,7 +18,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - `e2e/shell.spec.ts`: the skip link is the first focusable element and moves focus to `main` (R1.3).
     - `e2e/shell.spec.ts`: the page requests no font or image from another origin (R1.4, R1.5).
     - `scripts/assets.test.mts`: no audio files tracked and no `new Audio(` or `<audio` in `src/` (R11.4); the only image is `src/app/icon.svg`; fonts only under `src/app/fonts/` with OFL files (R1.4, R1.5).
-    - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6); and `src/lib/llm/` and `src/app/api/` import no `fs`/`node:fs` and call no `cookies()` (llm-explainer R11.1).
+    - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6); and `src/lib/llm/` and `src/app/api/` import no `fs`/`node:fs`, call no `cookies()`, and use no `"use cache"`, `unstable_cache` or `cacheTag` (llm-explainer R11.1).
     - axe finds no serious or critical issue on the empty page.
   - _Requirements: 1.1–1.6, 11.4, 13.1, 19.2, 19.3_
 - [ ] 23.3 Wire `page.tsx` to `isLlmAvailable()` and pass only the boolean to `HauntedApp`
@@ -55,7 +55,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 25.2 Write `Ghost.test.tsx`, `Room.test.tsx`, `House.test.tsx`, `ScoreBadge.test.tsx` and `Toolbar.test.tsx`, then `GhostArt`, `Ghost`, `Room`, `House`, `ScoreBadge` and the `Toolbar` (sample line and "Read another policy"; the Lights on and Sound toggles are added in Tasks 28.1 and 30.1)
   - Tests:
     - Each level 0–3 has `data-severity`, the aria-label, the numeral, the level class and a 44 px minimum size.
-    - Quiet rooms show "Quiet" and have no buttons.
+    - Quiet rooms show "Quiet", have no buttons, and the room `section` has the accessible name "<Room name>, quiet" (R4.5, C1.8).
     - The status line and the group label are right.
     - `House.test.tsx`: the frame SVG has `aria-hidden="true"` and no text nodes (R4.6).
     - The score shows "N · band" with no "/100", and the announcement happens only on change.
@@ -66,6 +66,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - The house view has the `h2` "Inside the house", and every room heading is an `h3` (R19.3).
   - 8 rooms in order.
   - Per-room ghost and wisp counts, and each `data-severity`, equal the analyzer's output.
+  - For one ghost of each level, the computed size, opacity and colour of its art match the design-language table (R5.4).
   - The score equals `hauntScore`.
   - _Requirements: 4, 5, 7, 15.1, 15.3, 19.3_
 
@@ -77,6 +78,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - The medium-raised note appears when it applies.
     - A quote containing `<b>` shows as literal text.
     - Close returns focus to the opener.
+    - The dialog title is an `h2` inside the dialog (R19.3).
   - _Requirements: 6.1–6.7, 13.1_
 - [ ] 26.2 E2E in `flow.spec.ts`: clicking a ghost opens the panel
   - The quote equals `text.slice(start, end)` exactly, with the right source badge, for at least one finding per sample.
@@ -107,7 +109,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 5.6, 6.7, 9.1–9.7, 19.4_
 
 - [ ] 28. Lights on mode
-- [ ] 28.1 Write `LightsOnList.test.tsx` and extend `Toolbar.test.tsx`, then `LightsOnList` and the Toolbar's Lights on toggle
+- [ ] 28.1 Write `LightsOnList.test.tsx` and extend `Toolbar.test.tsx` (the Lights on toggle and its `aria-pressed`, R8.1), then `LightsOnList` and the Toolbar's Lights on toggle
   - Tests:
     - Same findings as the model.
     - Quiet rooms shown.
@@ -117,6 +119,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 8.1–8.5, 13.1_
 - [ ] 28.2 E2E `lights.spec.ts`
   - For all three samples, the list holds the same finding IDs, severities and quotes as the house.
+  - Lights on mode has the `h2` "Lights on", and every room heading is an `h3` (R19.3).
   - axe passes in both modes.
   - _Requirements: 8.3, 19.1_
 
@@ -142,7 +145,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 30. Motion and sound settings
 - [ ] 30.1 Extend `Toolbar.test.tsx` (Sound toggle with `aria-pressed`, off by default, R11.2), then add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the 200 ms one-off fades. Add the Sound toggle to the Toolbar (off by default)
   - E2E `motion.spec.ts`:
-    - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s.
+    - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s, and `document.getAnimations()` holds no running repeating animation on any element (R10.3).
+    - `HauntedApp.test.tsx`: the app renders inside `MotionConfig` with `reducedMotion="user"` (R10.3).
     - Without it, level 3 ghosts are animated.
     - On each sample's house and in an open dialog, every repeating `document.getAnimations()` entry lasts at least 1 s per cycle with at most one opacity peak, and every one-off entry changes opacity in one direction and lasts at most 300 ms (R10.4).
     - With motion on, switching Lights on leaves no running repeating animation (R10.5).
@@ -186,7 +190,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - The house chunk is delayed, and "Opening the house…" shows with `aria-busy="true"` on `main` (R17.2).
   - The house chunk is blocked, and the error and "Try again" are shown.
   - After unblocking and retrying, the house opens and the text is kept.
-  - A render error shows the error boundary message.
+  - `HauntedApp.test.tsx`: with `HouseView` mocked to throw while rendering, the error boundary shows the R17.3 message (R17.5).
   - Polish the loading, error and empty states in the browser.
   - _Requirements: 17.1–17.5_
 

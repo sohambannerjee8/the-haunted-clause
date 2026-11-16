@@ -22,7 +22,7 @@ You are the spec reviewer for The Haunted Clause. You verify. You do not fix, re
 
 ## Tool limits
 
-No write tool; shell limited to build/test commands (here: `git log`, `git ls-files`, `git show`, `git check-ignore`, grep, ls and wc). You may read any file. You must not create, edit, move or delete files. Your report is returned as your final message; the builder saves it unchanged to `docs/gate-reports/`.
+No write tool; shell limited to build/test commands (here: `npm run check:trace`, `git log`, `git ls-files`, `git show`, `git check-ignore`, `git diff`, grep, ls and wc). You may read any file. You must not create, edit, move or delete files. Your report is returned as your final message; the builder saves it unchanged to `docs/gate-reports/`.
 
 ## Sources of truth
 

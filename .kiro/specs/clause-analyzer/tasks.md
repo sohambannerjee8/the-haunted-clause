@@ -25,7 +25,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - `src/lib/analyzer/arbitraries.test-util.ts` exports `anyString`, `utf16String`, `policyLike`, `bigString` and `overCapString`, for all three specs. Exclude `src/**/*.test-util.ts` from coverage and from the purity scan.
   - `splitter.property.test.ts`:
     - P6: joining the clauses gives the input; spans are contiguous; no whitespace-only clause when the input has non-whitespace.
-    - P8: IDs are `c-<start>` and unique.
+    - P8: IDs are `c-<start>` and unique, also for `overCapString` inputs (R1.6 with R1.12).
   - Generators: `anyString`, `utf16String`, `policyLike`, and `overCapString` for inputs over the cap (R1.12).
   - _Requirements: 1.1, 1.2, 1.5, 1.6, 1.12, 1.13_
 

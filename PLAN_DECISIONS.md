@@ -170,7 +170,7 @@ These are fixtures, checked in both unit and E2E tests.
 - **MCP:** `.kiro/settings/mcp.json` has Context7 (`@upstash/context7-mcp`) and Playwright MCP (`@playwright/mcp`), both pinned to versions checked with `npm view`. No API keys go in this file.
 - **Agents:** Markdown files in `.kiro/agents/`.
   - No agent has the `write` tool.
-  - Shell permissions are limited to build and test commands: `npm run test*`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run check:*`, `npx playwright test`, `npx vitest`, `npm audit`, `npx license-checker`, `git log`, `git ls-files`, `git check-ignore` and `git show`.
+  - Shell permissions are limited to build and test commands: `npm run test*`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run check:*` (including `check:trace`), `npx playwright test`, `npx vitest`, `npm audit`, `npx license-checker`, `git log`, `git ls-files`, `git check-ignore`, `git show` and `git diff`.
   - ui-a11y-reviewer also gets the Playwright MCP tools.
 - **Linting:** Recent Next.js removed `next lint`, so the `lint` script runs `eslint .`.
 - **Scaffolding:** `create-next-app` refuses to run in a folder holding PLAN.md. Scaffold into a temporary folder and move the files in.

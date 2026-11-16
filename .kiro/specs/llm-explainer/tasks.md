@@ -46,7 +46,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The key is read at call time.
     - An empty `res.text` returns `""`.
     - `isLlmAvailable` treats unset, empty and whitespace as `false`.
-  - Write `src/lib/llm/server-only.test.ts`: every file under `src/` that contains `GEMINI_API_KEY` imports `server-only`; no file marked `"use client"` imports `gemini.ts`, `availability.ts`, `rateLimit.ts` or `handler.ts`; no `NEXT_PUBLIC_` name in `src/`, `next.config.ts` or `.env.example` contains `GEMINI` (R15.1, R15.2).
+  - Write `src/lib/llm/server-only.test.ts`: the only files under `src/` that contain `GEMINI_API_KEY` are `gemini.ts` and `availability.ts` (R4.5); every file under `src/` that contains `GEMINI_API_KEY` imports `server-only`; no file marked `"use client"` imports `gemini.ts`, `availability.ts`, `rateLimit.ts` or `handler.ts`; no `NEXT_PUBLIC_` name in `src/`, `next.config.ts` or `.env.example` contains `GEMINI` (R15.1, R15.2).
   - Before writing the code, re-check the `generateContent` and `models.get` signatures in `node_modules/@google/genai/dist/genai.d.ts` (or through Context7 if it is connected), and log which source was used.
   - _Requirements: 3.2, 4.2, 4.5, 11.2, 15.1, 15.2_
 
@@ -57,6 +57,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - The 11th request in 60 s is refused, and the window slides.
     - `Retry-After` is at least 1 and correct.
     - Rejected requests are not counted, and stale timestamps are removed.
+    - The limiter's map holds only string keys and arrays of numbers (R11.1).
     - Least-recently-used eviction at `maxKeys`.
     - Header order: `x-vercel-forwarded-for`, then the first value of a comma-separated `x-forwarded-for` (trimmed), then `x-real-ip`, then `"unknown"`, with empty values skipped.
   - Property E5: never more than 10 allowed from one IP in any 60-second window.
@@ -125,7 +126,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - `npm run check:bundle`, `npm audit --omit=dev --audit-level=high`, `npm run test:coverage` (lines ≥ 90% for `src/lib/llm/**`), `npm run typecheck` and `npm run lint`, all with zero errors.
   - Draft these paragraphs for docs/DEPLOY.md now, so the security reviewer can check them (R5.3, R9.5, R17.3, C10.10, C10.14, C10.16):
     - Privacy.
-    - The best-effort rate limit.
+    - The best-effort rate limit: per-instance counts, reset on a cold start, not shared between instances (`docs.test.mts` checks "best-effort", "cold start" and "not shared").
     - `store: false`, with the Google citation.
     - A timed-out call may still be processed and billed by Google.
     - Samples come from the committed JSON, so run `npm run precompute:samples` and commit before deploying.

@@ -13,7 +13,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | CA-R1.3 | `splitter.test.ts` (empty input) | 11.2 |
 | CA-R1.4 | `splitter.test.ts` (whitespace only) | 11.2 |
 | CA-R1.5 | `splitter.property.test.ts` (P6) | 11.3 |
-| CA-R1.6 | `splitter.property.test.ts` (P8) | 11.3 |
+| CA-R1.6 | `splitter.property.test.ts` (P8, including `overCapString`) | 11.3 |
 | CA-R1.7 | `splitter.test.ts` (terminators with closers) | 11.2 |
 | CA-R1.8 | `splitter.test.ts` (paragraph breaks, CRLF) | 11.2 |
 | CA-R1.9 | `splitter.test.ts` (list markers) | 11.2 |
@@ -98,7 +98,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | LE-R4.2 | `gemini.test.ts` | 18.3 |
 | LE-R4.3 | `prompt.test.ts` | 18.2 |
 | LE-R4.4 | `prompt.test.ts` | 18.2 |
-| LE-R4.5 | `gemini.test.ts` (key read at call time), `server-only.test.ts` | 18.3 |
+| LE-R4.5 | `gemini.test.ts` (key read at call time), `server-only.test.ts` (only two files contain the key name) | 18.3 |
 | LE-R5.1 | `provider.test.ts`, `handler.test.ts` (timeout) | 18.1, 20.2 |
 | LE-R5.2 | `provider.test.ts` (provider ignores the signal) | 18.1 |
 | LE-R5.3 | `docs.test.mts` ("billed") | 22.2 |
@@ -115,10 +115,10 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | LE-R9.2 | `rateLimit.test.ts` (`Retry-After`), `handler.test.ts` (429) | 19.1, 20.2 |
 | LE-R9.3 | `rateLimit.test.ts` (header order) | 19.1 |
 | LE-R9.4 | `rateLimit.test.ts` (stale entries, LRU) | 19.1 |
-| LE-R9.5 | `rateLimit.test.ts` (source cites the URL), `docs.test.mts` ("best-effort") | 19.1, 22.2 |
+| LE-R9.5 | `rateLimit.test.ts` (source cites the URL), `docs.test.mts` ("best-effort", "cold start", "not shared") | 19.1, 22.2 |
 | LE-R10.1 | `handler.test.ts` (one log line) | 20.2 |
 | LE-R10.2 | `handler.test.ts` (`console` spy), `agent:security-reviewer` (item 13) | 20.2 |
-| LE-R11.1 | `no-storage.test.ts` (no `fs` or `cookies()` in llm and api code), `agent:security-reviewer` (item 14) | 23.2 |
+| LE-R11.1 | `no-storage.test.ts` (no `fs`, `cookies()` or cache APIs in llm and api code), `rateLimit.test.ts` (only IP keys and timestamps), `agent:security-reviewer` (item 14) | 19.1, 23.2 |
 | LE-R11.2 | `gemini.test.ts` (`store: false`) | 18.3 |
 | LE-R12.1 | `merge.property.test.ts` (E3) | 17.3 |
 | LE-R12.2 | `merge.test.ts`, `merge.property.test.ts` (E1) | 17.3 |
@@ -179,12 +179,12 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R4.2 | `layout.spec.ts` (2 and 4 columns) | 31.1 |
 | HU-R4.3 | `Room.test.tsx` (quiet room) | 25.2 |
 | HU-R4.4 | `Room.test.tsx`, `flow.spec.ts` (per-room counts) | 25.2, 25.3 |
-| HU-R4.5 | `Room.test.tsx` (group label) | 25.2 |
+| HU-R4.5 | `Room.test.tsx` (section and group accessible names, quiet rooms) | 25.2 |
 | HU-R4.6 | `House.test.tsx` (frame `aria-hidden`) | 25.2 |
 | HU-R5.1 | `Ghost.test.tsx` | 25.2 |
 | HU-R5.2 | `Ghost.test.tsx`, `houseModel.property.test.ts` (U4) | 25.1, 25.2 |
 | HU-R5.3 | `Ghost.test.tsx` (numeral) | 25.2 |
-| HU-R5.4 | `Ghost.test.tsx` (level class) | 25.2 |
+| HU-R5.4 | `Ghost.test.tsx` (level class), `flow.spec.ts` (computed size, opacity, colour) | 25.2, 25.3 |
 | HU-R5.5 | `Ghost.test.tsx` (44 px minimum) | 25.2 |
 | HU-R5.6 | `keyboard.spec.ts` (computed outline) | 27.3 |
 | HU-R6.1 | `DetailDialog.test.tsx`, `flow.spec.ts` (click opens) | 26.1, 26.2 |
@@ -197,7 +197,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R7.1 | `ScoreBadge.test.tsx` | 25.2 |
 | HU-R7.2 | `flow.spec.ts` (score equals `hauntScore`), `OptInPanel.test.tsx` (score after merge) | 25.3, 29.1 |
 | HU-R7.3 | `ScoreBadge.test.tsx` (announcement on change) | 25.2 |
-| HU-R8.1 | `LightsOnList.test.tsx` (`aria-pressed`) | 28.1 |
+| HU-R8.1 | `Toolbar.test.tsx` (Lights on toggle, `aria-pressed`), `lights.spec.ts` | 28.1, 28.2 |
 | HU-R8.2 | `LightsOnList.test.tsx` | 28.1 |
 | HU-R8.3 | `houseModel.property.test.ts` (U1), `lights.spec.ts` | 25.1, 28.2 |
 | HU-R8.4 | `LightsOnList.test.tsx` (no SVG, no animation classes) | 28.1 |
@@ -211,14 +211,14 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R9.7 | `keyboard.spec.ts` (tab order) | 27.3 |
 | HU-R10.1 | `motion.spec.ts` (level 3 animated) | 30.1 |
 | HU-R10.2 | `motion.spec.ts` (reduced motion) | 30.1 |
-| HU-R10.3 | `motion.spec.ts` | 30.1 |
+| HU-R10.3 | `motion.spec.ts` (no running repeating animation on any element), `HauntedApp.test.tsx` (`MotionConfig`) | 30.1 |
 | HU-R10.4 | `motion.spec.ts` (`getAnimations()` rules) | 30.1 |
 | HU-R10.5 | `motion.spec.ts` (Lights on stops repeating animations) | 30.1 |
 | HU-R11.1 | `sound.test.ts`, `motion.spec.ts` (no `AudioContext` on load) | 26.3, 30.1 |
 | HU-R11.2 | `Toolbar.test.tsx` (Sound toggle) | 30.1 |
 | HU-R11.3 | `sound.test.ts` (pitch, ≤ 600 ms) | 26.3 |
 | HU-R11.4 | `assets.test.mts` (no audio files, no `new Audio(`) | 23.2 |
-| HU-R12.1 | `layout.spec.ts` (15 states) | 31.1 |
+| HU-R12.1 | `layout.spec.ts` (every state listed in R12.1) | 31.1 |
 | HU-R12.2 | `layout.spec.ts` (1440 × 900) | 31.1 |
 | HU-R12.3 | `layout.spec.ts` (dialog fits and scrolls) | 31.1 |
 | HU-R13.1 | `Footer.test.tsx`, `DetailDialog.test.tsx`, `LightsOnList.test.tsx` | 23.2, 26.1, 28.1 |
@@ -243,12 +243,12 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R17.2 | `loading.spec.ts` (text and `aria-busy`), `flow.spec.ts` | 24.2, 32.2 |
 | HU-R17.3 | `loading.spec.ts` (blocked chunk, retry) | 32.2 |
 | HU-R17.4 | `flow.spec.ts` (Read another policy) | 24.2 |
-| HU-R17.5 | `loading.spec.ts` (render error) | 32.2 |
+| HU-R17.5 | `HauntedApp.test.tsx` (`HouseView` throws) | 32.2 |
 | HU-R18.1 | `perf.spec.ts` (typing within 5 s) | 33.1 |
 | HU-R18.2 | `perf.spec.ts` (≤ 200 kB JS) | 33.1 |
 | HU-R19.1 | `a11y.spec.ts` | 31.2 |
 | HU-R19.2 | `a11y.spec.ts` (`color-contrast` is serious) | 31.2 |
-| HU-R19.3 | `shell.spec.ts` (one `main`, one `h1`), `flow.spec.ts` (`h2` and `h3` levels) | 23.2, 25.3 |
+| HU-R19.3 | `shell.spec.ts` (one `main`, one `h1`), `flow.spec.ts` (house `h2`, room `h3`), `lights.spec.ts` (Lights on `h2`), `DetailDialog.test.tsx` (dialog `h2`) | 23.2, 25.3, 26.1, 28.2 |
 | HU-R19.4 | `keyboard.spec.ts` (focus ring on every control) | 27.3 |
 | HU-R20.1 | `screenshots.spec.ts` | 31.3 |
 | HU-R20.2 | `screenshots.spec.ts` | 31.3 |
