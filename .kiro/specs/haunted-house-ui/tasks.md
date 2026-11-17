@@ -28,8 +28,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Write both guard tests: the browser guard (no request to a host other than localhost) and the server guard (an unstubbed explain request to port 3101 returns `rules/error` within 5 s). See it pass before any opt-in test is written (C10.18).
   - _Requirements: 14.1, 14.2, 14.8_
 
-- [ ] 24. Input screen and sample cards
-- [ ] 24.1 Write `InputScreen.test.tsx` and `SampleCards.test.tsx`, then the components (the cards read `src/lib/samples/meta.ts` from clause-analyzer Task 15.2)
+- [x] 24. Input screen and sample cards
+- [x] 24.1 Write `InputScreen.test.tsx` and `SampleCards.test.tsx`, then the components (the cards read `src/lib/samples/meta.ts` from clause-analyzer Task 15.2)
   - Tests:
     - The label and the counter format.
     - The counter has `aria-live="off"` and sits in no live region (R2.6).
@@ -38,7 +38,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - Empty or whitespace text shows the message, with `aria-invalid` and `aria-describedby`.
     - Three cards, each with its company name and one-line description, and buttons named by company (R2.5).
   - _Requirements: 2.1–2.6_
-- [ ] 24.2 Write `HauntedApp` with the state machine, the lazy `HouseView` with a retryable import, `Suspense` "Opening the house…" and the error boundary
+- [x] 24.2 Write `HauntedApp` with the state machine, the lazy `HouseView` with a retryable import, `Suspense` "Opening the house…" and the error boundary
   - E2E `flow.spec.ts` (first part):
     - Opening each sample shows the house view.
     - No request goes to `/api/explain`.
