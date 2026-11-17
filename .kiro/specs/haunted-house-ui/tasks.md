@@ -47,12 +47,12 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - While the house chunk loads (delayed with `page.route`), "Opening the house…" shows and `main` has `aria-busy="true"` (R17.2); the full check moves to `loading.spec.ts` in Task 32.2.
   - _Requirements: 1.6, 3.1–3.4, 15.2, 17.1, 17.2, 17.4_
 
-- [ ] 25. House, rooms, ghosts and the Haunt Score
+- [x] 25. House, rooms, ghosts and the Haunt Score
 - [x] 25.1 Write `houseModel.test.ts` and `houseModel.property.test.ts`, then `src/lib/ui/houseModel.ts`
   - Functions: `buildHouseModel`, `bandFor`, `severityLabel`, `ghostLabel`, `roomLabel`.
   - Properties U1, U2 and U4.
   - _Requirements: 4.1, 4.4, 4.5, 5.2, 7.1, 8.3_
-- [ ] 25.2 Write `Ghost.test.tsx`, `Room.test.tsx`, `House.test.tsx`, `ScoreBadge.test.tsx` and `Toolbar.test.tsx`, then `GhostArt`, `Ghost`, `Room`, `House`, `ScoreBadge` and the `Toolbar` (sample line and "Read another policy"; the Lights on and Sound toggles are added in Tasks 28.1 and 30.1)
+- [x] 25.2 Write `Ghost.test.tsx`, `Room.test.tsx`, `House.test.tsx`, `ScoreBadge.test.tsx` and `Toolbar.test.tsx`, then `GhostArt`, `Ghost`, `Room`, `House`, `ScoreBadge` and the `Toolbar` (sample line and "Read another policy"; the Lights on and Sound toggles are added in Tasks 28.1 and 30.1)
   - Tests:
     - Each level 0–3 has `data-severity`, the aria-label, the numeral, the level class and a 44 px minimum size.
     - Quiet rooms show "Quiet", have no buttons, and the room `section` has the accessible name "<Room name>, quiet" (R4.5, C1.8).
@@ -61,7 +61,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - The score shows "N · band" with no "/100", and the announcement happens only on change.
     - `Toolbar.test.tsx`: "Sample: <company> (a fictional company)" for each sample, and no sample line for pasted text.
   - _Requirements: 4.1–4.6, 5.1–5.6, 7.1–7.3, 15.3_
-- [ ] 25.3 E2E `flow.spec.ts` (second part), for all three samples
+- [x] 25.3 E2E `flow.spec.ts` (second part), for all three samples
   - The toolbar shows "Sample: <company> (a fictional company)".
   - The house view has the `h2` "Inside the house", and every room heading is an `h3` (R19.3).
   - 8 rooms in order.

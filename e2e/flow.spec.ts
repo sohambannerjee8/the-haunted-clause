@@ -1,5 +1,11 @@
 // The main flows (haunted-house-ui R1.6, R3, R15.2, R17.2, R17.4). Runs in the no-key project.
 import type { Page, Request } from "@playwright/test";
+import { analyze } from "../src/lib/analyzer/analyze";
+import { ROOMS } from "../src/lib/analyzer/rooms";
+import { hauntScore } from "../src/lib/analyzer/score";
+import { mergeFindings } from "../src/lib/llm/merge";
+import { SAMPLES } from "../src/lib/samples";
+import { sampleReading } from "../src/lib/samples/explanations";
 import { SAMPLE_META } from "../src/lib/samples/meta";
 import { expect, test } from "./fixtures";
 
@@ -78,4 +84,74 @@ test("while the house chunk loads, 'Opening the house…' shows and main is aria
   release();
   await expect(page.getByRole("heading", { level: 2, name: "Inside the house" })).toBeVisible();
   await expect(page.locator("main#content")).not.toHaveAttribute("aria-busy", "true");
+});
+
+// --- Second part (Task 25.3): the house for each sample matches the analyzer. ---
+
+/** design-language.md, "Ghost intensity levels", desktop sizes. */
+const LEVELS = [
+  { size: 28, opacity: "0.55", colour: "rgb(154, 147, 166)" },
+  { size: 40, opacity: "0.75", colour: "rgb(242, 181, 68)" },
+  { size: 52, opacity: "0.9", colour: "rgb(239, 138, 76)" },
+  { size: 64, opacity: "1", colour: "rgb(166, 232, 107)" },
+];
+
+function expected(id: (typeof SAMPLES)[number]["id"]) {
+  const s = SAMPLES.find((x) => x.id === id)!;
+  const r = analyze(s.text);
+  if (!r.ok) throw new Error("sample too long");
+  const findings = mergeFindings(r.findings, sampleReading(id));
+  return { sample: s, findings, score: hauntScore(findings) };
+}
+
+test.describe("the house matches the analyzer (R4, R5, R7, R15, R19.3)", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+  for (const m of SAMPLE_META) {
+    test(`${m.id}: toolbar, headings, rooms, ghosts and score`, async ({ page }) => {
+      const want = expected(m.id);
+      await page.goto("/");
+      await page.getByRole("button", { name: `Open this house: ${m.company}` }).click();
+
+      await expect(page.getByText(`Sample: ${m.company} (a fictional company)`)).toBeVisible();
+      await expect(page.getByRole("heading", { level: 2, name: "Inside the house" })).toBeVisible();
+
+      const rooms = page.locator("section[data-room]");
+      await expect(rooms).toHaveCount(8);
+      expect(await rooms.evaluateAll((els) => els.map((e) => e.getAttribute("data-room")))).toEqual(ROOMS.map((r) => r.id));
+      for (const [i, room] of ROOMS.entries()) {
+        const section = rooms.nth(i);
+        await expect(section.getByRole("heading", { level: 3 })).toHaveText(room.name);
+        const mine = want.findings.filter((f) => f.room === room.id);
+        const buttons = section.locator("button.hc-ghost");
+        await expect(buttons).toHaveCount(mine.length);
+        expect(await buttons.evaluateAll((els) => els.map((e) => [e.getAttribute("data-finding-id"), e.getAttribute("data-severity")]))).toEqual(
+          mine.map((f) => [f.id, String(f.severity)]),
+        );
+        const ghosts = mine.filter((f) => f.severity >= 1).length;
+        const wisps = mine.length - ghosts;
+        const status = section.locator("[data-room-status]");
+        if (mine.length === 0) await expect(status).toHaveText("Quiet");
+        if (ghosts) await expect(status).toContainText(`${ghosts} ${ghosts === 1 ? "ghost" : "ghosts"}`);
+        if (wisps) await expect(status).toContainText(`${wisps} checked`);
+      }
+
+      await expect(page.getByTestId("haunt-score")).toHaveText(new RegExp(`^${want.score} · `));
+
+      // One ghost of each level present: computed size, opacity and colour of its art (R5.4).
+      for (const level of [0, 1, 2, 3]) {
+        const art = page.locator(`button.hc-ghost[data-severity="${level}"] svg.hc-art`).first();
+        if ((await page.locator(`button.hc-ghost[data-severity="${level}"]`).count()) === 0) continue;
+        const got = await art.evaluate((el) => {
+          const cs = getComputedStyle(el);
+          return { width: parseFloat(cs.width), height: parseFloat(cs.height), opacity: cs.opacity, colour: cs.color };
+        });
+        expect(got).toEqual({ width: LEVELS[level].size, height: LEVELS[level].size, opacity: LEVELS[level].opacity, colour: LEVELS[level].colour });
+      }
+    });
+  }
+
+  test("all four levels appear across the three samples", () => {
+    const levels = new Set(SAMPLES.flatMap((s) => expected(s.id).findings.map((f) => f.severity)));
+    expect([...levels].sort()).toEqual([0, 1, 2, 3]);
+  });
 });
