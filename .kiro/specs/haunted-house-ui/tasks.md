@@ -154,14 +154,14 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 10.1–10.5, 11.1, 11.2_
 
 - [ ] 31. Responsive layout, Gate 4 and the visual review
-- [ ] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
+- [x] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
   - Every state listed in R12.1, using both projects (the opt-in states on llm-ui; loading by delaying the house chunk with `page.route`): no horizontal scroll, no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width), no intersecting controls, and 2 or 4 grid columns.
   - The dialog fits within the viewport and scrolls inside.
   - _Requirements: 4.2, 12.1–12.3_
-- [ ] 31.2 E2E `a11y.spec.ts`
+- [x] 31.2 E2E `a11y.spec.ts`
   - An axe scan of every state in R19.1 (both projects), failing on serious or critical issues.
   - _Requirements: 19.1–19.3_
-- [ ] 31.3 Write `e2e/screenshots.spec.ts` (`@screenshots`) and the `npm run screenshots` script
+- [x] 31.3 Write `e2e/screenshots.spec.ts` (`@screenshots`) and the `npm run screenshots` script
   - Exclude it from `npm run test:e2e` with `--grep-invert @screenshots`.
   - _Requirements: 20.1–20.3_
 - [ ] 31.4 Run Gate 4

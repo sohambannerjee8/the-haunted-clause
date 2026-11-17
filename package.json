@@ -10,13 +10,14 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest --run",
     "test:coverage": "vitest --run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --grep-invert @screenshots",
     "check:secrets": "node scripts/secret-scan.mjs --tracked",
     "check:rules": "node scripts/check-repo-rules.mjs",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:history": "node scripts/secret-scan.mjs --history",
     "check:trace": "node scripts/check-traceability.mjs",
-    "precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts"
+    "precompute:samples": "tsx --conditions=react-server scripts/precompute-samples.mts",
+    "screenshots": "playwright test --grep @screenshots --project=no-key"
   },
   "dependencies": {
     "@google/genai": "^3.3.0",

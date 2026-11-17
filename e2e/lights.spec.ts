@@ -8,8 +8,10 @@ import { SAMPLES } from "../src/lib/samples";
 import { sampleReading } from "../src/lib/samples/explanations";
 import { SAMPLE_META } from "../src/lib/samples/meta";
 import { AXE_TAGS, expect, test } from "./fixtures";
+import { waitForFades } from "./helpers";
 
 async function axeClean(page: Page, label: string) {
+  await waitForFades(page); // a half-faded text would be measured at partial opacity
   const r = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
   const bad = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(bad.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`), label).toEqual([]);
