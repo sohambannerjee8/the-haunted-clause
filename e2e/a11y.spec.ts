@@ -13,7 +13,7 @@ async function scan(page: Page, label: string) {
   expect(r.passes.length, `${label}: axe ran rules`).toBeGreaterThan(0);
 }
 
-test("input screen, and with the empty-input error", async ({ page }) => {
+test("axe: input screen, and with the empty-input error", async ({ page }) => {
   await page.goto("/");
   await scan(page, "input");
   await page.getByRole("button", { name: "Analyze" }).click();
@@ -22,13 +22,13 @@ test("input screen, and with the empty-input error", async ({ page }) => {
 });
 
 for (const id of ["mild", "average", "terrible"] as const) {
-  test(`house for the ${id} sample`, async ({ page }) => {
+  test(`axe: house for the ${id} sample`, async ({ page }) => {
     await openSample(page, id);
     await scan(page, `house ${id}`);
   });
 }
 
-test("an open detail panel, and Lights on mode", async ({ page }) => {
+test("axe: an open detail panel, and Lights on mode", async ({ page }) => {
   await openSample(page, "terrible");
   await page.locator('button.hc-ghost[data-severity="3"]').first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -39,7 +39,7 @@ test("an open detail panel, and Lights on mode", async ({ page }) => {
   await scan(page, "lights on");
 });
 
-test("the no-ghosts state and the non-English notice", async ({ page }) => {
+test("axe: the no-ghosts state and the non-English notice", async ({ page }) => {
   await analyzeText(page, NO_RISK);
   await expect(page.getByText(/^No ghosts here\./)).toBeVisible();
   await scan(page, "no ghosts");
@@ -48,7 +48,7 @@ test("the no-ghosts state and the non-English notice", async ({ page }) => {
   await scan(page, "non-English");
 });
 
-test("@llm-ui the opt-in panel (llmAvailable true)", async ({ page }) => {
+test("@llm-ui axe: the opt-in panel (llmAvailable true)", async ({ page }) => {
   await page.route("**/api/explain", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ source: "rules", reason: "error", findings: [] }) }),
   );
