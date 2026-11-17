@@ -171,7 +171,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [x] 31.3 Write `e2e/screenshots.spec.ts` (`@screenshots`) and the `npm run screenshots` script
   - Exclude it from `npm run test:e2e` with `--grep-invert @screenshots`.
   - _Requirements: 20.1–20.3_
-- [ ] 31.4 Run Gate 4
+- [x] 31.4 Run Gate 4
   - **Read first:** PLAN.md section 6 "Phase 4" (the gate) and "Rules for every gate"; PLAN_DECISIONS.md C10.15, C10.18, C11 and C12; `.kiro/agents/ui-a11y-reviewer.md` and `.kiro/agents/test-verifier.md`; the end of BUILD_LOG.md.
   - **Builder checks first** (not the gate): `npm run typecheck`, `npm run lint`, `npm run test:coverage` and `CI=1 npm run test:e2e`, all with zero errors, failures or skips.
   - **ui-a11y-reviewer:** `env GEMINI_API_KEY= npm run build`, then start `env GEMINI_API_KEY= npx next start -p 3100` as a background process. Invoke the agent as a sub-agent with the gate name "Gate 4 (Phase 4: haunted house UI), ui-a11y-reviewer, attempt N", today's date and the URL `http://localhost:3100`. Item 16 is a Gate 5 item ("not due until Phase 5"). Stop the server after it reports.

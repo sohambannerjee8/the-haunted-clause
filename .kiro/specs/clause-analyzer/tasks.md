@@ -136,7 +136,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Append the result to BUILD_LOG.md.
   - Pass when all tests pass, every property runs at least 1,000 cases and analyzer line coverage is 90% or higher.
 - [x] 16.3 Mitigation phrasing gap (user request before Gate 4, PLAN_DECISIONS.md C12.1)
-  - Write failing tests first: "We will never sell your personal data." and "We will never share your personal data." give Cellar severity 0 with the no-sell and no-share mitigations; one test per mitigation for each modal or adverb form it now accepts.
+  - Write failing tests first, in `mitigation-phrasing.test.ts`: "We will never sell your personal data." and "We will never share your personal data." give Cellar severity 0 with the no-sell and no-share mitigations; one test per mitigation for each modal or adverb form it now accepts.
   - Then widen the cellar no-sell and no-share mitigations to accept "will never", and fix every other mitigation that has the same gap.
   - The sample bands (C7) still hold, and `sample-explanations.json` is regenerated (no key) if the sample finding IDs change.
   - _Requirements: 3.2, 3.3_

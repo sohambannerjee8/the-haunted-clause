@@ -22,15 +22,15 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | CA-R1.12 | `splitter.property.test.ts` (P6 with `overCapString`) | 11.3 |
 | CA-R1.13 | `splitter.test.ts` (boundary-resolution rows), `splitter.property.test.ts` (P6) | 11.2, 11.3 |
 | CA-R2.1 | `analyze.property.test.ts` (P8, findings) | 14.3 |
-| CA-R2.2 | `classifier.test.ts` (16 negative examples) | 12.2 |
+| CA-R2.2 | `classifier.test.ts` (21 negative examples) | 12.2, 16.4 |
 | CA-R2.3 | `classifier.test.ts` (whitespace-only clause) | 12.2 |
 | CA-R2.4 | `classifier.test.ts` (room tie-break) | 12.2 |
 | CA-R2.5 | `classifier.test.ts` (rule tie-break) | 12.2 |
 | CA-R2.6 | `rules.test.ts` | 12.1 |
-| CA-R2.7 | `classifier.test.ts` (44 room examples) | 12.2 |
+| CA-R2.7 | `classifier.test.ts` (62 room examples: 41 positive and 21 negative, of which 18 came from C12.2) | 12.2, 16.4 |
 | CA-R2.8 | `classifier.test.ts` (case-insensitivity) | 12.2 |
 | CA-R3.1 | `mitigation.test.ts`, `analyze.property.test.ts` (P10) | 12.3, 14.3 |
-| CA-R3.2 | `mitigation.test.ts` (plain mitigation rows) | 12.3 |
+| CA-R3.2 | `mitigation.test.ts` (plain mitigation rows), `mitigation-phrasing.test.ts` (each mitigation's wordings, C12.1) | 12.3, 16.3 |
 | CA-R3.3 | `mitigation.test.ts` (eight marker rows) | 12.3 |
 | CA-R3.4 | `mitigation.test.ts` (marker before mitigation) | 12.3 |
 | CA-R3.5 | `mitigation.test.ts` (marker in another clause) | 12.3 |

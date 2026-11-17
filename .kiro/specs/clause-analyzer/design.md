@@ -196,7 +196,7 @@ There are 45 rules: five per room, plus five added by PLAN_DECISIONS.md C12.2 (C
 
 ### Room examples (R2.7): 3+ positive and 2+ negative per room
 
-Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned to the room at the listed severity, with the listed rule. "Neg" rows must not be assigned to that room. The first 44 rows were checked against the patterns with a scratch script before this design was written: 0 failures. The 19 rows marked C12.2 were added with the calibration (Task 16.4) and are checked by `classifier.test.ts` like the rest.
+Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned to the room at the listed severity, with the listed rule. "Neg" rows must not be assigned to that room. The first 44 rows were checked against the patterns with a scratch script before this design was written: 0 failures. The 18 rows marked C12.2 (13 positive, 5 negative) were added with the calibration (Task 16.4) and are checked by `classifier.test.ts` like the rest.
 
 | Room | Kind | Clause | Expected |
 | --- | --- | --- | --- |
