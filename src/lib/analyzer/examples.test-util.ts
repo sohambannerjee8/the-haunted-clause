@@ -43,6 +43,20 @@ export const POSITIVE_EXAMPLES: readonly PositiveExample[] = [
   { room: "stairs", severity: 2, ruleId: "stairs.any-time", text: "We may change these terms at any time." },
   { room: "stairs", severity: 3, ruleId: "stairs.no-notice", text: "We can modify the service and these terms without notice." },
   { room: "stairs", severity: 2, ruleId: "stairs.continued-use", text: "Your continued use of the service after changes means you accept the new terms." },
+  // Calibration and new rules (PLAN_DECISIONS.md C12.2).
+  { room: "mirror", severity: 2, ruleId: "mirror.wide-licence", text: "You grant us a non-exclusive, royalty-free licence to host and display your content." },
+  { room: "mirror", severity: 2, ruleId: "mirror.wide-licence", text: "A worldwide, royalty-free licence to store and show your posts is needed to run the service." },
+  { room: "mirror", severity: 2, ruleId: "mirror.wide-licence", text: "You grant us a non-exclusive, non-transferable, non-sublicensable licence to display your posts." },
+  { room: "mirror", severity: 3, ruleId: "mirror.broad-licence", text: "You grant us a worldwide, royalty-free, sublicensable licence to use your content." },
+  { room: "mirror", severity: 3, ruleId: "mirror.broad-licence", text: "You grant us a licence to copy and sell the photos you upload." },
+  { room: "trapdoor", severity: 2, ruleId: "trapdoor.consequential", text: "We are not liable for any indirect or consequential damages arising from your use of the service." },
+  { room: "trapdoor", severity: 3, ruleId: "trapdoor.not-liable", text: "Under no circumstances will we be liable for any damages whatsoever." },
+  { room: "locked-door", severity: 3, ruleId: "locked.phone-or-person", text: "You can cancel your membership only by phone or in person at one of our clubs." },
+  { room: "locked-door", severity: 3, ruleId: "locked.phone-or-person", text: "Cancellations must be made in person at the branch where you signed up." },
+  { room: "cellar", severity: 2, ruleId: "cellar.merger", text: "If we are involved in a merger or acquisition, your information may be transferred to the new owner." },
+  { room: "cellar", severity: 2, ruleId: "cellar.merger", text: "We may disclose your personal data to a buyer as part of a sale of our business." },
+  { room: "cellar", severity: 2, ruleId: "cellar.retention", text: "We keep your personal information indefinitely." },
+  { room: "cellar", severity: 2, ruleId: "cellar.retention", text: "We retain your data for as long as we see fit." },
 ];
 
 export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
@@ -62,4 +76,10 @@ export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
   { room: "trapdoor", text: "Our warranty covers repairs for two years." },
   { room: "stairs", text: "These terms were last updated on 1 November 2026." },
   { room: "stairs", text: "You can change your password at any time in Settings." },
+  // Calibration and new rules (PLAN_DECISIONS.md C12.2).
+  { room: "mirror", text: "A worldwide audience can see the posts you choose to make public." },
+  { room: "trapdoor", text: "You are responsible for keeping your password safe." },
+  { room: "locked-door", text: "Call us by phone if you need help with an order." },
+  { room: "cellar", text: "Our company was founded after a merger of two small studios." },
+  { room: "cellar", text: "We keep your data for as long as necessary to provide the service." },
 ];

@@ -133,6 +133,8 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Cellar | `cellar.broker` | 3 | `\bdata brokers?\b` |
 | Cellar | `cellar.ad-partners` | 3 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \badvertis\w*\s+partners?\b` |
 | Cellar | `cellar.third-parties` | 2 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \b(third[- ]part(y\|ies)\|partners\|affiliates)\b` |
+| Cellar | `cellar.merger` (C12.2) | 2 | `\b(transfer\|disclos\|shar\|pass\|provid)\w*\b G{0,100} \b(merger\|acquisition\|reorgani[sz]ation\|bankruptcy\|change (of\|in) control\|sale of … (business\|company\|assets))\b`, or the event word first and the transfer verb after |
+| Cellar | `cellar.retention` (C12.2) | 2 | `\b(retain\|keep\|store\|hold)\w*\b G{0,80} \b(indefinitely\|permanently\|forever\|for an? (unlimited\|indefinite) (period\|time)\|as long as we (see fit\|wish\|like\|want\|choose\|deem (necessary\|appropriate)))\b` |
 | Portraits | `portraits.cross-site` | 3 | `\btrack\w*\b G{0,60} \b(across\|on) (other \|third[- ]party )?(websites\|sites\|apps\|services\|devices)\b` |
 | Portraits | `portraits.profile` | 2 | `\b(build\|create\|compile)\w*\b G{0,40} \bprofiles?\b` or `\bprofiling\b` |
 | Portraits | `portraits.location` | 2 | `\b(collect\|track\|record\|use)\w*\b G{0,40} \b(precise \|exact )?(location\|geolocation)\b` |
@@ -145,7 +147,8 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Vault | `vault.extra-fees` | 1 | `\b(additional\|extra\|hidden\|service\|processing) (fees\|charges)\b` |
 | Locked Door | `locked.cannot-delete` | 3 | `\b(cannot\|can't\|may not\|will not be able to) (delete\|close\|remove) (your )?(account\|data)\b` |
 | Locked Door | `locked.cancel-fee` | 3 | `\b(cancellation\|early termination\|termination) fees?\b` |
-| Locked Door | `locked.cancel-channel` | 2 | `\bcancel\w*\b G{0,60} \b(by (phone\|telephone\|mail\|post\|fax)\|in writing\|by calling)\b` |
+| Locked Door | `locked.phone-or-person` (C12.2) | 3 | `\bcancel\w*\b G{0,60} \bonly\b G{0,20} \b(by (phone\|telephone\|calling)\|in person)\b`, or `cancel… (must\|need to\|have to) be (made\|done\|submitted) in person`, or "only by phone / in person" before "cancel" |
+| Locked Door | `locked.cancel-channel` | 2 | `\bcancel\w*\b G{0,60} \b(by (phone\|telephone\|mail\|post\|fax)\|in writing\|in person\|by calling)\b` |
 | Locked Door | `locked.retain-after` | 2 | `\b(retain\|keep\|store)\w*\b G{0,80} \bafter\b G{0,40} \b(delet\|clos\|cancel\|terminat)\w*` |
 | Locked Door | `locked.notice-period` | 1 | `\bcancel\w*\b G{0,40} \b\d+ days\b` |
 | Silent Court | `court.binding-arbitration` | 3 | `\b(binding\|mandatory\|individual) arbitration\b` |
@@ -153,12 +156,14 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Silent Court | `court.jury` | 3 | `\b(waive\|give up)\w*\b G{0,60} \bjury\b` |
 | Silent Court | `court.arbitration` | 2 | `\barbitrat\w*` |
 | Silent Court | `court.venue` | 1 | `\bexclusive(ly)? (jurisdiction\|venue)\b` |
-| Mirror Room | `mirror.broad-licence` | 3 | `\b(perpetual\|irrevocable\|worldwide\|royalty[- ]free)\b G{0,80} \blicen[cs]e\b` |
+| Mirror Room | `mirror.broad-licence` | 3 | (C12.2) `(perpetual\|irrevocable\|sub-?licen[cs]…\|transferable\|in perpetuity)` within 80 of `licen[cs]e`, either side, not preceded by "non-"; or `licen[cs]e` G{0,60} `sell`; or `sell\w*` G{0,40} `(content\|posts\|photos\|videos\|uploads\|submissions\|creations)` |
 | Mirror Room | `mirror.ownership` | 3 | `\bbecomes? (our\|the company's) (sole )?property\b` or `\b(we\|company) (own\|owns\|will own)\b G{0,40} \b(content\|posts\|photos\|uploads\|submissions)\b` |
 | Mirror Room | `mirror.ai-training` | 2 | `\b(train\|improve)\w*\b G{0,40} \b(ai\|artificial intelligence\|machine learning\|models?)\b` |
+| Mirror Room | `mirror.wide-licence` (C12.2) | 2 | `\b(worldwide\|royalty[- ]free\|non-exclusive\|fully[- ]paid)\b G{0,80} \blicen[cs]e\b` |
 | Mirror Room | `mirror.licence` | 2 | `\b(grant\|give)\w*\b G{0,40} \b(us\|company)\b G{0,40} \blicen[cs]e\b` |
 | Mirror Room | `mirror.likeness` | 1 | `\buse your (name\|likeness\|image\|profile picture)\b` |
-| Trapdoor | `trapdoor.not-liable` | 3 | `\b(not\|never) (be )?(liable\|responsible)\b G{0,80} \b(any\|all)\b` |
+| Trapdoor | `trapdoor.not-liable` | 3 | (C12.2) total exclusions only: `\b(not\|never) (be )?(liable\|responsible)\b G{0,80} \b(any\|all)\b`, or `under no circumstances` G{0,40} `(liable\|responsible)`, or `(liable\|liability\|responsible)` G{0,80} `(whatsoever\|howsoever)`; each fails when one of `indirect, consequential, incidental, special, punitive, exemplary` follows within 80 |
+| Trapdoor | `trapdoor.consequential` (C12.2) | 2 | `\b(not\|never) (be )?(liable\|responsible)\b G{0,80} \b(indirect\|consequential\|incidental\|special\|punitive\|exemplary)\b` or `\b(exclude\|disclaim)\w*\b G{0,60} \b(indirect\|consequential\|incidental)\b` |
 | Trapdoor | `trapdoor.as-is` | 2 | `\bprovided\b G{0,30} \bas[- ]is\b` or `\bas[- ]is\s+basis\b` or `\bon an ["“]?as[- ]is` |
 | Trapdoor | `trapdoor.cap` | 2 | `\bliability\b G{0,60} \b(limited to\|shall not exceed\|will not exceed\|capped at)\b` |
 | Trapdoor | `trapdoor.indemnify` | 2 | `\bindemnif\w*` or `\bhold (us )?harmless\b` |
@@ -169,27 +174,29 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Shifting Stairs | `stairs.continued-use` | 2 | `\bcontinued use\b G{0,60} \b(accept\|agree\|constitut)\w*` |
 | Shifting Stairs | `stairs.sole-discretion` | 1 | `\b(sole\|absolute) discretion\b` |
 
-Every room has five rules, which meets R2.6 (at least three).
+There are 45 rules: five per room, plus five added by PLAN_DECISIONS.md C12.2 (Cellar 7, Locked Door 6, Mirror Room 6, Trapdoor 6). Every room has at least three, which meets R2.6.
 
 ### Mitigations
 
 | Room | Mitigation ID | Level | Pattern |
 | --- | --- | --- | --- |
-| Cellar | `cellar.no-sell` | 0 | `\bwe (do not\|don't\|never\|will not\|won't) sell\b` |
-| Cellar | `cellar.no-share` | 0 | `\bwe (do not\|don't\|never\|will not\|won't) share\b` |
+| Cellar | `cellar.no-sell` | 0 | `\bwe NOT sell\b` (C12.1) |
+| Cellar | `cellar.no-share` | 0 | `\bwe NOT share\b` (C12.1) |
 | Cellar | `cellar.consent` | 1 | `\bonly with your (explicit \|prior )?consent\b` |
-| Portraits | `portraits.no-track` | 0 | `\bwe (do not\|don't\|never) (track\|profile\|build profiles)\b` |
-| Portraits | `portraits.opt-out` | 1 | `\byou (can\|may) (opt[- ]out\|turn (this\|these\|it) off\|decline)\b` |
-| Vault | `vault.reminder` | 1 | `\b(remind\|notify\|email\|tell) you\b G{0,40} \bbefore\b` |
-| Locked Door | `locked.delete-anytime` | 0 | `\byou (can\|may) (delete\|close\|cancel)\b G{0,60} \b(at any time\|anytime\|instantly\|immediately)\b` |
+| Portraits | `portraits.no-track` | 0 | `\bwe NOT (track\|profile\|build profiles)\b` (C12.1) |
+| Portraits | `portraits.opt-out` | 1 | `\byou (can\|may\|will be able to) (always \|still )?(opt[- ]out\|turn (this\|these\|it) off\|decline)\b` |
+| Vault | `vault.reminder` | 1 | `\b(remind\|notify\|email\|tell) you\b G{0,40} \bbefore\b` or `\bsend you (a \|an )?(reminder\|notice\|email)\b G{0,40} \bbefore\b` |
+| Locked Door | `locked.delete-anytime` | 0 | `\byou (can\|may\|are free to\|will be able to) (always )?(delete\|close\|cancel)\b G{0,60} \b(at any time\|anytime\|instantly\|immediately)\b` |
 | Silent Court | `court.opt-out` | 1 | `\bopt[- ]out of (this \|the )?arbitration\b` |
-| Mirror Room | `mirror.you-own` | 1 | `\byou (retain\|keep) (all )?(ownership\|rights)\b` or `\byou own your content\b` |
-| Trapdoor | `trapdoor.carve-out` | 1 | `\bnothing in (these\|this)\b G{0,60} \blimits?\b G{0,40} \bliability\b` |
-| Shifting Stairs | `stairs.advance-notice` | 1 | `\b(will\|we'll) (notify\|tell\|email\|inform) you\b G{0,60} \b\d+ days\b` or `\bat least \d+ days'? notice\b` |
+| Mirror Room | `mirror.you-own` | 1 | `\byou (will \|always \|still )?(retain\|keep) (all )?((of )?your )?(ownership\|rights)\b` or `\byou (still \|always )?own your content\b` |
+| Trapdoor | `trapdoor.carve-out` | 1 | `\bnothing in (these\|this)\b G{0,60} \b(limits?\|excludes?\|restricts?)\b G{0,40} \bliability\b` |
+| Shifting Stairs | `stairs.advance-notice` | 1 | `\b(will\|we'll\|shall) (always )?(notify\|tell\|email\|inform\|give) you\b G{0,60} \b\d+ days\b` or `\bat least \d+ days'? notice\b` |
+
+`NOT` (C12.1) is one negation, optionally doubled and followed by "ever": `(do|does|will|shall|would|can) (not|never)`, `cannot`, `can't`, `don't`, `doesn't`, `won't`, `shan't` or `never`, as in "we do not and will not sell". Each mitigation's newly accepted wording has a test in `mitigation-phrasing.test.ts`.
 
 ### Room examples (R2.7): 3+ positive and 2+ negative per room
 
-Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned to the room at the listed severity, with the listed rule. "Neg" rows must not be assigned to that room. All 44 rows were checked against the patterns above with a scratch script before this design was written: 0 failures.
+Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned to the room at the listed severity, with the listed rule. "Neg" rows must not be assigned to that room. The first 44 rows were checked against the patterns with a scratch script before this design was written: 0 failures. The 19 rows marked C12.2 were added with the calibration (Task 16.4) and are checked by `classifier.test.ts` like the rest.
 
 | Room | Kind | Clause | Expected |
 | --- | --- | --- | --- |
@@ -237,6 +244,24 @@ Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned 
 | Shifting Stairs | Pos | Your continued use of the service after changes means you accept the new terms. | 2, `stairs.continued-use` |
 | Shifting Stairs | Neg | These terms were last updated on 1 November 2026. | no finding |
 | Shifting Stairs | Neg | You can change your password at any time in Settings. | no finding |
+| Mirror Room | Pos (C12.2) | You grant us a non-exclusive, royalty-free licence to host and display your content. | 2, `mirror.wide-licence` |
+| Mirror Room | Pos (C12.2) | A worldwide, royalty-free licence to store and show your posts is needed to run the service. | 2, `mirror.wide-licence` |
+| Mirror Room | Pos (C12.2) | You grant us a non-exclusive, non-transferable, non-sublicensable licence to display your posts. | 2, `mirror.wide-licence` |
+| Mirror Room | Pos (C12.2) | You grant us a worldwide, royalty-free, sublicensable licence to use your content. | 3, `mirror.broad-licence` |
+| Mirror Room | Pos (C12.2) | You grant us a licence to copy and sell the photos you upload. | 3, `mirror.broad-licence` |
+| Mirror Room | Neg (C12.2) | A worldwide audience can see the posts you choose to make public. | no finding |
+| Trapdoor | Pos (C12.2) | We are not liable for any indirect or consequential damages arising from your use of the service. | 2, `trapdoor.consequential` |
+| Trapdoor | Pos (C12.2) | Under no circumstances will we be liable for any damages whatsoever. | 3, `trapdoor.not-liable` |
+| Trapdoor | Neg (C12.2) | You are responsible for keeping your password safe. | no finding |
+| Locked Door | Pos (C12.2) | You can cancel your membership only by phone or in person at one of our clubs. | 3, `locked.phone-or-person` |
+| Locked Door | Pos (C12.2) | Cancellations must be made in person at the branch where you signed up. | 3, `locked.phone-or-person` |
+| Locked Door | Neg (C12.2) | Call us by phone if you need help with an order. | no finding |
+| Cellar | Pos (C12.2) | If we are involved in a merger or acquisition, your information may be transferred to the new owner. | 2, `cellar.merger` |
+| Cellar | Pos (C12.2) | We may disclose your personal data to a buyer as part of a sale of our business. | 2, `cellar.merger` |
+| Cellar | Pos (C12.2) | We keep your personal information indefinitely. | 2, `cellar.retention` |
+| Cellar | Pos (C12.2) | We retain your data for as long as we see fit. | 2, `cellar.retention` |
+| Cellar | Neg (C12.2) | Our company was founded after a merger of two small studios. | no finding |
+| Cellar | Neg (C12.2) | We keep your data for as long as necessary to provide the service. | no finding |
 
 ### Cancelled mitigations (R3.11)
 

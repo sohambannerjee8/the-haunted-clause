@@ -35,7 +35,10 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
   const [findings, setFindings] = useState<readonly ExplainedFinding[]>(prepared.findings);
   const [lights, setLights] = useState(false);
   const [medium, setMedium] = useState<Medium>("idle");
-  const [open, setOpen] = useState<{ finding: Finding; opener: HTMLButtonElement } | null>(null);
+  // Each opening is a new object with its own number, so a fast reopen gets a fresh dialog, and a
+  // late "close" event from the previous dialog cannot close the new one.
+  const [open, setOpen] = useState<{ finding: Finding; opener: HTMLButtonElement; seq: number } | null>(null);
+  const openings = useRef(0);
   // Sound is off until the user turns it on; no AudioContext exists before that (R11.1).
   const [sound] = useState(() => createSound());
   const [soundOn, setSoundOn] = useState(false);
@@ -88,19 +91,19 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
         {lights ? "Lights on" : "Inside the house"}
       </h2>
       {/* Lights on renders no ghost, so every repeating animation stops (R10.5). */}
-      {lights ? <LightsOnList model={model} /> : <House model={model} onOpen={(finding, opener) => setOpen({ finding, opener })} />}
+      {lights ? <LightsOnList model={model} /> : <House model={model} onOpen={(finding, opener) => setOpen({ finding, opener, seq: ++openings.current })} />}
       {open &&
         (() => {
           const shown = findings.find((f) => f.id === open.finding.id)!;
           const rule = prepared.ruleFindings.find((f) => f.id === shown.id)!;
           return (
             <DetailDialog
-              key={shown.id}
+              key={`${shown.id}-${open.seq}`}
               finding={shown}
               ruleSeverity={rule.severity}
               room={roomById(shown.room)}
               opener={open.opener}
-              onClose={() => setOpen(null)}
+              onClose={() => setOpen((cur) => (cur?.seq === open.seq ? null : cur))}
               onShown={(severity) => sound.play(severity)}
             />
           );

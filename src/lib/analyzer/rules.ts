@@ -20,6 +20,8 @@ export interface Mitigation {
 }
 
 const G = "[^.;]";
+/** Qualifiers that make a liability exclusion partial rather than total. */
+const LIMITED_DAMAGES = "(?:indirect|consequential|incidental|special|punitive|exemplary)";
 const re = (...alternatives: string[]) => new RegExp(alternatives.map((a) => `(?:${a})`).join("|"), "i");
 
 const rule = (id: string, room: RoomId, severity: 1 | 2 | 3, pattern: RegExp, explanation: string, whyItMatters: string): Rule =>
@@ -42,6 +44,15 @@ export const RULES: readonly Rule[] = Object.freeze([
   rule("cellar.third-parties", "cellar", 2, re(`\\b(?:share|disclose|provide|transfer)\\w*\\b${G}{0,80}\\b(?:third[- ]part(?:y|ies)|partners|affiliates)\\b`),
     "Your information can be shared with other companies.",
     "Each company that receives your data is another place it can leak or be misused."),
+  rule("cellar.merger", "cellar", 2, re(
+      `\\b(?:transfer|disclos|shar|pass|provid)\\w*\\b${G}{0,100}\\b(?:merger|acquisition|reorgani[sz]ation|bankruptcy|change (?:of|in) control|sale of (?:all or part of |substantially all of |some or all of |part of )?(?:our |the )?(?:business|company|assets))\\b`,
+      `\\b(?:merger|acquisition|bankruptcy|change (?:of|in) control)\\b${G}{0,100}\\b(?:transfer|disclos|shar|pass)\\w*`),
+    "If the company is sold or merges, your information goes to the new owner.",
+    "The new owner may have different plans for your data than the company you signed up with."),
+  rule("cellar.retention", "cellar", 2, re(
+      `\\b(?:retain|keep|store|hold)\\w*\\b${G}{0,80}\\b(?:indefinitely|permanently|forever|for an? (?:unlimited|indefinite) (?:period|time)|as long as we (?:see fit|wish|like|want|choose|deem (?:necessary|appropriate)))\\b`),
+    "The company can keep your information with no end date.",
+    "Data kept forever can leak, be sold or be used in ways you never expected, years from now."),
 
   // The Watching Portraits: tracking and profiling
   rule("portraits.cross-site", "portraits", 3, re(`\\btrack\\w*\\b${G}{0,60}\\b(?:across|on) (?:other |third[- ]party )?(?:websites|sites|apps|services|devices)\\b`),
@@ -84,7 +95,13 @@ export const RULES: readonly Rule[] = Object.freeze([
   rule("locked.cancel-fee", "locked-door", 3, re(`\\b(?:cancellation|early termination|termination) fees?\\b`),
     "Leaving costs you money.",
     "A fee to cancel is a penalty for changing your mind."),
-  rule("locked.cancel-channel", "locked-door", 2, re(`\\bcancel\\w*\\b${G}{0,60}\\b(?:by (?:phone|telephone|mail|post|fax)|in writing|by calling)\\b`),
+  rule("locked.phone-or-person", "locked-door", 3, re(
+      `\\bcancel\\w*\\b${G}{0,60}\\bonly\\b${G}{0,20}\\b(?:by (?:phone|telephone|calling)|in person)\\b`,
+      `\\bcancel\\w*\\b${G}{0,40}\\b(?:must|need to|have to) be (?:made|done|submitted) in person\\b`,
+      `\\bonly\\b${G}{0,20}\\b(?:by (?:phone|telephone)|in person)\\b${G}{0,40}\\bcancel\\w*`),
+    "You can only cancel by phone or by going somewhere in person.",
+    "Forcing a call or a visit to cancel keeps people paying who meant to leave."),
+  rule("locked.cancel-channel", "locked-door", 2, re(`\\bcancel\\w*\\b${G}{0,60}\\b(?:by (?:phone|telephone|mail|post|fax)|in writing|in person|by calling)\\b`),
     "You can only cancel by phone, post or another slow route.",
     "Making cancelling awkward keeps people paying who meant to leave."),
   rule("locked.retain-after", "locked-door", 2, re(`\\b(?:retain|keep|store)\\w*\\b${G}{0,80}\\bafter\\b${G}{0,40}\\b(?:delet|clos|cancel|terminat)\\w*`),
@@ -112,15 +129,24 @@ export const RULES: readonly Rule[] = Object.freeze([
     "A distant court makes it expensive for you to bring a claim."),
 
   // The Mirror Room: rights the company takes over your content
-  rule("mirror.broad-licence", "mirror", 3, re(`\\b(?:perpetual|irrevocable|worldwide|royalty[- ]free)\\b${G}{0,80}\\blicen[cs]e\\b`),
-    "You give the company a lasting, wide licence to use what you upload.",
-    "A perpetual, irrevocable licence means the company can keep using your work even after you leave."),
+  // Severity 3 only for licences that never end, cannot be withdrawn, pass to others, or let the
+  // company sell your work (PLAN_DECISIONS.md C12.2). "non-transferable" and similar do not count.
+  rule("mirror.broad-licence", "mirror", 3, re(
+      `(?<!non-)(?<!non )\\b(?:perpetual|irrevocable|sub-?licen[cs]\\w*|transferable|in perpetuity)\\b${G}{0,80}\\blicen[cs]e\\b`,
+      `\\blicen[cs]e\\b${G}{0,80}(?<!non-)(?<!non )\\b(?:perpetual|irrevocable|sub-?licen[cs]\\w*|transferable|in perpetuity)\\b`,
+      `\\blicen[cs]e\\b${G}{0,60}\\bsell\\b`,
+      `\\bsell\\w*\\b${G}{0,40}\\b(?:your )?(?:content|posts|photos|videos|uploads|submissions|creations)\\b`),
+    "You give the company a lasting licence it can pass on, or the right to sell what you upload.",
+    "A perpetual, irrevocable or sublicensable licence means others can keep using your work even after you leave."),
   rule("mirror.ownership", "mirror", 3, re(`\\bbecomes? (?:our|the company's) (?:sole )?property\\b`, `\\b(?:we|company) (?:own|owns|will own)\\b${G}{0,40}\\b(?:content|posts|photos|uploads|submissions)\\b`),
     "What you post becomes the company's property.",
     "You may lose the right to control, remove or reuse your own content."),
   rule("mirror.ai-training", "mirror", 2, re(`\\b(?:train|improve)\\w*\\b${G}{0,40}\\b(?:ai|artificial intelligence|machine learning|models?)\\b`),
     "Your content can be used to train AI systems.",
     "Once used for training, your content cannot easily be taken back out."),
+  rule("mirror.wide-licence", "mirror", 2, re(`\\b(?:worldwide|royalty[- ]free|non-exclusive|fully[- ]paid)\\b${G}{0,80}\\blicen[cs]e\\b`),
+    "You give the company a licence to use what you upload, for example to host and show it.",
+    "A service needs some licence to show your posts, but check what else it covers."),
   rule("mirror.licence", "mirror", 2, re(`\\b(?:grant|give)\\w*\\b${G}{0,40}\\b(?:us|company)\\b${G}{0,40}\\blicen[cs]e\\b`),
     "You give the company a licence to use your content.",
     "The wider the licence, the more the company can do with your work without asking."),
@@ -129,9 +155,19 @@ export const RULES: readonly Rule[] = Object.freeze([
     "Your face or name could appear in promotions you never saw."),
 
   // The Trapdoor: liability limits and disclaimers
-  rule("trapdoor.not-liable", "trapdoor", 3, re(`\\b(?:not|never) (?:be )?(?:liable|responsible)\\b${G}{0,80}\\b(?:any|all)\\b`),
+  // Severity 3 only for total exclusions; an ordinary indirect or consequential damages exclusion
+  // is trapdoor.consequential (PLAN_DECISIONS.md C12.2).
+  rule("trapdoor.not-liable", "trapdoor", 3, re(
+      `\\b(?:not|never) (?:be )?(?:liable|responsible)\\b(?!${G}{0,80}\\b${LIMITED_DAMAGES}\\b)${G}{0,80}\\b(?:any|all)\\b`,
+      `\\bunder no circumstances\\b${G}{0,40}\\b(?:liable|responsible)\\b(?!${G}{0,80}\\b${LIMITED_DAMAGES}\\b)`,
+      `\\b(?:liable|liability|responsible)\\b(?!${G}{0,80}\\b${LIMITED_DAMAGES}\\b)${G}{0,80}\\b(?:whatsoever|howsoever)\\b`),
     "The company says it is not responsible for any harm the service causes.",
     "If something goes badly wrong, you may have no one to hold to account."),
+  rule("trapdoor.consequential", "trapdoor", 2, re(
+      `\\b(?:not|never) (?:be )?(?:liable|responsible)\\b${G}{0,80}\\b${LIMITED_DAMAGES}\\b`,
+      `\\b(?:exclude|disclaim)\\w*\\b${G}{0,60}\\b(?:indirect|consequential|incidental)\\b`),
+    "The company will not pay for knock-on losses, such as lost profits or other indirect damage.",
+    "Many terms exclude these, but it means you bear the wider costs if the service fails you."),
   rule("trapdoor.as-is", "trapdoor", 2, re(`\\bprovided\\b${G}{0,30}\\bas[- ]is\\b`, `\\bas[- ]is\\s+basis\\b`, `\\bon an ["“]?as[- ]is`),
     "The service is offered \"as is\", with no promise that it works.",
     "You take the risk if it fails, loses your data or is wrong."),

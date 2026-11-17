@@ -7,8 +7,8 @@ describe("rule table (R2.6, R2.8, R4.5)", () => {
     expect(RULES.filter((r) => r.room === room).length).toBeGreaterThanOrEqual(3);
   });
 
-  it("has 40 rules and 11 mitigations, as in the design", () => {
-    expect(RULES).toHaveLength(40);
+  it("has 45 rules and 11 mitigations, as in the design (40 + 5 added by PLAN_DECISIONS.md C12.2)", () => {
+    expect(RULES).toHaveLength(45);
     expect(MITIGATIONS).toHaveLength(11);
   });
 
