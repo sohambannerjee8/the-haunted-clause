@@ -43,7 +43,9 @@ src/components/
   house/House.tsx             frame SVG (aria-hidden) and the 8 rooms grid
   house/Room.tsx              heading, clause type, status text, ghost group (roving tabindex)
   house/Ghost.tsx             <button> with GhostArt, numeral and aria-label
-  house/GhostArt.tsx          inline SVG ghost or wisp, sized by level
+  house/GhostArt.tsx          inline SVG ghost or wisp, sized by level; shape and face by level (C14.3, C15)
+  house/RoomProp.tsx          one drawn prop per room, aria-hidden (C14.2)
+  NightScene.tsx              moonlit scene behind the paste box, aria-hidden (C14.1)
   house/DetailDialog.tsx      native <dialog>
   house/LightsOnList.tsx      plain semantic list
 src/lib/ui/
@@ -156,10 +158,18 @@ stateDiagram-v2
 - `ScoreBadge` shows `` `${score} · ${bandFor(score)}` `` with the band in Creepster. There is no "/100" anywhere (R7.1).
 - A separate visually hidden `role="status"` element gets "Haunt Score N, band" only when the score changes, using a ref to the previous value (R7.3).
 
+## Design pass (C14, C15)
+
+- **Input screen:** `NightScene` draws a still moon, hill and house silhouette behind the paste box, which sits on a solid ink panel. Each sample card is a house front (1, 2 or 3 lit windows for mild, average, terrible) whose button is an arched door, still named "Open this house: <company>", at least 44 × 44 px.
+- **Room props:** `RoomProp` draws barrels, portrait frames with eyes, a vault door, a chained door, a gavel, a cracked mirror, a trapdoor and crooked stairs beside each room heading. They repeat the room's identity, so they are `aria-hidden` and outside the ghost group.
+- **Ghost shapes and faces:** level 0 a wisp; 1 a faint sheet with calm eyes; 2 an uneasy sheet with a worried face (`data-face="worried"`: brows raised at the inner ends, a wavering mouth); 3 a tattered sheet with a darker shredded hem and a menacing face (`data-face="menacing"`: slanted hollow sockets with glowing eyes, a jagged grin). Size, opacity, colour and numeral are unchanged.
+- **Hero score:** `ScoreBadge` is a panel above the house; the band in large Creepster is the main phrase, the number beside it, and the text is still "<score> · <band>".
+- **Fog and candlelight:** the page background uses still gradients. Inside the house frame only, a 24 s fog drift (transform only) and two 4 s candle glows (one opacity peak per cycle) sit behind the rooms with no pointer events. Lights on mode unmounts them and reduced motion stops them.
+
 ## Lights on mode (R8)
 
 - **Toggle:** a button with `aria-pressed`. Its text stays "Lights on" in both states, and its pressed state says whether the lights are on (R8.1). Focus stays on it, because the toggle is not unmounted (R8.5).
-- **List:** `LightsOnList` renders `<section>` per room, with an `h3` per room in room order. Under each is an `<ol>` of findings, each holding the severity numeral and label, the quote in `<blockquote>`, the explanation, "Why it matters" and the badge. A quiet room shows "Quiet" (R8.2).
+- **List:** `LightsOnList` renders `<section>` per room, with an `h3` per room in room order. Under each is an `<ol>` of findings, each holding the severity numeral and label, the quote in `<blockquote>`, the explanation, "Why it matters" and the badge. A mitigated finding also shows "A reassurance in this clause lowers its severity." (C13). A quiet room shows "Quiet" (R8.2).
 - It is built from the same `buildHouseModel(findings)` as the house, so both views show the same findings (R8.3, property U1).
 - It has no SVG, no animation classes and no Motion components (R8.4). "Not legal advice" sits at the top (R13).
 
@@ -243,11 +253,13 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 | --- | --- |
 | `InputScreen.test.tsx` | Counter format; the counter has `aria-live="off"` and no ancestor with `role="status"`, `role="alert"` or `aria-live` polite or assertive (R2.6); `maxLength`; paste over the cap is cut with the notice; the empty message with `aria-invalid`; the Analyze callback |
 | `SampleCards.test.tsx` | Three cards; each shows its company name and its one-line description from `meta.ts`; buttons named with the company (R2.5) |
-| `Ghost.test.tsx` | Each level 0–3: `data-severity`, aria-label, visible numeral, the level class; 44 px minimum |
+| `Ghost.test.tsx` | Each level 0–3: `data-severity`, aria-label, visible numeral, the level class; 44 px minimum; a different shape per level, glowing eyes only on level 3, `data-face` worried for level 2 and menacing for level 3 (C14.3, C15) |
+| `RoomProp.test.tsx` | One `aria-hidden` prop per room with no text, eight different drawings, outside the ghost group (C14.2) |
+| `NightScene.test.tsx` | Decorative only: `aria-hidden`, a moon and the house silhouette, no text, no pointer events (C14.1) |
 | `Room.test.tsx` | Quiet room text, no buttons, and the section's accessible name "<Room>, quiet" (R4.5); the status line; the group label; roving tabindex (one `tabindex=0`; arrows, Home and End move focus; wrap-around; focus memory) |
 | `DetailDialog.test.tsx` | The title is an `h2` inside the dialog (R19.3); all fields; mitigation notes; the medium-raised note; plain text (a quote holding `<b>` shows literally); Close returns focus |
 | `ScoreBadge.test.tsx` | Format "N · band"; no "/100"; the announcement only on change |
-| `LightsOnList.test.tsx` | Same findings as the model; Quiet rooms; no SVG; the notice at the top |
+| `LightsOnList.test.tsx` | Same findings as the model; Quiet rooms; no SVG; the notice at the top; the reassurance line on mitigated findings only, and the mitigation's explanation on the mild Cellar finding (C13) |
 | `OptInPanel.test.tsx` | Hidden when `llmAvailable` is false (the "no medium" line shown); hidden for samples; listening state; the success merge; each failure message; no call without a press |
 | `Footer.test.tsx` | "Not legal advice" and the sentence saying the readings are automated and can be wrong (R1.2) |
 | `House.test.tsx` | The frame SVG has `aria-hidden="true"` and holds no text nodes; 8 rooms in order (R4.1, R4.6) |
@@ -288,7 +300,8 @@ Coverage target: 80% of lines for `src/` outside the analyzer and llm folders, e
   5. The terrible sample with its first severity 3 ghost opened → `detail-<w>.png`.
   6. The terrible sample in Lights on mode → `lights-on-<w>.png`.
 - Each state is captured with `page.screenshot({ fullPage: true })`. The open dialog is captured in the viewport only, since it is modal.
-- The 12 PNGs are committed under `docs/screenshots/`. They are images of the app's own art and fictional samples, with no third-party marks.
+- A third `@screenshots` test (C14.7) opens the terrible sample at 1440 × 900 with `reducedMotion: "no-preference"`, checks that `document.getAnimations()` has running animations, and saves `house-terrible-motion-1440.png`.
+- The 13 PNGs are committed under `docs/screenshots/`. They are images of the app's own art and fictional samples, with no third-party marks.
 - After Gate 4 passes, the builder registers the 12 images as artifacts, shows them to the user and waits (C10.15).
 
 ## Error handling summary

@@ -66,7 +66,7 @@ export interface Finding {
   mitigationId: string | null;           // a mitigation lowered the severity (R3.6)
   cancelledMitigationId: string | null;  // a reassurance was undercut by an exception marker (R3.11)
   explanation: string;     // from the rule, or from the applied mitigation (C13); 1..400 chars
-  whyItMatters: string;    // from the rule, 1..400 chars
+  whyItMatters: string;    // from the rule, or from the applied mitigation (C13); 1..400 chars
 }
 
 export type AnalyzeResult =
@@ -110,13 +110,13 @@ When an indented list item follows a paragraph break, both R1.8 and R1.9 fire. *
 ### Algorithm for one clause
 
 1. Trim the clause to its non-whitespace span `[s, e)`. If it is empty, return `null` (R2.3).
+1b. Heading line (R4.2, C14.6): if the trimmed clause starts with a line of at most 60 characters followed by a line break and more text, and that line does not end in `.`, `;`, `:`, `?` or `!` (a bare list number such as "1." is allowed), before any rule is read, move `s` to the first non-whitespace character after the line break. The heading is left out of both the reading and the quote; the finding ID stays the clause ID.
 2. For each room in room order, find every rule of that room whose pattern matches `input.slice(s, e)`. The room's raw severity is the highest of their severities. Its `ruleId` is the first rule in the table with that severity (R2.5, R3.1).
 3. For each mitigation of that room (in table order), find its first match. If an exception marker appears in the text after the end of that match, the mitigation is **cancelled** (R3.3). Otherwise it **applies** (R3.2, R3.4, R3.5).
    - **Some mitigation applies:** the applying mitigation with the lowest level wins (ties go to the first in the table). If its level is lower than the room's severity, the severity becomes that level and `mitigationId` is set (R3.6).
    - **None applies, at least one cancelled (R3.11):** copy the clause text and replace every cancelled mitigation match with spaces of the same length. Then re-run the room's rules on that masked copy. The severity becomes `min(raw, max(highestMaskedMatch, 1))`. `ruleId` is the masked match's rule, or the original rule if nothing else matched. `cancelledMitigationId` is the first cancelled mitigation in table order.
    - **No mitigation matched:** the severity stays at the raw severity.
 4. Choose the room with the highest severity after mitigations. Ties go to the room that comes first in room order (R2.4).
-4b. Heading line (R4.2, C14.6): if the trimmed clause starts with a line of at most 60 characters followed by a line break and more text, and that line does not end in `.`, `;`, `:`, `?` or `!` (a bare list number such as "1." is allowed), move `s` to the first non-whitespace character after the line break. The heading is left out of both the reading and the quote; the finding ID stays the clause ID.
 5. Build the finding: `id` = clause ID, `start = s`, `end = e`, `quote = input.slice(s, e)`, plus `explanation` and `whyItMatters` from the rule, or from the mitigation when one was applied (R4.5, C13). A severity 0 result is still a finding (R3.7).
 
 All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so no `lastIndex` state leaks between calls (R7.3). Gaps between words use `[^.;]{0,N}` with a fixed `N`, so matching stays linear in the clause length (R6.3).
@@ -383,7 +383,7 @@ All properties use fast-check with `fc.assert(property, { numRuns: 1000 })` (tes
 The generators are:
 - `anyString`: `fc.string({ unit: "binary", maxLength: 2_000 })`, all code points.
 - `utf16String`: `fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((n) => String.fromCharCode(n)), maxLength: 2_000 })`. It includes unpaired surrogates and control characters.
-- `policyLike`: fragments joined from a pool. The pool holds the 28 positive and 16 negative example clauses, the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
+- `policyLike`: fragments joined from a pool. The pool holds all the room example clauses (41 positive and 21 negative after C12.2), the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
 - `bigString`: a fragment from `policyLike` repeated up to a length drawn from `fc.integer({ min: 0, max: 50_000 })`, so sizes up to the cap are covered.
 - `overCapString`: a fragment from `policyLike` repeated to a length drawn from `fc.integer({ min: 50_001, max: 60_000 })`, for the splitter's over-cap criterion (R1.12) and the analyzer's typed error (R6.2, R8.2).
 
@@ -410,8 +410,11 @@ Further properties that support the six (also at 1,000 runs):
 | --- | --- | --- |
 | `splitter.test.ts` | Unit | Each of the 11 abbreviations mid-sentence (one test each); `etc.` before a paragraph break; the four boundary-resolution rows above; terminators with closers; CRLF; empty input; whitespace only; emoji; `zinc. Then` still splits; list markers `-`, `*`, `•`, `1.`, `12)`, `a)`, `(iv)` |
 | `splitter.property.test.ts` | Property | P6, P8 |
-| `classifier.test.ts` | Unit | The 44 room examples (R2.7); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
+| `classifier.test.ts` | Unit | The 62 room examples (R2.7: 44, plus 18 from C12.2); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
 | `mitigation.test.ts` | Unit | The 19 mitigation and marker rows (R3), including the three R3.10 cases |
+| `mitigation-phrasing.test.ts` | Unit | Each mitigation's accepted wordings, including "we will never sell" (C12.1, R3.2) |
+| `mitigation-texts.test.ts` | Unit | Every mitigation's own texts, used when it lowers a finding; a cancelled one keeps the rule's (C13, R4.5) |
+| `heading.test.ts` | Unit | Heading lines left out of the quote and the reading, and the cases left alone (C14.6, R4.2) |
 | `rules.test.ts` | Unit | Every room has at least 3 rules; IDs are unique; severities are 1–3; texts are 1–400 characters; patterns have no `g` or `y` flag (R2.6, R4.5) |
 | `score.test.ts` | Unit | No findings gives 0; all severity 0 gives 0; one finding at each severity (5, 15, 30); a room capped at 6, 15 and 35; all eight rooms saturated gives exactly 97 (`MAX_REACHABLE_SCORE`); the long-policy scenarios in the table above give 80, 44, 31 and 31 |
 | `score.property.test.ts` | Property | P1, P7 |

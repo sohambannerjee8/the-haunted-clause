@@ -4,7 +4,7 @@ Tasks 23–33 of the build plan (PLAN_DECISIONS.md section D). Tasks 23–31 are
 
 Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
 
-**For any agent started from Kiro's spec task panel (PLAN_DECISIONS.md C12.3), before any task:**
+**For anyone working on a task here, before any task:** (C12.3's spec task panel route did not work in this workspace and was replaced by C12.4: tasks are ticked by hand, and saving this file triggers the Spec sync hook.)
 - Read PLAN.md (the brief; section 1 "How to work", section 3 rules, section 6 phases and gates) and PLAN_DECISIONS.md (it wins where the two differ), then the end of BUILD_LOG.md to see where the build stands.
 - The steering files in `.kiro/steering/` apply, especially `testing.md` (test first, never weaken or skip a test, 1,000 runs per property, sub-agents verify gates) and `tech.md`.
 - Gate agents are in `.kiro/agents/` and run as sub-agents with fresh context; the builder never verifies its own work at a gate.
@@ -164,7 +164,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - Sound is off on load, and no `AudioContext` is constructed.
   - _Requirements: 10.1–10.5, 11.1, 11.2_
 
-- [ ] 31. Responsive layout, Gate 4 and the visual review
+- [x] 31. Responsive layout, Gate 4 and the visual review
 - [x] 31.1 E2E `layout.spec.ts` at 360 × 740 and 1440 × 900
   - Every state listed in R12.1, using both projects (the opt-in states on llm-ui; loading by delaying the house chunk with `page.route`): no horizontal scroll, no clipped text (each visible text element has `scrollWidth <= clientWidth + 1` and stays inside the viewport width), no intersecting controls, and 2 or 4 grid columns.
   - The dialog fits within the viewport and scrolls inside.
@@ -185,19 +185,19 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - **Pass when** both agents return PASS: Playwright covers the full flow for all three samples, and axe shows no serious or critical issue (PLAN.md Phase 4 gate). On a FAIL, fix the cause test first and re-run that agent as attempt N+1; after 3 failed attempts on the same problem, stop and ask the user (PLAN.md section 1, rule 4).
   - **After a pass:** run `check:secrets`, `check:history`, `check:rules` and `check:trace`, commit, push to origin and log the push (C11.1). Then go to 31.5.
   - _Requirements: 4, 5, 6, 7, 8, 9, 10, 12, 19 (Gate 4)_
-- [x] 31.6 Design pass after the first screenshot review (PLAN_DECISIONS.md C14)
-  - **Read first:** PLAN_DECISIONS.md C14; `.kiro/steering/design-language.md`; the end of BUILD_LOG.md (the user's verdict).
-  - Moonlit input screen with the house silhouette behind the paste box, and the samples as small house fronts with doors (`InputScreen.tsx`, `SampleCards.tsx`, a new `NightScene.tsx`).
-  - One identifying prop per room (`RoomProp.tsx`, used in `Room.tsx`); ghost shapes by severity (`GhostArt.tsx`); the Haunt Score as the hero (`ScoreBadge.tsx`); fog and candlelight in the background and house frame only (`globals.css`, `House.tsx`).
-  - Tests first where behaviour is involved: `RoomProp.test.tsx` (one distinct `aria-hidden` prop per room, no text), `Ghost.test.tsx` (each level draws a different shape), `ScoreBadge.test.tsx` (band is the main phrase, text still "N · band"), `SampleCards.test.tsx` (door buttons keep their names and 44 px size). All existing unit, E2E, axe, layout, keyboard and motion tests must keep passing, and the first-load JS stays within 200 kB.
-  - Then `CI=1 npm run screenshots` for the 12 PNGs plus `house-terrible-motion-1440.png`, commit them, show them, and stop for the user's review.
-  - _Requirements: 4, 5.4, 7.1, 10, 12, 19.2, 20_
 - [x] 31.5 Visual review stop (C10.15)
   - **Read first:** PLAN_DECISIONS.md C10.15; requirements R20; `e2e/screenshots.spec.ts`.
   - Only after Gate 4 (31.4) has passed: run `CI=1 npm run screenshots`. It writes 12 PNGs to `docs/screenshots/` (`input`, `house-mild`, `house-average`, `house-terrible`, `detail`, `lights-on`, each at `1440` and `360`). Check that there are exactly 12, commit them, push and log the push (C11.1).
   - Register each image as an artifact, show them to the user, and **stop**. Do not start Phase 5 work.
   - In BUILD_LOG.md, record the date the screenshots were shown. The task is done when the screenshots are committed and shown. The user's reply is recorded in BUILD_LOG.md before any Phase 5 entry; Task 32.1 checks that it is there.
   - _Requirements: 20.1–20.4_
+- [x] 31.6 Design pass after the first screenshot review (PLAN_DECISIONS.md C14)
+  - **Read first:** PLAN_DECISIONS.md C14; `.kiro/steering/design-language.md`; the end of BUILD_LOG.md (the user's verdict).
+  - Moonlit input screen with the house silhouette behind the paste box, and the samples as small house fronts with doors (`InputScreen.tsx`, `SampleCards.tsx`, a new `NightScene.tsx`).
+  - One identifying prop per room (`RoomProp.tsx`, used in `Room.tsx`); ghost shapes by severity (`GhostArt.tsx`); the Haunt Score as the hero (`ScoreBadge.tsx`); fog and candlelight in the background and house frame only (`globals.css`, `House.tsx`).
+  - Tests first where behaviour is involved: `RoomProp.test.tsx` (one distinct `aria-hidden` prop per room, no text), `Ghost.test.tsx` (each level draws a different shape), `ScoreBadge.test.tsx` (band is the main phrase, text still "N · band"), `SampleCards.test.tsx` (door buttons keep their names and 44 px size). All existing unit, E2E, axe, layout, keyboard and motion tests must keep passing, and the first-load JS stays within 200 kB.
+  - Then add the motion-on test to `e2e/screenshots.spec.ts` and run `CI=1 npm run screenshots` for the 12 PNGs plus `house-terrible-motion-1440.png`, commit them, show them, and stop for the user's review.
+  - _Requirements: 4, 5.4, 7.1, 10, 12, 19.2, 20_
 
 - [x] 32. Edge cases, loading and error states (Phase 5)
 - [x] 32.0 Ghost expressions (PLAN_DECISIONS.md C15)
@@ -251,7 +251,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
 - [ ] 33.3 Run Gate 5
   - **Read first:** PLAN.md section 6 "Phase 5" (gate: all five agents) and "Rules for every gate"; PLAN_DECISIONS.md C10.21, C11 and C12; all five files in `.kiro/agents/`; the end of BUILD_LOG.md.
   - Run all five agents as sub-agents, one after the other, never in parallel (several of them build into `.next`):
-    1. `spec-reviewer` (gate name "Gate 5, spec-reviewer, attempt N"; the specs changed since Gate 1 by C12, so it re-checks all three specs and `npm run check:trace`);
+    1. `spec-reviewer` (gate name "Gate 5, spec-reviewer, attempt N"; the specs changed since Gate 1 by C12, C13, C14 and C15, so it re-checks all three specs and `npm run check:trace`);
     2. `security-reviewer`;
     3. `rules-auditor` (Gate 5 decides R1, R3, R4, R5, R7, R8, A1, A2, A3, A4, K1 and K2, as its agent file says);
     4. `ui-a11y-reviewer`: build with no key and start `npx next start -p 3100` first, pass the URL, item 16 is now due, and stop the server afterwards;

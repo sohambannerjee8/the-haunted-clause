@@ -919,3 +919,18 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with t
 - The same coverage run in the workspace afterwards also gave 96.86% (618/638), and the clone's `src/` file list matched the workspace's. (The 93.56% in the Task 31.6 entry was measured before the new `HauntedApp.test.tsx` tests in 32.1 and 32.2.)
 - The `/tmp/hc-clean` folder was deleted afterwards.
 - **Spec sync fired** (`PostFileSave`) when I ticked haunted-house-ui **Task 33.2 Clean clone**. Files changed in the repository: BUILD_LOG.md and the task's checkbox only (the clone was in `/tmp` and was deleted). Tests in the clone: `npm run test:coverage` 772 passed, 0 failed, 0 skipped; `CI=1 npm run test:e2e` 85 passed, 0 failed. Kiro features: the spec (task 33.2) and the Spec sync hook. README feature list: unchanged, since 33.2 adds no user-facing feature.
+
+### Gate 5 (Task 33.3)
+- **spec-reviewer, attempt 1: FAIL.** Report saved unchanged to `docs/gate-reports/phase-5-spec-reviewer-attempt-1.md`. 14 of 15 items Yes. `check:trace` passed and its 30-entry spot check found every named test in a task. All Gate 1 open items are resolved.
+  - **Item 15 No (CONFLICT):** haunted-house-ui R20.1 still said 12 screenshots and R20.3 "each screenshot with reduced motion on", but PLAN_DECISIONS.md C14.7 approved a 13th with motion on, which `screenshots.spec.ts` makes. I had changed the work without changing the requirement.
+  - MINOR items: the clause-analyzer design put the heading step (4b) after the room is chosen; R2.2 and R2.4 did not mention that the heading line is left out; the design's example counts, test table and `Finding` comment lagged behind C12–C13; the haunted-house-ui design lacked C13–C15 (Lights on reassurance line, night scene, room props, ghost faces, hero score, fog); `tasks.md` still pointed to the C12.3 panel route, 33.3 named only C12, 31.6 sat before 31.5, and parent Task 31 was unticked.
+- **Why I fixed it instead of stopping:** the agent noted that under C10.21 a conflict with PLAN_DECISIONS.md means stopping to ask the user. Here the decision itself is not in question: the user approved C14.7 explicitly, and the spec simply had not been updated to match. Bringing the spec into line with an approved decision needs no new decision from the user, so I fixed it and re-ran the agent. If the user disagrees, the change is one commit to revert.
+- **Fixes:**
+  - R20.1 and R20.3 now cover the 12 reduced-motion screenshots plus the C14.7 motion-on one (which must check that animations are running).
+  - The haunted-house-ui design's screenshot section and the HU-R20.1 and HU-R20.3 matrix rows say the same, with Task 31.6 added; 31.6 now names `e2e/screenshots.spec.ts`.
+  - The heading step is now step 1b, before any rule is read, and R2.2 and R2.4 say rules are read after any heading line.
+  - The clause-analyzer design has the 62-example count, the 41/21 pool, the C13 `whyItMatters` comment, and rows for `mitigation-phrasing.test.ts`, `mitigation-texts.test.ts` and `heading.test.ts`.
+  - The haunted-house-ui design has a "Design pass (C14, C15)" section, the new component files, the Lights on reassurance line, and updated `Ghost.test.tsx`, `LightsOnList.test.tsx`, `RoomProp.test.tsx` and `NightScene.test.tsx` rows.
+  - `tasks.md`: the header now describes the C12.4 route; 33.3 names C12–C15; 31.6 follows 31.5.
+  - Parent Task 31 was ticked by a script edit, so the Spec sync hook did not fire for it. It records nothing new: all its sub-tasks were already logged.
+- `npm run check:trace` still passes (236 rows). No code or test changed.

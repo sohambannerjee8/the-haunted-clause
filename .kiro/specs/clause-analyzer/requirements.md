@@ -65,9 +65,9 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 #### Acceptance Criteria
 
 1. THE classifier SHALL produce at most one finding per clause.
-2. WHEN no rule matches any part of a clause's text, THE classifier SHALL produce no finding for that clause.
+2. WHEN no rule matches any part of a clause's text (the text after any heading line, Requirement 4.2), THE classifier SHALL produce no finding for that clause.
 3. WHEN a clause consists only of whitespace, THE classifier SHALL produce no finding for it.
-4. WHEN one or more rules match a clause, THE classifier SHALL compute a severity for each room that has a matching rule (see Requirement 3) and SHALL assign the clause to the room with the highest severity; WHEN two rooms tie, THE classifier SHALL choose the room that comes first in the room order in the Glossary.
+4. WHEN one or more rules match a clause (after any heading line, Requirement 4.2), THE classifier SHALL compute a severity for each room that has a matching rule (see Requirement 3) and SHALL assign the clause to the room with the highest severity; WHEN two rooms tie, THE classifier SHALL choose the room that comes first in the room order in the Glossary.
 5. THE classifier SHALL set the finding's `ruleId` to the ID of the highest-severity matching rule in the chosen room; WHEN several rules in that room tie, it SHALL use the one listed first in the rule table.
 6. THE rule table SHALL contain at least three rules for each of the eight rooms, and every rule SHALL have a unique ID, a severity of 1, 2 or 3, a non-empty explanation and a non-empty "why it matters" text.
 7. FOR each of the eight rooms, THE classifier SHALL assign to that room each of at least three example clauses of that room's clause type written for the tests (positive cases), and SHALL NOT assign to that room any of at least two example clauses that mention the room's topic words without the risky behaviour (negative cases). Every example clause and its expected room and severity SHALL be listed in the design, and each SHALL have its own test.

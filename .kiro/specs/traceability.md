@@ -250,7 +250,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R19.2 | `a11y.spec.ts` (`color-contrast` is serious) | 31.2 |
 | HU-R19.3 | `shell.spec.ts` (one `main`, one `h1`), `flow.spec.ts` (house `h2`, room `h3`), `lights.spec.ts` (Lights on `h2`), `DetailDialog.test.tsx` (dialog `h2`) | 23.2, 25.3, 26.1, 28.2 |
 | HU-R19.4 | `keyboard.spec.ts` (focus ring on every control) | 27.3 |
-| HU-R20.1 | `screenshots.spec.ts` | 31.3 |
+| HU-R20.1 | `screenshots.spec.ts` (12 states, plus the motion-on image from C14.7) | 31.3, 31.6 |
 | HU-R20.2 | `screenshots.spec.ts` | 31.3 |
-| HU-R20.3 | `screenshots.spec.ts` | 31.3 |
+| HU-R20.3 | `screenshots.spec.ts` (reduced motion for the 12; motion on, with running animations checked, for the extra one) | 31.3, 31.6 |
 | HU-R20.4 | `BUILD_LOG.md` (date shown and the user's reply) | 31.5 |
