@@ -185,7 +185,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - **Pass when** both agents return PASS: Playwright covers the full flow for all three samples, and axe shows no serious or critical issue (PLAN.md Phase 4 gate). On a FAIL, fix the cause test first and re-run that agent as attempt N+1; after 3 failed attempts on the same problem, stop and ask the user (PLAN.md section 1, rule 4).
   - **After a pass:** run `check:secrets`, `check:history`, `check:rules` and `check:trace`, commit, push to origin and log the push (C11.1). Then go to 31.5.
   - _Requirements: 4, 5, 6, 7, 8, 9, 10, 12, 19 (Gate 4)_
-- [ ] 31.6 Design pass after the first screenshot review (PLAN_DECISIONS.md C14)
+- [x] 31.6 Design pass after the first screenshot review (PLAN_DECISIONS.md C14)
   - **Read first:** PLAN_DECISIONS.md C14; `.kiro/steering/design-language.md`; the end of BUILD_LOG.md (the user's verdict).
   - Moonlit input screen with the house silhouette behind the paste box, and the samples as small house fronts with doors (`InputScreen.tsx`, `SampleCards.tsx`, a new `NightScene.tsx`).
   - One identifying prop per room (`RoomProp.tsx`, used in `Room.tsx`); ghost shapes by severity (`GhostArt.tsx`); the Haunt Score as the hero (`ScoreBadge.tsx`); fog and candlelight in the background and house frame only (`globals.css`, `House.tsx`).

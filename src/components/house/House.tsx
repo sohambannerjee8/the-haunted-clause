@@ -11,7 +11,11 @@ export function House({ model, onOpen }: { model: RoomModel[]; onOpen: (finding:
         <path d="M0 58 L200 4 L400 58" fill="none" stroke="currentColor" strokeWidth="3" />
         <path d="M60 42 L60 18 L80 18 L80 37 M320 37 L320 18 L340 18 L340 42" fill="none" stroke="currentColor" strokeWidth="3" />
       </svg>
-      <div data-house-grid className="grid grid-cols-2 gap-2 rounded-b-md border-x-2 border-b-2 border-aubergine-500 bg-aubergine-900 p-2 md:grid-cols-4">
+      <div data-house-grid className="relative isolate grid grid-cols-2 gap-2 overflow-hidden rounded-b-md border-x-2 border-b-2 border-aubergine-500 bg-aubergine-900 p-2 md:grid-cols-4">
+        {/* Fog and candlelight in the frame only; behind the rooms, never over a ghost (C14.5). */}
+        <div className="hc-fog -z-10" aria-hidden="true" />
+        <div className="hc-candle -top-10 -left-10 -z-10" aria-hidden="true" />
+        <div className="hc-candle -right-10 -bottom-10 -z-10" aria-hidden="true" />
         {model.map((m) => (
           <Room key={m.room.id} model={m} onOpen={onOpen} />
         ))}

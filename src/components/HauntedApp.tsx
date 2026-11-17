@@ -8,6 +8,7 @@ import { createRetryableImport } from "../lib/ui/retryableImport";
 import { ErrorBoundary } from "./ErrorBoundary";
 import type { Prepared, Source } from "./house/HouseView";
 import { InputScreen, type InputNotice } from "./InputScreen";
+import { NightScene } from "./NightScene";
 import { SampleCards } from "./SampleCards";
 
 // The house view, the analyzer and the sample texts load on first use (R17.1).
@@ -70,12 +71,15 @@ export function HauntedApp({ llmAvailable }: { llmAvailable: boolean }) {
     case "input":
       body = (
         <>
-          <InputScreen
+          <div className="relative isolate pt-52 sm:pt-72">
+            <NightScene />
+            <InputScreen
             text={state.text}
             notice={state.notice}
             onChange={(text, notice) => setState({ screen: "input", text, notice })}
             onAnalyze={analyzePasted}
-          />
+            />
+          </div>
           <SampleCards onOpen={(id: SampleId) => void open({ kind: "sample", id }, "")} />
         </>
       );

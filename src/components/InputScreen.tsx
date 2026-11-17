@@ -30,7 +30,7 @@ export function InputScreen({
 
   const empty = notice === "empty";
   return (
-    <section aria-labelledby="read-heading">
+    <section aria-labelledby="read-heading" className="rounded-lg border-2 border-aubergine-500 bg-ink p-4 shadow-[0_0_40px_rgba(13,10,16,0.9)] sm:p-6">
       <h2 id="read-heading" className="font-display text-3xl tracking-wide text-bone">
         Read a policy
       </h2>

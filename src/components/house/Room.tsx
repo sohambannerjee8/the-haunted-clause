@@ -5,6 +5,7 @@ import type { Finding } from "../../lib/analyzer/types";
 import { roomLabel, roomStatus, type RoomModel } from "../../lib/ui/houseModel";
 import { nextIndex } from "../../lib/ui/roving";
 import { Ghost } from "./Ghost";
+import { RoomProp } from "./RoomProp";
 
 export function Room({ model, onOpen }: { model: RoomModel; onOpen: (finding: Finding, opener: HTMLButtonElement) => void }) {
   const [active, setActive] = useState(0);
@@ -26,7 +27,10 @@ export function Room({ model, onOpen }: { model: RoomModel; onOpen: (finding: Fi
       data-room={model.room.id}
       className={`hc-room relative flex min-h-44 flex-col rounded-md border border-aubergine-500 p-3 ${quiet ? "hc-room-quiet bg-aubergine-900" : "bg-aubergine-700"}`}
     >
-      <h3 className="font-display text-xl leading-tight tracking-wide text-bone sm:text-2xl">{model.room.name}</h3>
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-display text-xl leading-tight tracking-wide text-bone sm:text-2xl">{model.room.name}</h3>
+        <RoomProp room={model.room.id} />
+      </div>
       <p className="text-sm text-mist">{model.room.clauseType}</p>
       <p className="mt-1 text-sm font-bold text-bone" data-room-status>
         {roomStatus(model)}

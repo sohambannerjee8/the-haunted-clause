@@ -188,3 +188,47 @@ main:focus-visible {
   transform: scale(1.05);
   animation: hc-glow 2.5s ease-in-out infinite;
 }
+
+/* Fog and dim candlelight (PLAN_DECISIONS.md C14.5). Page background: still gradients only.
+   House frame: one slow fog drift (transform only, no opacity change) and one slow candle glow
+   (one opacity peak per 4 s cycle). Both live inside the house, so Lights on mode removes them, and
+   the reduced-motion rule above stops them. Every text keeps a solid panel behind it. */
+body {
+  background:
+    radial-gradient(ellipse 60% 40% at 12% 100%, rgb(242 181 68 / 0.07), transparent 70%),
+    radial-gradient(ellipse 70% 30% at 85% 0%, rgb(185 169 194 / 0.08), transparent 70%),
+    linear-gradient(180deg, var(--color-ink) 0%, #120c17 55%, var(--color-ink) 100%);
+  background-color: var(--color-ink);
+}
+.hc-fog {
+  position: absolute;
+  inset: auto -10% 0 -10%;
+  height: 45%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 30% 60% at 20% 70%, rgb(185 169 194 / 0.12), transparent 70%),
+    radial-gradient(ellipse 35% 55% at 65% 80%, rgb(185 169 194 / 0.1), transparent 70%),
+    radial-gradient(ellipse 25% 50% at 90% 65%, rgb(185 169 194 / 0.09), transparent 70%);
+  animation: hc-fog-drift 24s ease-in-out infinite;
+}
+@keyframes hc-fog-drift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6%); }
+}
+.hc-candle {
+  position: absolute;
+  width: 9rem;
+  height: 9rem;
+  pointer-events: none;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(242 181 68 / 0.18), transparent 70%);
+  opacity: 0.6;
+  animation: hc-candle-glow 4s ease-in-out infinite;
+}
+@keyframes hc-candle-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+}
+.hc-eye-glow {
+  filter: drop-shadow(0 0 2px currentColor);
+}

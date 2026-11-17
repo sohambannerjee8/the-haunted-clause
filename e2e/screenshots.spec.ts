@@ -43,3 +43,18 @@ for (const [width, height] of [
     });
   });
 }
+
+// One extra screenshot with motion on (PLAN_DECISIONS.md C14.7): the terrible house mid-animation.
+test.describe("@screenshots motion", () => {
+  test.use({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
+  test("@screenshots terrible house with motion on", async ({ page }) => {
+    mkdirSync(OUT, { recursive: true });
+    await openSample(page, "terrible");
+    await page.evaluate(() => document.fonts.ready);
+    // Let the ghosts, fog and candles move for a moment; all repeating animations must be running.
+    await page.waitForTimeout(1200);
+    const running = await page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length);
+    expect(running).toBeGreaterThan(0);
+    await page.screenshot({ path: join(OUT, "house-terrible-motion-1440.png"), fullPage: true });
+  });
+});
