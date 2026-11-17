@@ -57,6 +57,11 @@ export const POSITIVE_EXAMPLES: readonly PositiveExample[] = [
   { room: "cellar", severity: 2, ruleId: "cellar.merger", text: "We may disclose your personal data to a buyer as part of a sale of our business." },
   { room: "cellar", severity: 2, ruleId: "cellar.retention", text: "We keep your personal information indefinitely." },
   { room: "cellar", severity: 2, ruleId: "cellar.retention", text: "We retain your data for as long as we see fit." },
+  // C19: sponsors (like partners and affiliates, severity 2) and advertisers (like advertising partners, severity 3)
+  { room: "cellar", severity: 2, ruleId: "cellar.third-parties", text: "We may share your email address with our sponsors." },
+  { room: "cellar", severity: 2, ruleId: "cellar.third-parties", text: "We provide your contact details to event sponsors." },
+  { room: "cellar", severity: 3, ruleId: "cellar.ad-partners", text: "We disclose your personal information to advertisers." },
+  { room: "cellar", severity: 3, ruleId: "cellar.ad-partners", text: "We may transfer your e-mail to advertisers who run campaigns on our site." },
 ];
 
 export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
@@ -82,4 +87,8 @@ export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
   { room: "locked-door", text: "Call us by phone if you need help with an order." },
   { room: "cellar", text: "Our company was founded after a merger of two small studios." },
   { room: "cellar", text: "We keep your data for as long as necessary to provide the service." },
+  // C19: the new targets need your data, information, email or details to be what is shared
+  { room: "cellar", text: "We provide reports to advertisers about how their ads performed." },
+  { room: "cellar", text: "Our summer events are supported by local sponsors." },
+  { room: "cellar", text: "Sponsors may share their own logos with us for the event page." },
 ];

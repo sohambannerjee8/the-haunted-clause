@@ -26,6 +26,13 @@ const G = "[^.;]";
 /** Qualifiers that make a liability exclusion partial rather than total. */
 const LIMITED_DAMAGES = "(?:indirect|consequential|incidental|special|punitive|exemplary)";
 const re = (...alternatives: string[]) => new RegExp(alternatives.map((a) => `(?:${a})`).join("|"), "i");
+const SHARE = "\\b(?:share|disclose|provide|transfer)\\w*\\b";
+/**
+ * C19: sharing your data, information, email or details with or to `target`. The thing shared must be
+ * named, because "we provide reports to advertisers" is not about the reader's data.
+ */
+const sharedWith = (target: string) =>
+  `${SHARE}${G}{0,60}\\b(?:data|information|e-?mail|details)\\b${G}{0,60}\\b(?:with|to)\\b${G}{0,30}\\b${target}\\b`;
 
 const rule = (id: string, room: RoomId, severity: 1 | 2 | 3, pattern: RegExp, explanation: string, whyItMatters: string): Rule =>
   Object.freeze({ id, room, severity, pattern, explanation, whyItMatters });
@@ -41,10 +48,10 @@ export const RULES: readonly Rule[] = Object.freeze([
   rule("cellar.broker", "cellar", 3, re(`\\bdata brokers?\\b`),
     "The company works with data brokers, firms that buy and resell personal information.",
     "Brokers combine data from many sources into detailed files about you that others can buy."),
-  rule("cellar.ad-partners", "cellar", 3, re(`\\b(?:share|disclose|provide|transfer)\\w*\\b${G}{0,80}\\badvertis\\w*\\s+partners?\\b`),
+  rule("cellar.ad-partners", "cellar", 3, re(`${SHARE}${G}{0,80}\\badvertis\\w*\\s+partners?\\b`, sharedWith("advertisers?")),
     "Your data is passed to advertising partners.",
     "Ad partners use it to target you across other sites, and you rarely know who they are."),
-  rule("cellar.third-parties", "cellar", 2, re(`\\b(?:share|disclose|provide|transfer)\\w*\\b${G}{0,80}\\b(?:third[- ]part(?:y|ies)|partners|affiliates)\\b`),
+  rule("cellar.third-parties", "cellar", 2, re(`${SHARE}${G}{0,80}\\b(?:third[- ]part(?:y|ies)|partners|affiliates)\\b`, sharedWith("sponsors?")),
     "Your information can be shared with other companies.",
     "Each company that receives your data is another place it can leak or be misused."),
   rule("cellar.merger", "cellar", 2, re(

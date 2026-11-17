@@ -156,3 +156,8 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Write `heading.test.ts` first: "1. Your information\nWe may sell your data." gives a finding whose quote is "We may sell your data.", still equal to `input.slice(start, end)` and with the clause's ID; a heading made of risky words does not create a finding by itself; a one-line clause, a long first line, a first line ending in a full stop, and a heading with nothing after it are left alone. Add an E2E check in `flow.spec.ts` that no quote shown in the detail panel starts with a numbered heading.
   - Then change `classifier.ts`. P3 (quotes are exact slices) must keep passing; check the sample bands and that `sample-explanations.json` stays consistent.
   - _Requirements: 4.1, 4.2_
+- [x] 16.7 Broader Cellar sharing rule (user request after the production test, PLAN_DECISIONS.md C19)
+  - Tests first: four positive Cellar examples (sponsors at severity 2 under `cellar.third-parties`, advertisers at severity 3 under `cellar.ad-partners`) and three negative ones in `examples.test-util.ts`, checked by `classifier.test.ts`; two `cellar.no-share` phrasings and an exception case in `mitigation-phrasing.test.ts`. See them fail.
+  - Then add the sponsors and advertisers alternatives to the two rules in `rules.ts`, requiring the data, information, email or details to be named. Keep the rule count at 45.
+  - The sample scores stay 14, 59 and 97 with the same findings, so `sample-explanations.json` stays consistent.
+  - _Requirements: 2.2, 2.7_

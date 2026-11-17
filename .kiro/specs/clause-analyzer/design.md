@@ -132,8 +132,8 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Cellar | `cellar.sell` | 3 | `\bsell(s\|ing)?\b G{0,60} \b(data\|information\|details)\b` |
 | Cellar | `cellar.sold` | 3 | `\b(data\|information\|details)\b G{0,40} \b(be \|is \|are )?sold\b` |
 | Cellar | `cellar.broker` | 3 | `\bdata brokers?\b` |
-| Cellar | `cellar.ad-partners` | 3 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \badvertis\w*\s+partners?\b` |
-| Cellar | `cellar.third-parties` | 2 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \b(third[- ]part(y\|ies)\|partners\|affiliates)\b` |
+| Cellar | `cellar.ad-partners` | 3 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \badvertis\w*\s+partners?\b`, or (C19) the same verbs, then `data\|information\|e-?mail\|details`, then `with\|to`, then `advertisers?` |
+| Cellar | `cellar.third-parties` | 2 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \b(third[- ]part(y\|ies)\|partners\|affiliates)\b`, or (C19) the same verbs, then `data\|information\|e-?mail\|details`, then `with\|to`, then `sponsors?` |
 | Cellar | `cellar.merger` (C12.2) | 2 | `\b(transfer\|disclos\|shar\|pass\|provid)\w*\b G{0,100} \b(merger\|acquisition\|reorgani[sz]ation\|bankruptcy\|change (of\|in) control\|sale of … (business\|company\|assets))\b`, or the event word first and the transfer verb after |
 | Cellar | `cellar.retention` (C12.2) | 2 | `\b(retain\|keep\|store\|hold)\w*\b G{0,80} \b(indefinitely\|permanently\|forever\|for an? (unlimited\|indefinite) (period\|time)\|as long as we (see fit\|wish\|like\|want\|choose\|deem (necessary\|appropriate)))\b` |
 | Portraits | `portraits.cross-site` | 3 | `\btrack\w*\b G{0,60} \b(across\|on) (other \|third[- ]party )?(websites\|sites\|apps\|services\|devices)\b` |
@@ -206,6 +206,13 @@ Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned 
 | Cellar | Pos | We may sell your personal information to third parties. | 3, `cellar.sell` |
 | Cellar | Pos | We share your data with our advertising partners. | 3, `cellar.ad-partners` |
 | Cellar | Pos | Your information may be disclosed to our affiliates and other third parties. | 2, `cellar.third-parties` |
+| Cellar | Pos | We may share your email address with our sponsors. (C19) | 2, `cellar.third-parties` |
+| Cellar | Pos | We provide your contact details to event sponsors. (C19) | 2, `cellar.third-parties` |
+| Cellar | Pos | We disclose your personal information to advertisers. (C19) | 3, `cellar.ad-partners` |
+| Cellar | Pos | We may transfer your e-mail to advertisers who run campaigns on our site. (C19) | 3, `cellar.ad-partners` |
+| Cellar | Neg | We provide reports to advertisers about how their ads performed. (C19) | none |
+| Cellar | Neg | Our summer events are supported by local sponsors. (C19) | none |
+| Cellar | Neg | Sponsors may share their own logos with us for the event page. (C19) | none |
 | Cellar | Pos | We work with data brokers who buy and combine information about you. | 3, `cellar.broker` |
 | Cellar | Neg | You can download a copy of your data at any time. | no finding |
 | Cellar | Neg | We store your information on servers located in Ireland. | no finding |
@@ -383,7 +390,7 @@ All properties use fast-check with `fc.assert(property, { numRuns: 1000 })` (tes
 The generators are:
 - `anyString`: `fc.string({ unit: "binary", maxLength: 2_000 })`, all code points.
 - `utf16String`: `fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((n) => String.fromCharCode(n)), maxLength: 2_000 })`. It includes unpaired surrogates and control characters.
-- `policyLike`: fragments joined from a pool. The pool holds all the room example clauses (41 positive and 21 negative after C12.2), the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
+- `policyLike`: fragments joined from a pool. The pool holds all the room example clauses (45 positive and 24 negative after C12.2 and C19), the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
 - `bigString`: a fragment from `policyLike` repeated up to a length drawn from `fc.integer({ min: 0, max: 50_000 })`, so sizes up to the cap are covered.
 - `overCapString`: a fragment from `policyLike` repeated to a length drawn from `fc.integer({ min: 50_001, max: 60_000 })`, for the splitter's over-cap criterion (R1.12) and the analyzer's typed error (R6.2, R8.2).
 
@@ -392,7 +399,7 @@ The five generators are exported from one shared test-support module, `src/lib/a
 | # | Property (PLAN.md section 4) | Requirement | Test file | Generator |
 | --- | --- | --- | --- | --- |
 | P1 | The Haunt Score is always a whole number from 0 to 100. | R5.2 | `score.property.test.ts` | Arrays of up to 400 `{ room, severity }`, and `analyze` on `policyLike` |
-| P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the positive room examples (41 after C12.2) `r`: `score(t + "\n\n" + r) >= score(t)` |
+| P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the positive room examples (45 after C12.2 and C19) `r`: `score(t + "\n\n" + r) >= score(t)` |
 | P3 | Every finding quotes text that appears in the input, character for character. | R4.1, R4.2 | `analyze.property.test.ts` | `policyLike`, `utf16String`: `f.quote === input.slice(f.start, f.end)`, non-empty, no edge whitespace |
 | P4 | The analyzer never throws, for any string up to the size cap, including empty text and emoji. | R6.1, R6.2 | `analyze.property.test.ts` | `fc.oneof(anyString, utf16String, policyLike, bigString)` plus explicit `""`, whitespace and emoji cases in unit tests; `overCapString` always gives the typed `too-long` result without throwing |
 | P5 | The same input always gives the same rule-based result. | R7.1, R7.3 | `analyze.property.test.ts` | Pairs `(x, y)`: `analyze(x)` deep-equals `analyze(x)` called again after `analyze(y)` |
@@ -410,7 +417,7 @@ Further properties that support the six (also at 1,000 runs):
 | --- | --- | --- |
 | `splitter.test.ts` | Unit | Each of the 11 abbreviations mid-sentence (one test each); `etc.` before a paragraph break; the four boundary-resolution rows above; terminators with closers; CRLF; empty input; whitespace only; emoji; `zinc. Then` still splits; list markers `-`, `*`, `•`, `1.`, `12)`, `a)`, `(iv)` |
 | `splitter.property.test.ts` | Property | P6, P8 |
-| `classifier.test.ts` | Unit | The 62 room examples (R2.7: 44, plus 18 from C12.2); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
+| `classifier.test.ts` | Unit | The 69 room examples (R2.7: 44, plus 18 from C12.2 and 7 from C19); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
 | `mitigation.test.ts` | Unit | The 19 mitigation and marker rows (R3), including the three R3.10 cases |
 | `mitigation-phrasing.test.ts` | Unit | Each mitigation's accepted wordings, including "we will never sell" (C12.1, R3.2) |
 | `mitigation-texts.test.ts` | Unit | Every mitigation's own texts, used when it lowers a finding; a cancelled one keeps the rule's (C13, R4.5) |

@@ -17,6 +17,8 @@ const CASES: readonly { mitigation: string; room: string; severity: number; text
   { mitigation: "cellar.no-share", room: "cellar", severity: 0, text: "We will never share your personal data with third parties." },
   { mitigation: "cellar.no-share", room: "cellar", severity: 0, text: "We cannot share your information with advertising partners." },
   { mitigation: "cellar.no-share", room: "cellar", severity: 0, text: "We shall not share your information with our affiliates." },
+  { mitigation: "cellar.no-share", room: "cellar", severity: 0, text: "We do not share your email address with our sponsors." },
+  { mitigation: "cellar.no-share", room: "cellar", severity: 0, text: "We will never share your data with advertisers." },
   { mitigation: "portraits.no-track", room: "portraits", severity: 0, text: "We will never track you across other websites." },
   { mitigation: "portraits.no-track", room: "portraits", severity: 0, text: "We won't track your activity across other apps." },
   { mitigation: "portraits.opt-out", room: "portraits", severity: 1, text: "We show you targeted ads and you can always opt out in your settings." },
@@ -55,6 +57,13 @@ describe("mitigation phrasings (C12.1)", () => {
     expect(f!.severity).toBeGreaterThanOrEqual(1);
   });
 
+  it("an exception still cancels the reassurance for the C19 targets (R3.11)", () => {
+    const f = classify("We do not share your email with sponsors, except when you enter a sponsored contest.");
+    expect(f!.room).toBe("cellar");
+    expect(f!.mitigationId).toBeNull();
+    expect(f!.cancelledMitigationId).toBe("cellar.no-share");
+    expect(f!.severity).toBeGreaterThanOrEqual(1);
+  });
   it("a positive statement is not read as a reassurance", () => {
     expect(classify("We will sell your personal data.")!.severity).toBe(3);
     expect(classify("We will share your personal data with third parties.")!.severity).toBe(2);
