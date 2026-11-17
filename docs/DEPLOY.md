@@ -13,15 +13,19 @@ Set them in Vercel under the project's Settings, Environment Variables. Locally,
 
 A billing-enabled (paid-tier) key is recommended. On the free tier, Google's terms let Google use the content it receives to improve its products, and human reviewers may read it.
 
-## Before you deploy: the sample readings
+## The sample readings stay rule-based
 
-The three sample policies never call the API, and the build never calls Google. Their readings come from the committed file `src/lib/samples/sample-explanations.json`.
+The three sample policies never call the API, and the build never calls Google. Their readings come from the committed file `src/lib/samples/sample-explanations.json`, which holds rule-based readings for all three samples.
 
-1. Put your key in `.env.local`.
+That is a deliberate choice (PLAN_DECISIONS.md C18). On 17 November 2026 the medium's readings for the samples were generated and reviewed, and rejected because they added claims the clause text does not make. The medium remains an opt-in feature for pasted text only.
+
+If you want to try the medium on the samples again later:
+
+1. Put your key in `.env.local`, and make sure `GEMINI_API_KEY` is not already set (even to an empty value) in your shell, because a variable that is already set wins over `.env.local`.
 2. Run `npm run precompute:samples`. It first makes one `models.get` call and prints `precompute: model=<id>`. If Google rejects the model name or the key, it prints an ERROR, leaves the file alone and exits with code 1; set `GEMINI_MODEL` to a current model ID and run it again.
-3. Check that each entry in `src/lib/samples/sample-explanations.json` says `"source": "llm"` and names the model, then commit the file and push it.
+3. Read every generated reading against its clause. Commit the file only if you accept them; otherwise restore it with `git checkout -- src/lib/samples/sample-explanations.json`.
 
-Vercel builds use the committed file as it is. If you skip these steps, the samples show rule-based readings.
+Vercel builds use the committed file as it is.
 
 ## Deploy on Vercel
 

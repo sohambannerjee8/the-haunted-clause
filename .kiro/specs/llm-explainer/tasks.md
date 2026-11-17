@@ -138,7 +138,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Save each report unchanged to `docs/gate-reports/phase-3-<agent>-attempt-N.md`, and append the results to BUILD_LOG.md.
   - Pass when the key never reaches the browser bundle, pasted text is not logged or stored, and the app works with no key.
 
-- [ ] 22.4 Default model and prompt tightening (PLAN_DECISIONS.md C17)
+- [x] 22.4 Default model and prompt tightening (PLAN_DECISIONS.md C17; outcome in C18: the user rejected the generated sample readings, so nothing from the run is committed)
   - Tests first: `gemini.test.ts` expects the default model `gemini-3.5-flash-lite`; `prompt.test.ts` expects the system instruction to keep both texts to what the clause states and to describe a protecting promise as one. See them fail, then change `DEFAULT_MODEL` in `gemini.ts` and `SYSTEM_INSTRUCTION` in `prompt.ts`.
   - Update R4.2, R4.4, the design's facts table and prompt text, docs/DEPLOY.md, README.md and `.kiro/steering/tech.md`.
   - Run `npm run precompute:samples` once and show every generated explanation to the user. Commit `src/lib/samples/sample-explanations.json` only after the user approves.
