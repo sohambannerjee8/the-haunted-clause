@@ -1,7 +1,5 @@
 # Deploying The Haunted Clause
 
-> Draft written in Phase 3 (Task 22.2) so the security reviewer can check the privacy and cost statements. The exact Vercel click-path is finished in Phase 6.
-
 The app runs on the Vercel free (Hobby) plan. It has no database and no login. It works fully with no API key: the analysis runs in the browser and every finding has a rule-based reading.
 
 ## Environment variables
@@ -21,13 +19,34 @@ The three sample policies never call the API, and the build never calls Google. 
 
 1. Put your key in `.env.local`.
 2. Run `npm run precompute:samples`. It first makes one `models.get` call and prints `precompute: model=<id>`. If Google rejects the model name or the key, it prints an ERROR, leaves the file alone and exits with code 1; set `GEMINI_MODEL` to a current model ID and run it again.
-3. Check that each entry in `src/lib/samples/sample-explanations.json` says `"source": "llm"` and names the model, then commit the file.
+3. Check that each entry in `src/lib/samples/sample-explanations.json` says `"source": "llm"` and names the model, then commit the file and push it.
 
 Vercel builds use the committed file as it is. If you skip these steps, the samples show rule-based readings.
+
+## Deploy on Vercel
+
+These steps follow Vercel's [Deploying Git Repositories](https://vercel.com/docs/git) and [Managing Deployments](https://vercel.com/docs/deployments/managing-deployments) pages (checked 17 November 2026).
+
+1. Make sure `main` is pushed to GitHub (`sohambannerjee8/the-haunted-clause`, a public repository on a personal account, which a Hobby account can import).
+2. Sign in to Vercel with the same GitHub account and select **New Project** on the dashboard (or open https://vercel.com/new).
+3. Pick `the-haunted-clause` from the repository list and select **Import**.
+4. On the configuration page:
+   - **Framework Preset:** Next.js (Vercel detects it).
+   - **Root Directory:** leave it as the repository root.
+   - **Build and Output Settings:** leave the defaults. The build command is `npm run build` (`next build`); no custom output folder or install command is needed.
+   - **Environment Variables:** add `GEMINI_API_KEY` with your key if you want the opt-in reading of pasted text. Add `GEMINI_MODEL` only to override the default model. Leave both out for a rule-based-only site.
+5. Select **Deploy**. When the build finishes, open the production domain (`<project>.vercel.app`) and check:
+   - the input screen loads and each of the three sample houses opens (the terrible one shows "97 · Run");
+   - with a key set, pasting text and opening the house shows the opt-in button; without a key it does not appear.
+6. Judges need free access with no login. Under Settings, **Deployment Protection**, Vercel's Standard Protection leaves production domains public but protects preview and generated deployment URLs. Share only the production domain, and do not choose "All Deployments".
+
+Vercel deploys again by itself on every push to `main`.
 
 ## A key change needs a redeploy
 
 The page reads `llmAvailable` (whether a key is set) at build time, when the page is built. Adding, changing or removing `GEMINI_API_KEY` on Vercel has no effect on the opt-in button until you redeploy.
+
+To redeploy: open the project, select **Deployments** in the sidebar, find the latest production deployment, open its **…** menu, select **Redeploy**, and confirm **Redeploy** in the dialog.
 
 ## Privacy
 

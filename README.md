@@ -4,7 +4,7 @@ Paste any Terms & Conditions or privacy policy and it becomes a haunted house. E
 
 **Not legal advice.**
 
-> This README is a stub. Setup, tests, architecture, pre-existing work and licenses are completed in Phase 6.
+Every spooky element carries information. The room says what kind of clause it is, the ghost's size, shape, colour and numeral say how bad it is (severity 0 to 3), and the Haunt Score says how haunted the whole policy is. "Lights on" mode shows the same findings as a plain list.
 
 ## Features
 
@@ -23,13 +23,81 @@ Paste any Terms & Conditions or privacy policy and it becomes a haunted house. E
 - Optional: with a Gemini key on the site, ask "the medium" for a plain-English reading of pasted text, sending only the flagged clauses and only after you opt in.
 <!-- features:end -->
 
-## Quick start
+## Setup
+
+You need Node.js 20.9 or newer (the build was made and tested on Node 26.13.1 with npm 11.20.0) and git. No account, database or API key is needed.
+
+1. Get the code and install the exact dependency versions from the lockfile:
+
+   ```bash
+   git clone https://github.com/sohambannerjee8/the-haunted-clause.git
+   cd the-haunted-clause
+   npm ci
+   ```
+
+2. Environment variables (optional). The app works fully without them. To turn on the optional "medium's reading" of pasted text, copy the example file and add a Google Gemini API key:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   | Name | Required | What it does |
+   | --- | --- | --- |
+   | `GEMINI_API_KEY` | No | Shows the opt-in button that asks Gemini for a plain-English reading of the flagged clauses in pasted text. Without it, every finding shows the rule-based reading. |
+   | `GEMINI_MODEL` | No | Overrides the default model ID. |
+
+   `.env.local` is ignored by git. Never put a key in a tracked file. See [docs/DEPLOY.md](docs/DEPLOY.md) for the paid-tier recommendation and for refreshing the sample readings with `npm run precompute:samples`.
+
+3. Run it:
+
+   ```bash
+   npm run dev                  # development server on http://localhost:3000
+   # or the production build:
+   npm run build && npm start   # http://localhost:3000
+   ```
+
+## Tests
 
 ```bash
-npm install
-cp .env.example .env.local   # optional; the app works with no key
-npm run dev
+npm test                         # all unit and property tests, once
+npm run test:coverage            # the same, with line-coverage thresholds
+npx playwright install chromium  # once, before the first end-to-end run
+npm run test:e2e                 # Playwright end-to-end tests
 ```
+
+- `npm run test:e2e` builds the app twice and starts two production servers: port 3100 with no key, and port 3101 with a placeholder key behind a dead local proxy, so it can never reach Google. Both ports must be free. Set `CI=1` to make Playwright build fresh servers instead of reusing ones already running.
+- No test calls a real LLM. The LLM is always mocked, and no test needs a key or a network connection beyond `localhost`.
+- Every property-based test (fast-check) runs 1,000 cases.
+- Coverage thresholds (lines): 90% for `src/lib/analyzer` and `src/lib/llm`, 80% for the rest of `src/`.
+- Other checks: `npm run typecheck`, `npm run lint`, `npm run check:secrets` (secret scan of tracked files), `npm run check:history` (secret scan of git history), `npm run check:rules` (repository rules), `npm run check:bundle` (builds with a canary key and checks it never reaches the browser bundle), `npm run check:trace` (every spec criterion has a named test).
+- `npm run screenshots` regenerates the review screenshots in `docs/screenshots/`.
+
+Results at the end of the build (17 November 2026): 772 unit and property tests in 71 files, 85 end-to-end tests across the two projects, all passing; line coverage 96.86%.
+
+## Architecture
+
+```
+src/
+├── app/
+│   ├── layout.tsx, page.tsx, globals.css   page shell, self-hosted fonts, palette
+│   └── api/explain/route.ts                the only server route (POST /api/explain)
+├── components/                              input screen, night scene, sample cards, app state machine
+│   └── house/                               house, rooms, props, ghosts, detail dialog, score, Lights on list, toolbar
+└── lib/
+    ├── analyzer/                            splitter, rules, classifier, score, analyze() — pure TypeScript
+    ├── llm/                                 Zod schemas, merge, request builder, rate limit, handler, Gemini (server only)
+    ├── samples/                             three fictional policies and their precomputed readings
+    └── ui/                                  house model, roving tabindex, sound, retryable import
+```
+
+How a policy becomes a house:
+
+1. **In the browser.** `analyze()` in `src/lib/analyzer` splits the text into clauses (joining them back gives the input exactly), gives each risky clause one of eight rooms and a severity from 0 to 3 using 45 rules and 11 mitigations, and computes the Haunt Score. It uses no network, clock or randomness, so the same text always gives the same house. The highest reachable score is 97.
+2. **The house view** is loaded with a dynamic import, so the first screen stays light. Each finding becomes a ghost button; the detail dialog shows the exact clause, its explanation, why it matters and the reading's source.
+3. **Optional, on the server.** If the site has a key and the user opts in, the browser sends only the flagged clauses to `POST /api/explain`. The route checks the Origin, the body size and shape (Zod) and a best-effort rate limit, calls Gemini with a 15-second timeout and `store: false`, validates the answer with Zod, and merges it. The medium can rewrite an explanation and raise or confirm a severity, never lower it. On any failure the rule-based reading stays. The key is read only in files that import `server-only`.
+4. **Samples** never call the route. Their readings come from the committed `src/lib/samples/sample-explanations.json`.
+
+Specs, steering, hooks and verification agents used to build it are in [`.kiro/`](.kiro/). How they were used is in [docs/KIRO_USAGE.md](docs/KIRO_USAGE.md) and [BUILD_LOG.md](BUILD_LOG.md).
 
 ## Privacy
 
@@ -68,7 +136,9 @@ Runtime dependencies:
 
 `npx license-checker --production --summary` reports the whole production tree as MIT (44), Apache-2.0 (15), BSD-3-Clause (12), ISC (2), 0BSD (1), CC-BY-4.0 (1: `caniuse-lite`, browser data used at build time), LGPL-3.0-or-later (1: `@img/sharp-libvips`, an optional image library Next.js loads as a separate binary), and UNLICENSED (1: this package itself, which the tool reports that way because it is marked private; its licence is MIT).
 
-Development tools: TypeScript (Apache-2.0), Tailwind CSS (MIT), ESLint and eslint-config-next (MIT), Vitest and @vitest/coverage-v8 (MIT), fast-check (MIT), Testing Library (MIT), jsdom (MIT), Playwright (Apache-2.0), @axe-core/playwright (MPL-2.0), tsx (MIT), license-checker (BSD-3-Clause).
+Development tools: TypeScript (Apache-2.0), Tailwind CSS and @tailwindcss/turbopack (MIT), babel-plugin-react-compiler (MIT), ESLint and eslint-config-next (MIT), Vitest, @vitest/coverage-v8 and @vitejs/plugin-react (MIT), fast-check (MIT), Testing Library (MIT), jsdom (MIT), Playwright (Apache-2.0), @axe-core/playwright (MPL-2.0), tsx (MIT), license-checker (BSD-3-Clause), and the type packages @types/node, @types/react and @types/react-dom (MIT).
+
+Build-time MCP servers, configured in `.kiro/settings/mcp.json` and run by Kiro through `npx` (not installed in the project or used by the app): Playwright MCP `@playwright/mcp` (Apache-2.0) and Context7 `@upstash/context7-mcp` (MIT).
 
 Fonts: Creepster and Atkinson Hyperlegible, both under the SIL Open Font License 1.1 (`src/app/fonts/OFL-*.txt`).
 
