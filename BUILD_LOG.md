@@ -907,3 +907,15 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with t
   - These differ from my earlier `gzip -9` estimate (179,190 bytes, 7 files), which compressed the files myself and counted one more file. The network measurement is the one the requirement asks for.
 - Results: `npm test` 772 passed; `CI=1 npm run test:e2e` 85 passed across both projects; lint and `check:trace` clean.
 - **Spec sync fired** (`PostFileSave`) when I ticked haunted-house-ui **Task 33.1 E2E perf.spec.ts**. Files changed: `e2e/perf.spec.ts` (new), `.kiro/steering/tech.md`. Tests: `npm test` 772 passed, 0 failed; `CI=1 npm run test:e2e` 85 passed, 0 failed. Kiro features: the spec (task 33.1), steering (tech.md now holds the measured budget figures) and the Spec sync hook. README feature list: one line added for the fast first screen.
+
+### Task 33.2: clean clone
+- Everything was pushed first. `git clone https://github.com/sohambannerjee8/the-haunted-clause.git /tmp/hc-clean` checked out commit **`6ba3320`**. The clone had only `.env.example` (no `.env.local`), and every command ran with `GEMINI_API_KEY` empty.
+  - `npm ci` → exit 0. npm warned that `protobufjs@7.6.6`'s postinstall script was not run (npm's install-scripts policy). Nothing needed it.
+  - `npm run build` → exit 0; "✓ Compiled successfully"; `○ /` static.
+  - `npm run lint` → exit 0, 0 problems.
+  - `npm run typecheck` → exit 0, 0 errors.
+  - `npm run test:coverage` → exit 0; 71 files, 772 tests passed, none skipped; lines 96.86% (618/638).
+  - `CI=1 npm run test:e2e` → exit 0; 85 passed, 0 failed, skipped or flaky. Ports 3100 and 3101 were free beforehand, so both servers were built fresh in the clone.
+- The same coverage run in the workspace afterwards also gave 96.86% (618/638), and the clone's `src/` file list matched the workspace's. (The 93.56% in the Task 31.6 entry was measured before the new `HauntedApp.test.tsx` tests in 32.1 and 32.2.)
+- The `/tmp/hc-clean` folder was deleted afterwards.
+- **Spec sync fired** (`PostFileSave`) when I ticked haunted-house-ui **Task 33.2 Clean clone**. Files changed in the repository: BUILD_LOG.md and the task's checkbox only (the clone was in `/tmp` and was deleted). Tests in the clone: `npm run test:coverage` 772 passed, 0 failed, 0 skipped; `CI=1 npm run test:e2e` 85 passed, 0 failed. Kiro features: the spec (task 33.2) and the Spec sync hook. README feature list: unchanged, since 33.2 adds no user-facing feature.

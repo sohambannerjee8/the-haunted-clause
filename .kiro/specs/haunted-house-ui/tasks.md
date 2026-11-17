@@ -242,7 +242,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Record the measured values in `.kiro/steering/tech.md` (replacing "to be confirmed against the first real build") and in BUILD_LOG.md.
   - **Done when** the tests pass and the full suites, type-check, lint and `check:trace` are clean; commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 17.1, 18.1, 18.2_
-- [ ] 33.2 Clean clone
+- [x] 33.2 Clean clone
   - **Read first:** PLAN.md section 7 "Definition of done" (a fresh clone builds, lints, type-checks and passes every test with none skipped).
   - First push everything (C11.1), so the clone has the latest commit. Then `git clone https://github.com/sohambannerjee8/the-haunted-clause.git` into a new folder under `/tmp`, and in it run, with no `.env.local` and no `GEMINI_API_KEY`: `npm ci`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `CI=1 npm run test:e2e` (run `npx playwright install chromium` first if the browser is missing there).
   - Every command must exit 0 with zero errors, zero failed and zero skipped tests.
