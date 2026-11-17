@@ -27,6 +27,19 @@ vi.mock("../lib/analyzer/analyze", async (importOriginal) => {
   };
 });
 
+// HouseView can be made to throw while rendering, to reach the error boundary (R17.5).
+let houseThrows = false;
+vi.mock("./house/HouseView", async (importOriginal) => {
+  const real = await importOriginal<typeof import("./house/HouseView")>();
+  return {
+    ...real,
+    HouseView: (props: Parameters<typeof real.HouseView>[0]) => {
+      if (houseThrows) throw new Error("render failed");
+      return real.HouseView(props);
+    },
+  };
+});
+
 const { HauntedApp } = await import("./HauntedApp");
 
 describe("HauntedApp", () => {
@@ -59,5 +72,23 @@ describe("HauntedApp edge paths", () => {
     await userEvent.type(screen.getByLabelText("Paste a Terms & Conditions or privacy policy"), "We may sell your data.");
     await userEvent.click(screen.getByRole("button", { name: "Analyze" }));
     expect(await screen.findByRole("heading", { level: 2, name: "Inside the house" })).toBeInTheDocument();
+  });
+});
+
+describe("HauntedApp error boundary (R17.5)", () => {
+  it("shows the load-error message instead of a blank page when the house view throws while rendering", async () => {
+    houseThrows = true;
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      render(<HauntedApp llmAvailable={false} />);
+      await userEvent.type(screen.getByLabelText("Paste a Terms & Conditions or privacy policy"), "We may sell your data.");
+      await userEvent.click(screen.getByRole("button", { name: "Analyze" }));
+      expect(await screen.findByText("The house would not open. Check your connection and try again.")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { level: 2, name: "Inside the house" })).toBeNull();
+    } finally {
+      houseThrows = false;
+      quiet.mockRestore();
+    }
   });
 });

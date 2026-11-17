@@ -199,7 +199,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - In BUILD_LOG.md, record the date the screenshots were shown. The task is done when the screenshots are committed and shown. The user's reply is recorded in BUILD_LOG.md before any Phase 5 entry; Task 32.1 checks that it is there.
   - _Requirements: 20.1–20.4_
 
-- [ ] 32. Edge cases, loading and error states (Phase 5)
+- [x] 32. Edge cases, loading and error states (Phase 5)
 - [x] 32.0 Ghost expressions (PLAN_DECISIONS.md C15)
   - Extend `Ghost.test.tsx` first: level 2 has a worried face (`data-face="worried"`, raised inner brows) and no jagged mouth; level 3 has `data-face="menacing"`, glowing eyes, a jagged mouth and a darker hem layer; size, opacity, colour and numeral unchanged.
   - Then change `GhostArt.tsx`, run the full suites and `CI=1 npm run screenshots`, and commit the regenerated PNGs. No review stop (the user approved this in C15).
@@ -219,7 +219,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - The analyzer `too-long` path, through `HauntedApp.test.tsx` with a mocked `analyze`: the app stays on the input screen with "That text is longer than 50,000 characters." (R16.6).
   - **Done when** these tests pass, `npm test`, `CI=1 npm run test:e2e`, `npm run typecheck`, `npm run lint` and `npm run check:trace` are clean; then commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 2.2–2.4, 16.1–16.6_
-- [ ] 32.2 E2E `loading.spec.ts`, then any fixes
+- [x] 32.2 E2E `loading.spec.ts`, then any fixes
   - **Read first:** requirements R17; traceability rows HU-R17.2, HU-R17.3 and HU-R17.5; `src/components/HauntedApp.tsx`, `src/components/ErrorBoundary.tsx`, `src/lib/ui/retryableImport.ts`; `holdChunks` and `blockChunks` in `e2e/helpers.ts`.
   - **Files:** new `e2e/loading.spec.ts` (no-key project); extend `src/components/HauntedApp.test.tsx`.
   - Tests, written first:

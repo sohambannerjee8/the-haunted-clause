@@ -18,6 +18,7 @@ Paste any Terms & Conditions or privacy policy and it becomes a haunted house. E
 - Keyboard use with one Tab stop per room and arrow keys between ghosts; reduced motion respected; sound off by default.
 - Works from 360 px wide to desktop, and works fully with no API key.
 - Clear messages for unusual input: empty text, the 50,000-character limit (long pastes are cut, with a notice), non-English text, a policy with no risky clauses, and one with only calm wisps.
+- A loading message while the house opens, and if it fails to load, a "Try again" button that keeps your text.
 - Optional: with a Gemini key on the site, ask "the medium" for a plain-English reading of pasted text, sending only the flagged clauses and only after you opt in.
 <!-- features:end -->
 
