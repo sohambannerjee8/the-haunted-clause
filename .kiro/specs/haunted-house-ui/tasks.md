@@ -48,7 +48,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 1.6, 3.1–3.4, 15.2, 17.1, 17.2, 17.4_
 
 - [ ] 25. House, rooms, ghosts and the Haunt Score
-- [ ] 25.1 Write `houseModel.test.ts` and `houseModel.property.test.ts`, then `src/lib/ui/houseModel.ts`
+- [x] 25.1 Write `houseModel.test.ts` and `houseModel.property.test.ts`, then `src/lib/ui/houseModel.ts`
   - Functions: `buildHouseModel`, `bandFor`, `severityLabel`, `ghostLabel`, `roomLabel`.
   - Properties U1, U2 and U4.
   - _Requirements: 4.1, 4.4, 4.5, 5.2, 7.1, 8.3_
