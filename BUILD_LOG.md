@@ -834,3 +834,4 @@ The user said Task 31.4 (Gate 4) had finished from the spec task panel. I found 
 - `CI=1 npm run screenshots` (2 tests passed, against a fresh no-key production build with the C13 change) wrote exactly 12 PNGs to `docs/screenshots/`: `input`, `house-mild`, `house-average`, `house-terrible`, `detail` and `lights-on`, each at 1440 and 360 px, with reduced motion on and fonts loaded.
 - **Shown to the user on 17 November 2026**, as artifacts. The build is stopped here; Phase 5 starts only after the user's reply, which will be recorded below before any Phase 5 entry.
 - README feature list: the Lights on line now mentions the reassurance note (left over from Task 28.3).
+- **Push (screenshots):** `193d844..2c79739` to `origin/main` after the four pre-push checks passed (218 tracked files).
