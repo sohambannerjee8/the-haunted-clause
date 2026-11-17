@@ -4,6 +4,13 @@ Tasks 23–33 of the build plan (PLAN_DECISIONS.md section D). Tasks 23–31 are
 
 Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
 
+**For any agent started from Kiro's spec task panel (PLAN_DECISIONS.md C12.3), before any task:**
+- Read PLAN.md (the brief; section 1 "How to work", section 3 rules, section 6 phases and gates) and PLAN_DECISIONS.md (it wins where the two differ), then the end of BUILD_LOG.md to see where the build stands.
+- The steering files in `.kiro/steering/` apply, especially `testing.md` (test first, never weaken or skip a test, 1,000 runs per property, sub-agents verify gates) and `tech.md`.
+- Gate agents are in `.kiro/agents/` and run as sub-agents with fresh context; the builder never verifies its own work at a gate.
+- After each task: keep BUILD_LOG.md factual, run `npm run check:secrets`, `check:history`, `check:rules` and `check:trace`, then commit and push to origin and log the push (C11.1).
+- Never write a secret to a tracked file, never ignore `.kiro`, and do not do the user's manual steps (PLAN_DECISIONS.md C9).
+
 - [x] 23. Design tokens, fonts, page shell
 - [x] 23.1 Commit the fonts
   - Download Creepster Regular and Atkinson Hyperlegible Regular and Bold, with their `OFL.txt` files, from the official `google/fonts` repository (`ofl/creepster`, `ofl/atkinsonhyperlegible`) into `src/app/fonts/`.
@@ -165,45 +172,76 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Exclude it from `npm run test:e2e` with `--grep-invert @screenshots`.
   - _Requirements: 20.1–20.3_
 - [ ] 31.4 Run Gate 4
-  - Run `npm run test:coverage`, `npm run test:e2e`, `npm run typecheck` and `npm run lint`.
-  - Start `next start -p 3100` and run the `ui-a11y-reviewer` (Playwright MCP) and `test-verifier` sub-agents.
-  - Save each report unchanged to `docs/gate-reports/phase-4-<agent>-attempt-N.md`, and log the results.
-  - Pass when Playwright covers the full flow for all three samples and axe shows no serious issues.
+  - **Read first:** PLAN.md section 6 "Phase 4" (the gate) and "Rules for every gate"; PLAN_DECISIONS.md C10.15, C10.18, C11 and C12; `.kiro/agents/ui-a11y-reviewer.md` and `.kiro/agents/test-verifier.md`; the end of BUILD_LOG.md.
+  - **Builder checks first** (not the gate): `npm run typecheck`, `npm run lint`, `npm run test:coverage` and `CI=1 npm run test:e2e`, all with zero errors, failures or skips.
+  - **ui-a11y-reviewer:** `env GEMINI_API_KEY= npm run build`, then start `env GEMINI_API_KEY= npx next start -p 3100` as a background process. Invoke the agent as a sub-agent with the gate name "Gate 4 (Phase 4: haunted house UI), ui-a11y-reviewer, attempt N", today's date and the URL `http://localhost:3100`. Item 16 is a Gate 5 item ("not due until Phase 5"). Stop the server after it reports.
+  - **test-verifier:** invoke it only after the server is stopped (it runs `npm run build` and `npm run test:e2e` itself, which must not share `.next` with a running server). Gate name "Gate 4 (Phase 4: haunted house UI), test-verifier, attempt N"; tell it which items are due at Gate 4 (item 12: Playwright full flow for all three samples, keyboard on the terrible sample, axe scan), and give it the last pushed commit for its item 8 check.
+  - Run the two agents one after the other, never in parallel.
+  - **Files:** save each final report unchanged to `docs/gate-reports/phase-4-ui-a11y-reviewer-attempt-N.md` and `docs/gate-reports/phase-4-test-verifier-attempt-N.md`. Append a "Gate 4" entry to BUILD_LOG.md (verdict, attempt, problems found) for each agent, pass or fail.
+  - **Pass when** both agents return PASS: Playwright covers the full flow for all three samples, and axe shows no serious or critical issue (PLAN.md Phase 4 gate). On a FAIL, fix the cause test first and re-run that agent as attempt N+1; after 3 failed attempts on the same problem, stop and ask the user (PLAN.md section 1, rule 4).
+  - **After a pass:** run `check:secrets`, `check:history`, `check:rules` and `check:trace`, commit, push to origin and log the push (C11.1). Then go to 31.5.
+  - _Requirements: 4, 5, 6, 7, 8, 9, 10, 12, 19 (Gate 4)_
 - [ ] 31.5 Visual review stop (C10.15)
-  - After Gate 4 passes, run `npm run screenshots` and commit the 12 PNGs in `docs/screenshots/`.
-  - Show them to the user as artifacts, and **stop**. Phase 5 starts only after the user has reviewed the look.
-  - Record in BUILD_LOG.md the date the screenshots were shown and the user's reply, before any Phase 5 entry.
-  - _Requirements: 20.4_
+  - **Read first:** PLAN_DECISIONS.md C10.15; requirements R20; `e2e/screenshots.spec.ts`.
+  - Only after Gate 4 (31.4) has passed: run `CI=1 npm run screenshots`. It writes 12 PNGs to `docs/screenshots/` (`input`, `house-mild`, `house-average`, `house-terrible`, `detail`, `lights-on`, each at `1440` and `360`). Check that there are exactly 12, commit them, push and log the push (C11.1).
+  - Register each image as an artifact, show them to the user, and **stop**. Do not start Phase 5 work.
+  - In BUILD_LOG.md, record the date the screenshots were shown. The task is done when the screenshots are committed and shown. The user's reply is recorded in BUILD_LOG.md before any Phase 5 entry; Task 32.1 checks that it is there.
+  - _Requirements: 20.1–20.4_
 
 - [ ] 32. Edge cases, loading and error states (Phase 5)
 - [ ] 32.1 E2E `edge.spec.ts`, then any fixes
-  - Empty input.
-  - Exactly 50,000 characters analyzed.
-  - The 50,001st character blocked.
-  - A 60,000-character paste cut, with the notice.
-  - Spanish and Japanese paragraphs show the English-only notice.
-  - A policy with no risky clauses shows "No ghosts here" and "0 · Mostly quiet".
-  - A wisps-only policy shows "Only calm wisps here".
-  - The analyzer `too-long` path, through `HauntedApp.test.tsx` with a mocked `analyze` (R16.6).
+  - **Read first:** PLAN.md section 6 "Phase 5"; PLAN_DECISIONS.md C10.15 and C11; requirements R2.2–R2.4 and R16; `.kiro/specs/traceability.md` rows HU-R2.2–R2.4 and HU-R16.1–R16.6; `e2e/helpers.ts`; the end of BUILD_LOG.md.
+  - **Before starting:** check that BUILD_LOG.md records the user's reply to the Gate 4 screenshots (31.5). If it does not, stop and ask the user.
+  - **Files:** new `e2e/edge.spec.ts` (no-key project); extend `src/components/HauntedApp.test.tsx`; use the fixtures in `e2e/helpers.ts` (add a Japanese paragraph fixture there, checked at import like the others).
+  - Tests, written first and run to see them fail where the app is wrong:
+    - Empty input: the message, `aria-invalid` and staying on the input screen.
+    - Exactly 50,000 characters analyzed and the house shown.
+    - The 50,001st typed character blocked (length stays 50,000).
+    - A 60,000-character paste cut to 50,000, with the notice.
+    - Spanish and Japanese paragraphs show the English-only notice.
+    - A policy with no risky clauses shows "No ghosts here", every room "Quiet" and "0 · Mostly quiet".
+    - A wisps-only policy shows "Only calm wisps here".
+    - The analyzer `too-long` path, through `HauntedApp.test.tsx` with a mocked `analyze`: the app stays on the input screen with "That text is longer than 50,000 characters." (R16.6).
+  - **Done when** these tests pass, `npm test`, `CI=1 npm run test:e2e`, `npm run typecheck`, `npm run lint` and `npm run check:trace` are clean; then commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 2.2–2.4, 16.1–16.6_
 - [ ] 32.2 E2E `loading.spec.ts`, then any fixes
-  - The house chunk is delayed, and "Opening the house…" shows with `aria-busy="true"` on `main` (R17.2).
-  - The house chunk is blocked, and the error and "Try again" are shown.
-  - After unblocking and retrying, the house opens and the text is kept.
-  - `HauntedApp.test.tsx`: with `HouseView` mocked to throw while rendering, the error boundary shows the R17.3 message (R17.5).
-  - Polish the loading, error and empty states in the browser.
+  - **Read first:** requirements R17; traceability rows HU-R17.2, HU-R17.3 and HU-R17.5; `src/components/HauntedApp.tsx`, `src/components/ErrorBoundary.tsx`, `src/lib/ui/retryableImport.ts`; `holdChunks` and `blockChunks` in `e2e/helpers.ts`.
+  - **Files:** new `e2e/loading.spec.ts` (no-key project); extend `src/components/HauntedApp.test.tsx`.
+  - Tests, written first:
+    - The house chunk is delayed, and "Opening the house…" shows with `aria-busy="true"` on `main` (R17.2).
+    - The house chunk is blocked, and "The house would not open. Check your connection and try again." and "Try again" are shown.
+    - After unblocking and pressing "Try again", the house opens, and for pasted text the text is kept (R17.3).
+    - `HauntedApp.test.tsx`: with `HouseView` mocked to throw while rendering, the error boundary shows the R17.3 message (R17.5).
+  - Then polish the loading, error and empty states in the browser (function only; the look was reviewed in 31.5).
+  - **Done when** these tests pass and the full suites, type-check, lint and `check:trace` are clean; commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 17.1–17.5_
 
 - [ ] 33. Performance, clean clone and Gate 5 (Phase 5)
 - [ ] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
-  - The textarea accepts typing within 5 s.
-  - The JS transferred before any action is at most 200 kB, and no request loads the house view chunk before the first Analyze or sample click (R17.1).
-  - Record the measured values in tech.md (replacing "to be confirmed") and in BUILD_LOG.md.
+  - **Read first:** PLAN.md section 2 and `.kiro/steering/tech.md` "Performance budget"; requirements R17.1 and R18; traceability rows HU-R17.1, HU-R18.1 and HU-R18.2.
+  - **Files:** new `e2e/perf.spec.ts` (no-key project, Chromium CDP `Network.emulateNetworkConditions` and `Network.setCacheDisabled`); update `.kiro/steering/tech.md`.
+  - Tests, written first:
+    - The textarea is visible and accepts typing within 5 s of navigation start.
+    - The JS transferred before any action (sum of `encodedDataLength` for script responses) is at most 200 kB, and the test prints the measured value.
+    - No request loads the house view chunk before the first Analyze or sample click (R17.1).
+  - Record the measured values in `.kiro/steering/tech.md` (replacing "to be confirmed against the first real build") and in BUILD_LOG.md.
+  - **Done when** the tests pass and the full suites, type-check, lint and `check:trace` are clean; commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 17.1, 18.1, 18.2_
 - [ ] 33.2 Clean clone
-  - `git clone` into `/tmp`, then run `npm ci`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `npm run test:e2e`, all with zero errors and no skipped tests.
-  - Log the commands and results.
+  - **Read first:** PLAN.md section 7 "Definition of done" (a fresh clone builds, lints, type-checks and passes every test with none skipped).
+  - First push everything (C11.1), so the clone has the latest commit. Then `git clone https://github.com/sohambannerjee8/the-haunted-clause.git` into a new folder under `/tmp`, and in it run, with no `.env.local` and no `GEMINI_API_KEY`: `npm ci`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run test:coverage` and `CI=1 npm run test:e2e` (run `npx playwright install chromium` first if the browser is missing there).
+  - Every command must exit 0 with zero errors, zero failed and zero skipped tests.
+  - **Files:** none in the repository except BUILD_LOG.md: log each command, its exit code and its summary line, and the commit hash cloned. Delete the `/tmp` clone afterwards. No gate in this task.
+  - _Requirements: PLAN.md section 7_
 - [ ] 33.3 Run Gate 5
-  - Run all five agents (`spec-reviewer`, `test-verifier`, `security-reviewer`, `ui-a11y-reviewer`, `rules-auditor`) as sub-agents.
-  - Save each report to `docs/gate-reports/phase-5-<agent>-attempt-N.md`, and log the results.
-  - Pass when each returns PASS.
+  - **Read first:** PLAN.md section 6 "Phase 5" (gate: all five agents) and "Rules for every gate"; PLAN_DECISIONS.md C10.21, C11 and C12; all five files in `.kiro/agents/`; the end of BUILD_LOG.md.
+  - Run all five agents as sub-agents, one after the other, never in parallel (several of them build into `.next`):
+    1. `spec-reviewer` (gate name "Gate 5, spec-reviewer, attempt N"; the specs changed since Gate 1 by C12, so it re-checks all three specs and `npm run check:trace`);
+    2. `security-reviewer`;
+    3. `rules-auditor` (Gate 5 decides R1, R3, R4, R5, R7, R8, A1, A2, A3, A4, K1 and K2, as its agent file says);
+    4. `ui-a11y-reviewer`: build with no key and start `npx next start -p 3100` first, pass the URL, item 16 is now due, and stop the server afterwards;
+    5. `test-verifier` (item 12 at Gate 5: edge-case E2E and the slow-connection test), after the server is stopped.
+  - **Files:** save each report unchanged to `docs/gate-reports/phase-5-<agent>-attempt-N.md`, and append each result to BUILD_LOG.md, pass or fail.
+  - **Pass when** each of the five returns PASS. On a FAIL, fix the cause test first and re-run that agent; after 3 failed attempts on the same problem, stop and ask the user.
+  - **After a pass:** run the four pre-push checks, commit, push and log the push (C11.1). Phase 6 (README, DEPLOY.md, drafts, Gate 6) and Phase 7 (COMPLETION_REPORT.md) follow, as PLAN.md section 6 describes; they have no spec tasks.
+  - _Requirements: all (Gate 5)_

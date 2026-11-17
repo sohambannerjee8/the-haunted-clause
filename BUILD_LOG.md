@@ -756,3 +756,16 @@ The ui-a11y-reviewer run for Gate 4 was cancelled by the user before it reported
 - Cause: when a modal dialog closes, Chromium returns focus to the ghost before the dialog's `close` event reaches React. A fast Space press reopened the same finding while the old dialog element was still mounted under the same React key, so nothing called `showModal()` again. The late `close` event could also clear the new opening. A quick keyboard user could hit this too.
 - Fix in `HouseView`: each opening gets its own number, used in the dialog's `key`, and a `close` event clears the open panel only if it belongs to the same opening. The test then passed 40 of 40 repeats, and the full E2E suite (71 tests) passed twice.
 - ESLint had started reporting warnings in `playwright-report/` (generated after a failed run, git-ignored). It and `test-results/` are now in the ESLint ignores; lint is clean.
+- **Push after Task 16.4:** `c2bcaca..1b66fc7` to `origin/main` after `check:secrets` (203 files), `check:history`, `check:rules` (0 FAIL) and `check:trace` passed.
+
+#### Switching to the spec task panel (C12.3, user's choice: option A from Task 31.4)
+- The user chose to start every task from Task 31.4 onward with Kiro's spec task panel ("Start task"), so the `PostTaskExec` Spec sync hook fires.
+- **Tasks 16.3 and 16.4 (clause-analyzer) were ticked by hand**, at the user's instruction. They were completed before the panel was used, so Spec sync did not fire for them.
+- Before the first panel start, I reviewed the remaining haunted-house-ui tasks (31.4, 31.5, 32.1, 32.2, 33.1, 33.2, 33.3) so that an agent started from the panel has what it needs:
+  - A header block now tells any panel-started agent to read PLAN.md (sections 1, 3 and 6), PLAN_DECISIONS.md and the end of BUILD_LOG.md first, follow the steering files, use the agents in `.kiro/agents/` as sub-agents for gates, and push after each task (C11.1).
+  - Each task now has a "Read first" line pointing to the PLAN.md section, the PLAN_DECISIONS.md entries, the requirements and the traceability rows it needs. Each one names the files to create or change, lists the tests, and says when it is done.
+  - The gate tasks (31.4, 33.3) say how to start and stop the `next start` server, to run the agents one at a time (they share `.next`), which checklist items are due, the gate names and the report paths, and the PLAN.md pass condition and three-attempt rule.
+  - Two gaps were filled. 31.5 now says the task is done once the screenshots are committed and shown; 32.1 begins by checking that the user's reply is in BUILD_LOG.md. 33.2 now says to push first so the clone has the latest commit, and to delete the clone afterwards.
+  - Phases 6 and 7 have no spec tasks; 33.3 says they follow as PLAN.md section 6 describes.
+- `npm run check:trace` still passes (236 rows).
+- The Spec sync hook has never fired so far. Its first firing will be logged here.
