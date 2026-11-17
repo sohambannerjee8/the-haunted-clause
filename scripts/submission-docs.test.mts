@@ -151,3 +151,26 @@ describe("README.md (R2, R6)", () => {
     for (const n of names) expect(licenses, n).toContain(alias[n] ?? n);
   });
 });
+
+describe("docs/SUBMISSION_PACK.md (C20)", () => {
+  const pack = read("docs/SUBMISSION_PACK.md");
+  it("exists and fills every Devpost field", () => {
+    for (const h of ["Project name", "Tagline", "About the project", "Built with", "Try it out", "Video demo", "Category", "Kiro usage"]) {
+      expect(pack, h).toMatch(new RegExp(`^## ${h}\\s*$`, "m"));
+    }
+  });
+  it("uses the live URL, the repository URL and the category", () => {
+    expect(pack).toContain("https://the-haunted-clause.vercel.app");
+    expect(pack).toContain("https://github.com/sohambannerjee8/the-haunted-clause");
+    expect(pack).toContain("Costume Contest");
+  });
+  it("leaves blanks only for the video link and the student details", () => {
+    const blanks = pack.match(/_\(blank: [^)]+\)_/g) ?? [];
+    expect(blanks.length).toBeGreaterThan(0);
+    for (const b of blanks) expect(b, b).toMatch(/video|student/i);
+  });
+  it("never calls the agents read-only and never shows /100", () => {
+    expect(pack.toLowerCase()).not.toContain("read-only");
+    expect(pack).not.toContain("/100");
+  });
+});

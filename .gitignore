@@ -45,6 +45,9 @@ yarn-error.log*
 
 # Local record of hook runs, written by scripts/lib/hook-log.mjs
 /.hook-runs/
+# Real-policy audit (sources, report) and the recorded demo video: never committed (PLAN_DECISIONS.md C20)
+/audit/
+/video/
 
 # typescript
 *.tsbuildinfo

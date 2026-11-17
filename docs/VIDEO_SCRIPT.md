@@ -12,6 +12,7 @@ Everything on screen is the real app, running at a 1440 px wide window, except t
 - **Branding:** nothing on screen or in the narration names a third-party product or company. The sample companies (Quillwhisper Notes, Mirebell Streaming, Murkwillow Social) are fictional and were checked by web search. Do not open the optional "medium" panel; it names an outside service.
 - **Readings:** if the sample readings were refreshed with `npm run precompute:samples` before recording, the badge in the panel reads "Medium's reading" and the explanation wording differs. The narration below does not quote the explanation, so it fits either way.
 - **Start state:** the app open on the input screen, scrolled to the top.
+- **Recorded version:** `npx tsx scripts/record-demo.mts` plays this script against the live site at 1440 × 900 with motion on and burns the narration in as captions, writing `video/demo.webm` (git-ignored). A browser cannot film the Kiro window, so in that recording the Kiro segment shows a local page listing the repository's real `.kiro/` files, EARS lines, gate reports and a property test. To show Kiro itself, screen-record that segment and splice it in.
 
 ## Script
 
