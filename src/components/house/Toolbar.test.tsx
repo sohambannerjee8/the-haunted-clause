@@ -31,6 +31,34 @@ describe("Toolbar (R15.3, R17.4)", () => {
     expect(toggle).toHaveAttribute("aria-pressed", "false");
     expect(toggle).toHaveFocus();
   });
+  it("has a Sound toggle third, off by default, with aria-pressed (R11.2)", async () => {
+    const { useState } = await import("react");
+    const onSound = vi.fn();
+    function Harness() {
+      const [on, setOn] = useState(false);
+      return (
+        <Toolbar
+          company={null}
+          onBack={() => {}}
+          lightsOn={false}
+          onToggleLights={() => {}}
+          soundOn={on}
+          onToggleSound={() => {
+            onSound(!on);
+            setOn(!on);
+          }}
+        />
+      );
+    }
+    render(<Harness />);
+    const toggle = screen.getAllByRole("button")[2];
+    expect(toggle).toHaveTextContent("Sound");
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(onSound).toHaveBeenCalledWith(true);
+    expect(toggle).toHaveFocus();
+  });
   it("has Read another policy first", async () => {
     const onBack = vi.fn();
     render(<Toolbar company={null} onBack={onBack} />);

@@ -1,5 +1,6 @@
 "use client";
 // The house view, loaded with a dynamic import on first use (haunted-house-ui R17.1).
+import { domAnimation, LazyMotion, m } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { roomById } from "../../lib/analyzer/rooms";
 import { hauntScore } from "../../lib/analyzer/score";
@@ -37,6 +38,7 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
   const [open, setOpen] = useState<{ finding: Finding; opener: HTMLButtonElement } | null>(null);
   // Sound is off until the user turns it on; no AudioContext exists before that (R11.1).
   const [sound] = useState(() => createSound());
+  const [soundOn, setSoundOn] = useState(false);
   useEffect(() => heading.current?.focus(), []);
 
   const model = buildHouseModel(findings);
@@ -54,9 +56,25 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
     }
   }
 
+  function toggleSound() {
+    // The AudioContext is made here, inside the click (a user gesture), and not before (R11.1).
+    if (soundOn) sound.disable();
+    else sound.enable();
+    setSoundOn(!soundOn);
+  }
+
   return (
-    <div>
-      <Toolbar company={prepared.company} onBack={onBack} lightsOn={lights} onToggleLights={() => setLights((v) => !v)} />
+    <LazyMotion features={domAnimation} strict>
+      {/* One-off fade-in: opacity only, one direction, 200 ms (R10.4). */}
+      <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+      <Toolbar
+        company={prepared.company}
+        onBack={onBack}
+        lightsOn={lights}
+        onToggleLights={() => setLights((v) => !v)}
+        soundOn={soundOn}
+        onToggleSound={toggleSound}
+      />
       <ScoreBadge score={score} />
       <Notices
         llmAvailable={llmAvailable}
@@ -87,6 +105,7 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
             />
           );
         })()}
-    </div>
+      </m.div>
+    </LazyMotion>
   );
 }

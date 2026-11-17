@@ -1,5 +1,6 @@
 // The ghost detail panel: a native modal <dialog> (haunted-house-ui R6, R13.1).
 // Every text is a React text child; nothing is rendered as HTML (R6.5).
+import { m } from "motion/react";
 import { useEffect, useId, useRef } from "react";
 import type { Room, Severity } from "../../lib/analyzer/types";
 import type { ExplainedFinding } from "../../lib/llm/merge";
@@ -47,6 +48,7 @@ export function DetailDialog({
       aria-labelledby={titleId}
       className="hc-dialog m-auto rounded-lg border-2 border-aubergine-500 bg-aubergine-900 p-5 text-bone backdrop:bg-ink/80"
     >
+      <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
       <h2 id={titleId} className="font-display text-3xl tracking-wide">
         {room.name}
       </h2>
@@ -81,6 +83,7 @@ export function DetailDialog({
           Close
         </button>
       </div>
+      </m.div>
     </dialog>
   );
 }

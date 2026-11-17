@@ -145,3 +145,43 @@ main:focus-visible {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* Ghost motion by level (design-language "Ghost intensity levels"). Every cycle is at least 2.5 s;
+   only the level 3 glow changes opacity, through one peak per cycle, far below 3 flashes a second (R10.4).
+   The art moves, never the button, so the hit area and focus ring stay still.
+   The reduced-motion rule above turns all of it off (R10.2). */
+@keyframes hc-drift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+@keyframes hc-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes hc-bob-sway {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(0deg); }
+  75% { transform: translateY(-3px) rotate(3deg); }
+}
+@keyframes hc-bob-sway-big {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(0deg); }
+  75% { transform: translateY(-4px) rotate(4deg); }
+}
+@keyframes hc-glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.65; }
+}
+.hc-ghost[data-severity="0"] .hc-art { animation: hc-drift 6s ease-in-out infinite; animation-delay: inherit; }
+.hc-ghost[data-severity="1"] .hc-art { animation: hc-bob 4s ease-in-out infinite; animation-delay: inherit; }
+.hc-ghost[data-severity="2"] .hc-art { animation: hc-bob-sway 3s ease-in-out infinite; animation-delay: inherit; }
+.hc-ghost[data-severity="3"] .hc-art { animation: hc-bob-sway-big 2.5s ease-in-out infinite; animation-delay: inherit; }
+.hc-glow {
+  opacity: 0.35; /* still glow when motion is reduced */
+  filter: blur(4px);
+  transform-origin: center;
+  transform: scale(1.15);
+  animation: hc-glow 2.5s ease-in-out infinite;
+}

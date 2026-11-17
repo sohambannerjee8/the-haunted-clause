@@ -142,8 +142,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - The button is absent with no key.
   - _Requirements: 14.1–14.7, 15.2_
 
-- [ ] 30. Motion and sound settings
-- [ ] 30.1 Extend `Toolbar.test.tsx` (Sound toggle with `aria-pressed`, off by default, R11.2), then add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the 200 ms one-off fades. Add the Sound toggle to the Toolbar (off by default)
+- [x] 30. Motion and sound settings
+- [x] 30.1 Extend `Toolbar.test.tsx` (Sound toggle with `aria-pressed`, off by default, R11.2), then add the CSS keyframes per level, the reduced-motion media query, and `MotionConfig reducedMotion="user"` with `LazyMotion` for the 200 ms one-off fades. Add the Sound toggle to the Toolbar (off by default)
   - E2E `motion.spec.ts`:
     - With reduced motion, every `.hc-ghost` has `animation-name: none` and its bounding box is unchanged after 1 s, and `document.getAnimations()` holds no running repeating animation on any element (R10.3).
     - `HauntedApp.test.tsx`: the app renders inside `MotionConfig` with `reducedMotion="user"` (R10.3).
