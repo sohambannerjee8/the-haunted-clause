@@ -11,7 +11,7 @@ Paste any Terms & Conditions or privacy policy and it becomes a haunted house. E
 <!-- features:start -->
 - Arrive at a moonlit haunted house: paste a policy of up to 50,000 characters, or open one of three fictional sample houses (mild, average, terrible).
 - The analysis runs in your browser: a rule-based reader splits the text into clauses and sorts risky ones into eight rooms.
-- The haunted house: eight rooms, each with a drawn prop that identifies it, and one ghost per flagged clause whose size, shape, opacity, colour, motion and numeral rise with severity, from a calm wisp (checked, looks fine) to a tattered ghost with glowing eyes.
+- The haunted house: eight rooms, each with a drawn prop that identifies it, and one ghost per flagged clause whose size, shape, opacity, colour, motion and numeral rise with severity, from a calm wisp (checked, looks fine) through a worried ghost to a tattered, menacing ghost with glowing eyes and a jagged grin.
 - Click or press Enter on a ghost to read the exact clause (without its section heading), a plain-English explanation, why it matters and where the reading came from; a clause that reassures you (for example "We do not sell your data") is explained as a reassurance.
 - A large Haunt Score above the house, led by its band label (Mostly quiet, Uneasy, Haunted, Run).
 - Lights on mode: the same findings as a plain, accessible list, including the note when a reassurance lowers a clause's severity.

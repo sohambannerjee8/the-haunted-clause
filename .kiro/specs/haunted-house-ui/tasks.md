@@ -200,7 +200,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 20.1–20.4_
 
 - [ ] 32. Edge cases, loading and error states (Phase 5)
-- [ ] 32.0 Ghost expressions (PLAN_DECISIONS.md C15)
+- [x] 32.0 Ghost expressions (PLAN_DECISIONS.md C15)
   - Extend `Ghost.test.tsx` first: level 2 has a worried face (`data-face="worried"`, raised inner brows) and no jagged mouth; level 3 has `data-face="menacing"`, glowing eyes, a jagged mouth and a darker hem layer; size, opacity, colour and numeral unchanged.
   - Then change `GhostArt.tsx`, run the full suites and `CI=1 npm run screenshots`, and commit the regenerated PNGs. No review stop (the user approved this in C15).
   - _Requirements: 5.4_

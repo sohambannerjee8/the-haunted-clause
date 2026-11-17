@@ -15,6 +15,7 @@ const TATTERED = "M32 3C18 3 9 13 9 28v31l4-7 3 6 4-9 4 8 3-6 5 9 3-7 4 8 4-9 3 
 const WISP = "M33 8c-9 0-15 7-15 15 0 7 4 11 9 13-3 3-7 4-11 4 6 5 15 4 20-2 6-5 9-12 9-18 0-7-5-12-12-12Z";
 
 const SHAPE = ["wisp", "faint", "uneasy", "tattered"] as const;
+const FACE = ["none", "calm", "worried", "menacing"] as const;
 
 export function GhostArt({ severity }: { severity: Severity }) {
   const style = {
@@ -23,7 +24,7 @@ export function GhostArt({ severity }: { severity: Severity }) {
     opacity: "var(--ghost-opacity)",
     color: "var(--ghost-colour)",
   };
-  const common = { viewBox: "0 0 64 64", "aria-hidden": true, focusable: false, className: "hc-art", style, "data-shape": SHAPE[severity] } as const;
+  const common = { viewBox: "0 0 64 64", "aria-hidden": true, focusable: false, className: "hc-art", style, "data-shape": SHAPE[severity], "data-face": FACE[severity] } as const;
 
   if (severity === 0) {
     return (
@@ -46,11 +47,11 @@ export function GhostArt({ severity }: { severity: Severity }) {
     return (
       <svg {...common}>
         <path d={UNEASY} fill="currentColor" />
-        {/* Worried brows and a wobbling mouth. */}
-        <path d="M21 20l7 3M45 20l-7 3" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />
-        <ellipse cx="26" cy="28" rx="3.5" ry="4.5" fill={INK} />
-        <ellipse cx="40" cy="28" rx="3.5" ry="4.5" fill={INK} />
-        <path d="M25 41c2.5-2 5-2 7.5 0s5 2 7.5 0" fill="none" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />
+        {/* Worried, not angry: brows raised at the inner ends, wide eyes, a small wavering mouth (C15). */}
+        <path data-part="brows-worried" d="M20 21l8-4M46 21l-8-4" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />
+        <ellipse cx="27" cy="29" rx="3.6" ry="4.6" fill={INK} />
+        <ellipse cx="39" cy="29" rx="3.6" ry="4.6" fill={INK} />
+        <path d="M28 42c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0" fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />
       </svg>
     );
   }
@@ -58,12 +59,14 @@ export function GhostArt({ severity }: { severity: Severity }) {
     <svg {...common}>
       <path d={TATTERED} fill="currentColor" className="hc-glow" />
       <path d={TATTERED} fill="currentColor" />
-      {/* Hollow sockets with glowing eyes, and a gaping mouth. */}
-      <ellipse cx="24" cy="26" rx="5.5" ry="7" fill={INK} />
-      <ellipse cx="40" cy="26" rx="5.5" ry="7" fill={INK} />
-      <circle cx="24" cy="27" r="2.6" fill="currentColor" className="hc-eye-glow" />
-      <circle cx="40" cy="27" r="2.6" fill="currentColor" className="hc-eye-glow" />
-      <ellipse cx="32" cy="43" rx="5" ry="6.5" fill={INK} />
+      {/* A darker, shredded lower edge (C15). */}
+      <path data-part="hem-dark" d="M9 46v13l4-7 3 6 4-9 4 8 3-6 5 9 3-7 4 8 4-9 3 6 5-8 2 7V46c-8 4-15 5-23 5s-15-1-23-5Z" fill={INK} opacity="0.35" />
+      {/* Menacing: slanted hollow sockets with glowing eyes, and a jagged grin (C15). */}
+      <path d="M16 21l13 4-1 8c-6 1-11-3-12-12Z" fill={INK} />
+      <path d="M48 21l-13 4 1 8c6 1 11-3 12-12Z" fill={INK} />
+      <circle cx="24" cy="27.5" r="2.4" fill="currentColor" className="hc-eye-glow" />
+      <circle cx="40" cy="27.5" r="2.4" fill="currentColor" className="hc-eye-glow" />
+      <path data-part="mouth-jagged" d="M20 39l4 3 3-4 3 5 2-5 2 5 3-5 3 4 4-3-2 6c-8 4-16 4-24 0Z" fill={INK} />
     </svg>
   );
 }

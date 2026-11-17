@@ -52,6 +52,27 @@ describe("Ghost (R5.1–R5.5)", () => {
     expect(shapes[3].glow).toBeGreaterThan(0);
     expect(shapes[0].glow + shapes[1].glow + shapes[2].glow).toBe(0);
   });
+  it("level 2 looks worried, not angry; level 3 is the most menacing face (C15)", () => {
+    const art = (s: Severity) => {
+      const { container, unmount } = render(<Ghost finding={finding(s)} room={cellar} tabIndex={0} onOpen={() => {}} />);
+      const svg = container.querySelector("svg.hc-art")!.cloneNode(true) as SVGElement;
+      unmount();
+      return svg;
+    };
+    const two = art(2);
+    const three = art(3);
+    expect(two.getAttribute("data-face")).toBe("worried");
+    expect(two.querySelector('[data-part="brows-worried"]')).not.toBeNull();
+    expect(two.querySelector('[data-part="mouth-jagged"]')).toBeNull();
+    expect(two.querySelectorAll(".hc-eye-glow")).toHaveLength(0);
+    expect(three.getAttribute("data-face")).toBe("menacing");
+    expect(three.querySelectorAll(".hc-eye-glow").length).toBeGreaterThanOrEqual(2);
+    expect(three.querySelector('[data-part="mouth-jagged"]')).not.toBeNull();
+    expect(three.querySelector('[data-part="hem-dark"]')).not.toBeNull();
+    // Levels 0 and 1 carry no face drama.
+    expect(art(0).getAttribute("data-face")).toBe("none");
+    expect(art(1).getAttribute("data-face")).toBe("calm");
+  });
   it("calls onOpen with the finding and the button", async () => {
     const onOpen = vi.fn();
     render(<Ghost finding={finding(2)} room={cellar} tabIndex={0} onOpen={onOpen} />);
