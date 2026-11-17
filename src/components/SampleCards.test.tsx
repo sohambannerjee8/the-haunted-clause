@@ -21,6 +21,18 @@ describe("SampleCards (R2.5)", () => {
       expect(b).toHaveTextContent("Open this house");
     }
   });
+  it("draws each sample as a small house front with a door button of at least 44 px (C14.1)", () => {
+    const { container } = render(<SampleCards onOpen={() => {}} />);
+    for (const card of screen.getAllByRole("article")) {
+      const front = card.querySelector("svg[data-house-front]");
+      expect(front).not.toBeNull();
+      expect(front).toHaveAttribute("aria-hidden", "true");
+      const door = within(card).getByRole("button");
+      expect(door).toHaveClass("hc-door");
+      expect(door).toHaveStyle({ minWidth: "44px", minHeight: "44px" });
+    }
+    expect(container.querySelectorAll("svg[data-house-front] text")).toHaveLength(0);
+  });
   it("calls onOpen with the sample ID", async () => {
     const onOpen = vi.fn();
     render(<SampleCards onOpen={onOpen} />);

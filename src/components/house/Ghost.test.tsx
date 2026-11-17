@@ -39,6 +39,19 @@ describe("Ghost (R5.1–R5.5)", () => {
     expect(b).toHaveStyle({ minWidth: "44px", minHeight: "44px" });
     expect(b.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
   });
+  it("draws a different shape for each level: wisp, faint, uneasy, tattered with glowing eyes (C14.3)", () => {
+    const shapes = ([0, 1, 2, 3] as const).map((s) => {
+      const { container, unmount } = render(<Ghost finding={finding(s)} room={cellar} tabIndex={0} onOpen={() => {}} />);
+      const svg = container.querySelector("svg.hc-art")!;
+      const out = { shape: svg.getAttribute("data-shape"), html: svg.innerHTML, glow: svg.querySelectorAll(".hc-eye-glow").length };
+      unmount();
+      return out;
+    });
+    expect(shapes.map((x) => x.shape)).toEqual(["wisp", "faint", "uneasy", "tattered"]);
+    expect(new Set(shapes.map((x) => x.html)).size).toBe(4);
+    expect(shapes[3].glow).toBeGreaterThan(0);
+    expect(shapes[0].glow + shapes[1].glow + shapes[2].glow).toBe(0);
+  });
   it("calls onOpen with the finding and the button", async () => {
     const onOpen = vi.fn();
     render(<Ghost finding={finding(2)} room={cellar} tabIndex={0} onOpen={onOpen} />);

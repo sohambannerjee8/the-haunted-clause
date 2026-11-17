@@ -20,6 +20,15 @@ describe("ScoreBadge (R7.1, R7.3)", () => {
     render(<ScoreBadge score={score} />);
     expect(screen.getByTestId("haunt-score")).toHaveTextContent(text);
   });
+  it("makes the band the main phrase, larger than the number, as the hero (C14.4)", () => {
+    render(<ScoreBadge score={97} />);
+    const band = screen.getByTestId("haunt-band");
+    expect(band).toHaveTextContent("Run");
+    expect(band).toHaveClass("hc-score-band", "font-display");
+    expect(screen.getByTestId("haunt-number")).toHaveClass("hc-score-number");
+    expect(screen.getByTestId("haunt-score")).toHaveTextContent("97 · Run");
+    expect(screen.getByTestId("haunt-score").closest("[data-score-hero]")).not.toBeNull();
+  });
   it("announces the score in a polite live region once, and again only when it changes", () => {
     const { rerender } = render(<ScoreBadge score={14} />);
     const status = screen.getByRole("status");
