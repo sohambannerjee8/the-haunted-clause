@@ -9,6 +9,7 @@ import { buildHouseModel } from "../../lib/ui/houseModel";
 import { createSound } from "../../lib/ui/sound";
 import { DetailDialog } from "./DetailDialog";
 import { House } from "./House";
+import { LightsOnList } from "./LightsOnList";
 import type { Prepared } from "./prepare";
 import { ScoreBadge } from "./ScoreBadge";
 import { Toolbar } from "./Toolbar";
@@ -25,6 +26,7 @@ export interface HouseViewProps {
 export function HouseView({ prepared, onBack }: HouseViewProps) {
   const heading = useRef<HTMLHeadingElement>(null);
   const [findings] = useState<readonly ExplainedFinding[]>(prepared.findings);
+  const [lights, setLights] = useState(false);
   const [open, setOpen] = useState<{ finding: Finding; opener: HTMLButtonElement } | null>(null);
   // Sound is off until the user turns it on; no AudioContext exists before that (R11.1).
   const [sound] = useState(() => createSound());
@@ -35,12 +37,13 @@ export function HouseView({ prepared, onBack }: HouseViewProps) {
 
   return (
     <div>
-      <Toolbar company={prepared.company} onBack={onBack} />
+      <Toolbar company={prepared.company} onBack={onBack} lightsOn={lights} onToggleLights={() => setLights((v) => !v)} />
       <ScoreBadge score={score} />
       <h2 ref={heading} tabIndex={-1} className="mt-6 font-display text-3xl tracking-wide">
-        Inside the house
+        {lights ? "Lights on" : "Inside the house"}
       </h2>
-      <House model={model} onOpen={(finding, opener) => setOpen({ finding, opener })} />
+      {/* Lights on renders no ghost, so every repeating animation stops (R10.5). */}
+      {lights ? <LightsOnList model={model} /> : <House model={model} onOpen={(finding, opener) => setOpen({ finding, opener })} />}
       {open && (() => {
         const shown = findings.find((f) => f.id === open.finding.id)!;
         const rule = prepared.ruleFindings.find((f) => f.id === shown.id)!;

@@ -1,12 +1,37 @@
-// The house view's toolbar (haunted-house-ui R15.3, R17.4). Lights on and Sound come in Tasks 28 and 30.
+// The house view's toolbar (haunted-house-ui R8.1, R10.5, R15.3, R17.4). The Lights on toggle is
+// always the second control, so motion can always be stopped. Sound comes in Task 30.
 import type { ReactNode } from "react";
 
-export function Toolbar({ company, onBack, children }: { company: string | null; onBack: () => void; children?: ReactNode }) {
+const BUTTON = "min-h-11 rounded-md border-2 px-4 py-2 hover:bg-aubergine-700";
+
+export function Toolbar({
+  company,
+  onBack,
+  lightsOn,
+  onToggleLights,
+  children,
+}: {
+  company: string | null;
+  onBack: () => void;
+  lightsOn?: boolean;
+  onToggleLights?: () => void;
+  children?: ReactNode;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-3 py-4">
-      <button type="button" onClick={onBack} className="min-h-11 rounded-md border-2 border-mist px-4 py-2 text-bone hover:bg-aubergine-700">
+      <button type="button" onClick={onBack} className={`${BUTTON} border-mist text-bone`}>
         Read another policy
       </button>
+      {onToggleLights && (
+        <button
+          type="button"
+          aria-pressed={lightsOn ? "true" : "false"}
+          onClick={onToggleLights}
+          className={`${BUTTON} ${lightsOn ? "border-bone bg-bone text-ink hover:bg-bone" : "border-candle text-candle"}`}
+        >
+          Lights on
+        </button>
+      )}
       {children}
       {company && <p className="text-mist">Sample: {company} (a fictional company)</p>}
     </div>

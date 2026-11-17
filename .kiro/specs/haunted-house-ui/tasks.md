@@ -108,8 +108,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - The skip link and toolbar come first in tab order.
   - _Requirements: 5.6, 6.7, 9.1–9.7, 19.4_
 
-- [ ] 28. Lights on mode
-- [ ] 28.1 Write `LightsOnList.test.tsx` and extend `Toolbar.test.tsx` (the Lights on toggle and its `aria-pressed`, R8.1), then `LightsOnList` and the Toolbar's Lights on toggle
+- [x] 28. Lights on mode
+- [x] 28.1 Write `LightsOnList.test.tsx` and extend `Toolbar.test.tsx` (the Lights on toggle and its `aria-pressed`, R8.1), then `LightsOnList` and the Toolbar's Lights on toggle
   - Tests:
     - Same findings as the model.
     - Quiet rooms shown.
@@ -117,7 +117,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - The notice at the top.
     - `aria-pressed` toggles, and focus stays on the toggle.
   - _Requirements: 8.1–8.5, 13.1_
-- [ ] 28.2 E2E `lights.spec.ts`
+- [x] 28.2 E2E `lights.spec.ts`
   - For all three samples, the list holds the same finding IDs, severities and quotes as the house.
   - Lights on mode has the `h2` "Lights on", and every room heading is an `h3` (R19.3).
   - axe passes in both modes.
