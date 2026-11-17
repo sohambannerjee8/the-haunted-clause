@@ -45,8 +45,8 @@ Vercel free plan. No database, no login, no stored user text. Input capped at 50
 
 ## Performance budget
 
-- First-load JavaScript for `/`: at most 200 kB gzipped (to be confirmed against the first real build and recorded here).
-- On a throttled connection (about 1.6 Mbps, 150 ms latency), the input screen must be usable within 5 seconds.
+- First-load JavaScript for `/`: at most 200 kB gzipped. Measured on 17 November 2026 by `e2e/perf.spec.ts` (Task 33.1) against `next start`: 142,493 bytes gzip-encoded in 6 script files.
+- On a throttled connection (about 1.6 Mbps, 150 ms latency), the input screen must be usable within 5 seconds. Measured: the hydrated textarea followed typing after about 1.65 s (three runs: 1,657, 1,637 and 1,633 ms; 200,000 B/s down, 93,750 B/s up, 150 ms latency, cache disabled).
 - The house view is loaded with a dynamic import so the first screen stays light.
 
 ## Security defaults

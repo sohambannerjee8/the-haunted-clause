@@ -232,7 +232,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 17.1–17.5_
 
 - [ ] 33. Performance, clean clone and Gate 5 (Phase 5)
-- [ ] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
+- [x] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
   - **Read first:** PLAN.md section 2 and `.kiro/steering/tech.md` "Performance budget"; requirements R17.1 and R18; traceability rows HU-R17.1, HU-R18.1 and HU-R18.2.
   - **Files:** new `e2e/perf.spec.ts` (no-key project, Chromium CDP `Network.emulateNetworkConditions` and `Network.setCacheDisabled`); update `.kiro/steering/tech.md`.
   - Tests, written first:
