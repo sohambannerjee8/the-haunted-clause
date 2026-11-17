@@ -252,13 +252,13 @@ E2E tests import the analyzer and samples directly (`../src/lib/analyzer`) to co
 | File | Covers |
 | --- | --- |
 | `InputScreen.test.tsx` | Counter format; the counter has `aria-live="off"` and no ancestor with `role="status"`, `role="alert"` or `aria-live` polite or assertive (R2.6); `maxLength`; paste over the cap is cut with the notice; the empty message with `aria-invalid`; the Analyze callback |
-| `SampleCards.test.tsx` | Three cards; each shows its company name and its one-line description from `meta.ts`; buttons named with the company (R2.5) |
+| `SampleCards.test.tsx` | Three cards; each shows its company name and its one-line description from `meta.ts`; buttons named with the company (R2.5); each card a house front with a door button of at least 44 px (C14.1) |
 | `Ghost.test.tsx` | Each level 0–3: `data-severity`, aria-label, visible numeral, the level class; 44 px minimum; a different shape per level, glowing eyes only on level 3, `data-face` worried for level 2 and menacing for level 3 (C14.3, C15) |
 | `RoomProp.test.tsx` | One `aria-hidden` prop per room with no text, eight different drawings, outside the ghost group (C14.2) |
 | `NightScene.test.tsx` | Decorative only: `aria-hidden`, a moon and the house silhouette, no text, no pointer events (C14.1) |
 | `Room.test.tsx` | Quiet room text, no buttons, and the section's accessible name "<Room>, quiet" (R4.5); the status line; the group label; roving tabindex (one `tabindex=0`; arrows, Home and End move focus; wrap-around; focus memory) |
 | `DetailDialog.test.tsx` | The title is an `h2` inside the dialog (R19.3); all fields; mitigation notes; the medium-raised note; plain text (a quote holding `<b>` shows literally); Close returns focus |
-| `ScoreBadge.test.tsx` | Format "N · band"; no "/100"; the announcement only on change |
+| `ScoreBadge.test.tsx` | Format "N · band"; no "/100"; the announcement only on change; the band as the main phrase in the hero panel (C14.4) |
 | `LightsOnList.test.tsx` | Same findings as the model; Quiet rooms; no SVG; the notice at the top; the reassurance line on mitigated findings only, and the mitigation's explanation on the mild Cellar finding (C13) |
 | `OptInPanel.test.tsx` | Hidden when `llmAvailable` is false (the "no medium" line shown); hidden for samples; listening state; the success merge; each failure message; no call without a press |
 | `Footer.test.tsx` | "Not legal advice" and the sentence saying the readings are automated and can be wrong (R1.2) |

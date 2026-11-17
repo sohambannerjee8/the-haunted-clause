@@ -934,3 +934,5 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with t
   - `tasks.md`: the header now describes the C12.4 route; 33.3 names C12–C15; 31.6 follows 31.5.
   - Parent Task 31 was ticked by a script edit, so the Spec sync hook did not fire for it. It records nothing new: all its sub-tasks were already logged.
 - `npm run check:trace` still passes (236 rows). No code or test changed.
+- **spec-reviewer, attempt 2: PASS.** Report saved unchanged to `docs/gate-reports/phase-5-spec-reviewer-attempt-2.md`. All 15 items Yes; it checked each attempt 1 problem again and found the conflict and all but one MINOR item resolved. Its 30-entry spot check and `check:trace` (236 rows) passed.
+  - Two MINOR leftovers it listed (no item failed): P2 in the clause-analyzer design still said "28 positive examples", and the `ScoreBadge.test.tsx` and `SampleCards.test.tsx` rows did not mention the C14 tests. **Fixed** (P2 now says 41; both rows name their C14 tests). Text only.
