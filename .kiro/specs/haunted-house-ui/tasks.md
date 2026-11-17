@@ -204,7 +204,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Extend `Ghost.test.tsx` first: level 2 has a worried face (`data-face="worried"`, raised inner brows) and no jagged mouth; level 3 has `data-face="menacing"`, glowing eyes, a jagged mouth and a darker hem layer; size, opacity, colour and numeral unchanged.
   - Then change `GhostArt.tsx`, run the full suites and `CI=1 npm run screenshots`, and commit the regenerated PNGs. No review stop (the user approved this in C15).
   - _Requirements: 5.4_
-- [ ] 32.1 E2E `edge.spec.ts`, then any fixes
+- [x] 32.1 E2E `edge.spec.ts`, then any fixes
   - **Read first:** PLAN.md section 6 "Phase 5"; PLAN_DECISIONS.md C10.15 and C11; requirements R2.2–R2.4 and R16; `.kiro/specs/traceability.md` rows HU-R2.2–R2.4 and HU-R16.1–R16.6; `e2e/helpers.ts`; the end of BUILD_LOG.md.
   - **Before starting:** check that BUILD_LOG.md records the user's reply to the Gate 4 screenshots (31.5). If it does not, stop and ask the user.
   - **Files:** new `e2e/edge.spec.ts` (no-key project); extend `src/components/HauntedApp.test.tsx`; use the fixtures in `e2e/helpers.ts` (add a Japanese paragraph fixture there, checked at import like the others).

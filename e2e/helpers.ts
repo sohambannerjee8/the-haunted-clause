@@ -9,6 +9,9 @@ export const RISKY = "Welcome to the Example Tea service. We may sell your perso
 export const SPANISH =
   "Bienvenido a nuestro servicio. Podemos compartir sus datos con nuestros socios para mejorar la experiencia. " +
   "Su suscripción se renueva cada año y puede cancelarla cuando quiera desde la configuración de su cuenta.";
+export const JAPANESE =
+  "当社は、サービスを改善するためにお客様の情報をパートナーと共有することがあります。" +
+  "サブスクリプションは毎年自動的に更新され、アカウント設定からいつでも解約できます。";
 export const NO_RISK = "Thanks for reading our policy. We hope you enjoy the app and have a lovely day.";
 export const ONLY_WISPS = "We do not sell your personal information.";
 
@@ -21,6 +24,7 @@ const ok = (t: string) => {
 if (ok(NO_RISK).findings.length !== 0) throw new Error("NO_RISK fixture has findings");
 if (!ok(ONLY_WISPS).findings.length || ok(ONLY_WISPS).findings.some((f) => f.severity > 0)) throw new Error("ONLY_WISPS fixture is not wisps only");
 if (!ok(SPANISH).likelyNonEnglish) throw new Error("SPANISH fixture is not flagged");
+if (!ok(JAPANESE).likelyNonEnglish) throw new Error("JAPANESE fixture is not flagged");
 if (ok(RISKY).findings.length === 0) throw new Error("RISKY fixture has no findings");
 
 /** Wait until every one-off animation (the 200 ms fades) has finished; repeating ghost motion is ignored. */
