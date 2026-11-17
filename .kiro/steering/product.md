@@ -50,4 +50,4 @@ The Haunted Clause turns any Terms & Conditions or privacy policy into a haunted
 
 ## Kiro features in this build
 
-Specs (three), steering (six files), hooks (four), custom verification agents (five, each with no write tool; shell limited to build/test commands), MCP (Context7 and Playwright), and property-based tests with fast-check.
+Specs (three), steering (six files), hooks (four), custom verification agents (five, each with no write tool; shell limited to build/test commands), MCP (Playwright MCP, used through Kiro; Context7 was configured but never connected in Kiro, because its first download timed out, so it was only reached from the shell), and property-based tests with fast-check.

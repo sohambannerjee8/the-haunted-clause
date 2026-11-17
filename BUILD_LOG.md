@@ -957,3 +957,11 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with t
 - **Spec sync fired** (`PostFileSave`) when I ticked haunted-house-ui **Task 33.3 Run Gate 5**. Parent Task 33 was ticked just before by a script edit, which does not trigger the hook. Files changed: the five `docs/gate-reports/phase-5-*.md` reports (plus spec-reviewer attempt 1), spec text fixes in `.kiro/specs/`, `package.json` (licence) and README.md (pre-existing work and licences). Tests, as the agents ran them: `npm run test:coverage` 772 passed, 0 failed; `CI=1 npm run test:e2e` 85 passed, 0 failed. Kiro features: the spec, five custom agents run as sub-agents (each has no write tool; shell limited to build/test commands), Playwright MCP (ui-a11y-reviewer), the Spec sync hook and property-based tests. README feature list: unchanged, since 33.3 adds no user-facing feature.
 
 **Phase 5 complete.** Every spec task in all three specs is ticked. Next is Phase 6 (submission pack and the final rules-auditor gate), which has no spec tasks.
+
+---
+## Phase 6: Submission pack (started 17 November 2026)
+PLAN.md (sections 3, 6 and 7) and PLAN_DECISIONS.md re-read at the start of the phase. Phase 6 has no spec tasks. The user approved it with three additions: correct the MCP line in `product.md`; video script requirements (about 2:30, the real app throughout, "97 · Run" in the first 20 seconds, one ghost detail panel, Lights on, the keyboard path, ending on how Kiro was used, no music unless royalty-free and named); and mark KIRO_USAGE.md, BLOG_DRAFT.md and SOCIAL_POST.md as drafts the user will rewrite, with every claim based on this log, including what did not work.
+
+### Steering: the MCP line in product.md
+- `.kiro/steering/product.md` said "MCP (Context7 and Playwright)" under "Kiro features in this build", which presented Context7 as used through Kiro. It now says Playwright MCP was used through Kiro, and Context7 was configured but never connected in Kiro (its first download passed the 60-second connect timeout), so it was only reached from the shell. This matches the Phase 0 entries above.
+- `.kiro/steering/structure.md` still lists "Context7 and Playwright MCP" next to `settings/mcp.json`. That line describes what the config file holds, which is true, so it is unchanged.
