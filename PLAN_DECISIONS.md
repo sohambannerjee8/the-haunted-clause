@@ -296,3 +296,7 @@ These are fixtures, checked in both unit and E2E tests.
 - Phase 7: Task 36 (COMPLETION_REPORT.md and final message).
 
 The full task text is in the execution handoff the user approved; the summary of each task is reproduced in the spec tasks.md files when they are written.
+
+## C11. Changes approved during Phase 4 (16 November 2026)
+
+1. **Push after every finished task as well as after every gate.** The user asked for the uncommitted Task 27.1–27.2 work to be committed and pushed at once, and from then on for a push after each finished task and after each gate, each logged in BUILD_LOG.md. This extends C10.21 ("push after every gate"). Before each push the builder runs `check:secrets`, `check:history`, `check:rules` and `check:trace`.
