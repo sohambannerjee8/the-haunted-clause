@@ -3,8 +3,9 @@
   "hooks": [
     {
       "name": "Spec sync",
-      "trigger": "PostTaskExec",
-      "description": "After a spec task is completed, update BUILD_LOG.md and the README feature list.",
+      "trigger": "PostFileSave",
+      "description": "When a spec tasks.md file is saved (a task checkbox ticked), update BUILD_LOG.md and the README feature list.",
+      "matcher": "\\.kiro/specs/[^/]+/tasks\\.md$",
       "action": {
         "type": "agent",
         "prompt": "A spec task was just marked complete. Before doing anything else: (1) Append a short factual entry to BUILD_LOG.md under the current phase naming the spec, the task ID and title, the files changed, the test command you ran and its pass/fail counts, and any Kiro feature used (spec, steering, hook, MCP, sub-agent, property-based test). Record only what really happened. (2) Update the README feature list between the <!-- features:start --> and <!-- features:end --> markers so it lists every user-facing feature whose spec tasks are complete, one line each, in plain English. Do not edit anything outside those markers in README.md. Describe verification agents only as \"no write tool; shell limited to build/test commands\"."

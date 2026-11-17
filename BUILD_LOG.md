@@ -769,3 +769,20 @@ The ui-a11y-reviewer run for Gate 4 was cancelled by the user before it reported
   - Phases 6 and 7 have no spec tasks; 33.3 says they follow as PLAN.md section 6 describes.
 - `npm run check:trace` still passes (236 rows).
 - The Spec sync hook has never fired so far. Its first firing will be logged here.
+- **Push (task updates for the panel):** `1b66fc7..f7160a6` to `origin/main` after `check:secrets` (203 files), `check:history`, `check:rules` (0 FAIL) and `check:trace` passed.
+
+#### Check after the user reported 31.4 finished from the panel (17 November 2026, 10:42 UTC)
+The user said Task 31.4 (Gate 4) had finished from the spec task panel. I found no trace of it in this workspace:
+- No Gate 4 report: `docs/gate-reports/` has no `phase-4-*` file.
+- No commit after `f7160a6` (my own task-update commit), locally or on `origin/main`.
+- The 31.4 checkbox in `.kiro/specs/haunted-house-ui/tasks.md` is still unticked.
+- BUILD_LOG.md has no entry from the task or from Spec sync. The only uncommitted change is my own push line.
+- The README feature list between the `features:start` and `features:end` markers still reads "(none yet)". Spec sync would have updated it.
+- `.next/BUILD_ID` dates from my last build (10:30 UTC); Gate 4 would have rebuilt it.
+- `.hook-runs/hook-runs.log` has no entry after my own BUILD_LOG edit at 10:39 UTC. Spec sync is an `agent` hook, so it does not write to that log either way.
+
+**Conclusion: Spec sync did not fire, and Gate 4 has not run** — at least, nothing from such a run reached this repository. No Gate 4 result is recorded, and none is claimed.
+
+#### Spec sync moved to PostFileSave (PLAN_DECISIONS.md C12.4)
+- At the user's instruction, the panel route was dropped. The Spec sync hook was rewritten with Kiro's `createHook` tool: trigger `PostFileSave`, matcher `\.kiro/specs/[^/]+/tasks\.md$`, and the same agent prompt word for word. Kiro reported "The hook will be active on the next session start", so it may not fire during this session.
+- Task 31.4's checkbox will be ticked only after Gate 4 passes; the result is logged below.
