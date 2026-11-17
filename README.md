@@ -41,6 +41,35 @@ If the site has a Gemini key and you choose to ask for the medium's reading of p
 
 Google's terms: [Gemini API terms](https://ai.google.dev/gemini-api/terms).
 
-## License
+## Pre-existing work
 
-MIT, see [LICENSE](./LICENSE).
+Everything in this repository was written for Kiroween 2026, except these standard resources:
+
+- The `create-next-app` starter template (Next.js 16), used to scaffold the project. Its default logos and page were removed.
+- Frameworks and libraries installed from npm, listed under Licenses below.
+- Two fonts from the official `google/fonts` repository, committed unmodified in `src/app/fonts/` with their licence files: Creepster (Font Diner, Inc) and Atkinson Hyperlegible (Braille Institute of America, Inc).
+
+All art (the house, rooms, props, ghosts and night scene) is inline SVG and CSS drawn for this project. The three sample policies and their companies are fictional and were written for this project. There is no audio file; the optional sound is synthesised with the Web Audio API.
+
+## Licenses
+
+This project: MIT, see [LICENSE](./LICENSE).
+
+Runtime dependencies:
+
+| Package | Version | License |
+| --- | --- | --- |
+| next | 16.4.6 | MIT |
+| react, react-dom | 19.3.0 | MIT |
+| zod | 4.6.7 | MIT |
+| motion | 14.14.0 | MIT |
+| @google/genai | 3.3.0 | Apache-2.0 |
+| server-only | 0.0.1 | MIT |
+
+`npx license-checker --production --summary` reports the whole production tree as MIT (44), Apache-2.0 (15), BSD-3-Clause (12), ISC (2), 0BSD (1), CC-BY-4.0 (1: `caniuse-lite`, browser data used at build time), LGPL-3.0-or-later (1: `@img/sharp-libvips`, an optional image library Next.js loads as a separate binary), and UNLICENSED (1: this package itself, which the tool reports that way because it is marked private; its licence is MIT).
+
+Development tools: TypeScript (Apache-2.0), Tailwind CSS (MIT), ESLint and eslint-config-next (MIT), Vitest and @vitest/coverage-v8 (MIT), fast-check (MIT), Testing Library (MIT), jsdom (MIT), Playwright (Apache-2.0), @axe-core/playwright (MPL-2.0), tsx (MIT), license-checker (BSD-3-Clause).
+
+Fonts: Creepster and Atkinson Hyperlegible, both under the SIL Open Font License 1.1 (`src/app/fonts/OFL-*.txt`).
+
+APIs: Google Gemini (optional, server side, opt-in for pasted text only), used under the [Gemini API terms](https://ai.google.dev/gemini-api/terms).
