@@ -192,7 +192,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Tests first where behaviour is involved: `RoomProp.test.tsx` (one distinct `aria-hidden` prop per room, no text), `Ghost.test.tsx` (each level draws a different shape), `ScoreBadge.test.tsx` (band is the main phrase, text still "N · band"), `SampleCards.test.tsx` (door buttons keep their names and 44 px size). All existing unit, E2E, axe, layout, keyboard and motion tests must keep passing, and the first-load JS stays within 200 kB.
   - Then `CI=1 npm run screenshots` for the 12 PNGs plus `house-terrible-motion-1440.png`, commit them, show them, and stop for the user's review.
   - _Requirements: 4, 5.4, 7.1, 10, 12, 19.2, 20_
-- [ ] 31.5 Visual review stop (C10.15)
+- [x] 31.5 Visual review stop (C10.15)
   - **Read first:** PLAN_DECISIONS.md C10.15; requirements R20; `e2e/screenshots.spec.ts`.
   - Only after Gate 4 (31.4) has passed: run `CI=1 npm run screenshots`. It writes 12 PNGs to `docs/screenshots/` (`input`, `house-mild`, `house-average`, `house-terrible`, `detail`, `lights-on`, each at `1440` and `360`). Check that there are exactly 12, commit them, push and log the push (C11.1).
   - Register each image as an artifact, show them to the user, and **stop**. Do not start Phase 5 work.
@@ -200,6 +200,10 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 20.1–20.4_
 
 - [ ] 32. Edge cases, loading and error states (Phase 5)
+- [ ] 32.0 Ghost expressions (PLAN_DECISIONS.md C15)
+  - Extend `Ghost.test.tsx` first: level 2 has a worried face (`data-face="worried"`, raised inner brows) and no jagged mouth; level 3 has `data-face="menacing"`, glowing eyes, a jagged mouth and a darker hem layer; size, opacity, colour and numeral unchanged.
+  - Then change `GhostArt.tsx`, run the full suites and `CI=1 npm run screenshots`, and commit the regenerated PNGs. No review stop (the user approved this in C15).
+  - _Requirements: 5.4_
 - [ ] 32.1 E2E `edge.spec.ts`, then any fixes
   - **Read first:** PLAN.md section 6 "Phase 5"; PLAN_DECISIONS.md C10.15 and C11; requirements R2.2–R2.4 and R16; `.kiro/specs/traceability.md` rows HU-R2.2–R2.4 and HU-R16.1–R16.6; `e2e/helpers.ts`; the end of BUILD_LOG.md.
   - **Before starting:** check that BUILD_LOG.md records the user's reply to the Gate 4 screenshots (31.5). If it does not, stop and ask the user.
