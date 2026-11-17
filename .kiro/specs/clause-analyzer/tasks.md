@@ -152,3 +152,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Change the R4.5 test in `classifier.test.ts` with the requirement: rule texts for findings with no applied mitigation.
   - Then add the texts to `MITIGATIONS` in `rules.ts` and use them in `classifier.ts`. Check that `explanations.test.ts` (the committed `sample-explanations.json`) and the sample bands still pass.
   - _Requirements: 4.5_
+- [ ] 16.6 Clause headings out of quotes (user request after the Gate 4 screenshots, PLAN_DECISIONS.md C14.6)
+  - Write `heading.test.ts` first: "1. Your information\nWe may sell your data." gives a finding whose quote is "We may sell your data.", still equal to `input.slice(start, end)` and with the clause's ID; a heading made of risky words does not create a finding by itself; a one-line clause, a long first line, a first line ending in a full stop, and a heading with nothing after it are left alone. Add an E2E check that the mild sample's Cellar quote no longer starts with "1.".
+  - Then change `classifier.ts`. P3 (quotes are exact slices) must keep passing; check the sample bands and that `sample-explanations.json` stays consistent.
+  - _Requirements: 4.1, 4.2_

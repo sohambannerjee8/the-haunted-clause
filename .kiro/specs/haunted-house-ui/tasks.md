@@ -185,6 +185,13 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - **Pass when** both agents return PASS: Playwright covers the full flow for all three samples, and axe shows no serious or critical issue (PLAN.md Phase 4 gate). On a FAIL, fix the cause test first and re-run that agent as attempt N+1; after 3 failed attempts on the same problem, stop and ask the user (PLAN.md section 1, rule 4).
   - **After a pass:** run `check:secrets`, `check:history`, `check:rules` and `check:trace`, commit, push to origin and log the push (C11.1). Then go to 31.5.
   - _Requirements: 4, 5, 6, 7, 8, 9, 10, 12, 19 (Gate 4)_
+- [ ] 31.6 Design pass after the first screenshot review (PLAN_DECISIONS.md C14)
+  - **Read first:** PLAN_DECISIONS.md C14; `.kiro/steering/design-language.md`; the end of BUILD_LOG.md (the user's verdict).
+  - Moonlit input screen with the house silhouette behind the paste box, and the samples as small house fronts with doors (`InputScreen.tsx`, `SampleCards.tsx`, a new `NightScene.tsx`).
+  - One identifying prop per room (`RoomProp.tsx`, used in `Room.tsx`); ghost shapes by severity (`GhostArt.tsx`); the Haunt Score as the hero (`ScoreBadge.tsx`); fog and candlelight in the background and house frame only (`globals.css`, `House.tsx`).
+  - Tests first where behaviour is involved: `RoomProp.test.tsx` (one distinct `aria-hidden` prop per room, no text), `Ghost.test.tsx` (each level draws a different shape), `ScoreBadge.test.tsx` (band is the main phrase, text still "N · band"), `SampleCards.test.tsx` (door buttons keep their names and 44 px size). All existing unit, E2E, axe, layout, keyboard and motion tests must keep passing, and the first-load JS stays within 200 kB.
+  - Then `CI=1 npm run screenshots` for the 12 PNGs plus `house-terrible-motion-1440.png`, commit them, show them, and stop for the user's review.
+  - _Requirements: 4, 5.4, 7.1, 10, 12, 19.2, 20_
 - [ ] 31.5 Visual review stop (C10.15)
   - **Read first:** PLAN_DECISIONS.md C10.15; requirements R20; `e2e/screenshots.spec.ts`.
   - Only after Gate 4 (31.4) has passed: run `CI=1 npm run screenshots`. It writes 12 PNGs to `docs/screenshots/` (`input`, `house-mild`, `house-average`, `house-terrible`, `detail`, `lights-on`, each at `1440` and `360`). Check that there are exactly 12, commit them, push and log the push (C11.1).

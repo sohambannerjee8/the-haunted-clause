@@ -322,3 +322,15 @@ The Gate 4 ui-a11y-reviewer pointed out that on a mitigated finding the rule's t
 2. Lights on mode shows "A reassurance in this clause lowers its severity." for a mitigated finding, as the detail panel already does.
 3. Clause-analyzer R4.5 and haunted-house-ui R8.2 are reworded, the clause-analyzer design and the traceability matrix are updated, the tests are written first, and the committed `sample-explanations.json` must still validate and stay consistent. Tasks: clause-analyzer 16.5 and haunted-house-ui 28.3.
 4. The existing `classifier.test.ts` test "takes the explanation and why-it-matters texts from the rule named by ruleId (R4.5)" changes with the requirement: it now covers findings without an applied mitigation, and the new test file covers mitigated ones.
+
+## C14. Design pass after the Gate 4 screenshot review (approved by the user, 17 November 2026)
+
+The user approved the function and asked for one design pass before Phase 5. Every contrast ratio, hit area, keyboard path and test must keep passing.
+
+1. **Input screen:** a moonlit night scene with the house silhouette behind the paste box; the three samples drawn as small house fronts with doors. The paste box and all text keep solid backgrounds, so contrast is unchanged. The sample buttons keep their names ("Open this house: <company>") and 44 px minimum size.
+2. **Room props:** each room gets one small drawn prop that identifies it: cellar barrels, portrait frames with eyes, a coin vault door, a locked door with chains, a gavel, a cracked mirror, a trapdoor, crooked stairs. They repeat the room's identity, so they carry information under the design-language rule. They are `aria-hidden` SVG and never cover a ghost's hit area.
+3. **Ghost shapes by severity:** size, opacity, colour and numeral stay as in design-language.md. The shape also changes: level 3 tattered with glowing eyes, level 2 uneasy, level 1 faint, level 0 a wisp.
+4. **Haunt Score as the hero:** much larger, above the house, with the band label as the main phrase. The text stays "<score> · <band>" with no "/100" (R7.1).
+5. **Background:** subtle fog and dim candlelight in the page background and the house frame only, as CSS and inline SVG within the 200 kB first-load budget. Any movement lives in the house frame, so Lights on mode still stops every repeating animation (R10.5), and the reduced-motion rule makes it fully still. No flashing (R10.4).
+6. **Clause headings out of quotes:** when a clause starts with a short heading line (for example "1. Your information" on its own line), the finding's `start` moves past that line, so the displayed quote leaves the heading out and is still exactly `input.slice(start, end)`. The heading is also left out of classification, so a finding always quotes the words that triggered it. clause-analyzer R4.2 is reworded (Task 16.6); the finding ID stays the clause ID.
+7. **Screenshots:** the 12 from R20 are regenerated, plus one extra with motion on (`house-terrible-motion-1440.png`, made by its own `@screenshots` test). Then the build stops for the user's review again.

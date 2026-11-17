@@ -41,7 +41,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | CA-R3.10 | `mitigation.test.ts` (three R3.10 rows) | 12.3 |
 | CA-R3.11 | `mitigation.test.ts`, `analyze.property.test.ts` (P10) | 12.3, 14.3 |
 | CA-R4.1 | `analyze.property.test.ts` (P3) | 14.3 |
-| CA-R4.2 | `analyze.property.test.ts` (P3), `classifier.test.ts` (trimmed span) | 12.2, 14.3 |
+| CA-R4.2 | `analyze.property.test.ts` (P3), `classifier.test.ts` (trimmed span), `heading.test.ts` (heading lines left out, C14.6) | 12.2, 14.3, 16.6 |
 | CA-R4.3 | `analyze.property.test.ts` (P8, findings) | 14.3 |
 | CA-R4.4 | `analyze.test.ts` (input order) | 14.2 |
 | CA-R4.5 | `rules.test.ts` (text lengths), `classifier.test.ts` (rule texts when no mitigation applies), `mitigation-texts.test.ts` (mitigation texts when one applies, C13) | 12.1, 12.2, 16.5 |
