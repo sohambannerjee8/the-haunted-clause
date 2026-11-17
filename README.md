@@ -92,7 +92,7 @@ src/
 
 How a policy becomes a house:
 
-1. **In the browser.** `analyze()` in `src/lib/analyzer` splits the text into clauses (joining them back gives the input exactly), gives each risky clause one of eight rooms and a severity from 0 to 3 using 45 rules and 11 mitigations, and computes the Haunt Score. It uses no network, clock or randomness, so the same text always gives the same house. The highest reachable score is 97.
+1. **In the browser.** `analyze()` in `src/lib/analyzer` splits the text into clauses (joining them back gives the input exactly), gives each risky clause one of eight rooms and a severity from 0 to 3 using 48 rules and 11 mitigations, and computes the Haunt Score. It uses no network, clock or randomness, so the same text always gives the same house. The highest reachable score is 97.
 2. **The house view** is loaded with a dynamic import, so the first screen stays light. Each finding becomes a ghost button; the detail dialog shows the exact clause, its explanation, why it matters and the reading's source.
 3. **Optional, on the server.** If the site has a key and the user opts in, the browser sends only the flagged clauses to `POST /api/explain`. The route checks the Origin, the body size and shape (Zod) and a best-effort rate limit, calls Gemini with a 15-second timeout and `store: false`, validates the answer with Zod, and merges it. The medium can rewrite an explanation and raise or confirm a severity, never lower it. On any failure the rule-based reading stays. The key is read only in files that import `server-only`.
 4. **Samples** never call the route. Their readings come from the committed `src/lib/samples/sample-explanations.json`.

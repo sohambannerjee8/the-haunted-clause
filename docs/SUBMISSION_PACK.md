@@ -31,7 +31,7 @@ Paste any Terms & Conditions or privacy policy (up to 50,000 characters), or ope
 
 ### How we built it
 
-Next.js 16 with TypeScript, Tailwind CSS and Motion. The analyzer is pure TypeScript that runs in the browser: a clause splitter whose output joins back to the input exactly, 45 rules with 11 mitigations and exception markers, and the Haunt Score with per-room ceilings (the highest reachable score is 97). One server route calls Gemini with a 15-second timeout, validates every answer with Zod, and logs only an outcome code. All art is inline SVG and CSS made for this project; the fonts are open-licensed and self-hosted; the optional sound is synthesised in the browser.
+Next.js 16 with TypeScript, Tailwind CSS and Motion. The analyzer is pure TypeScript that runs in the browser: a clause splitter whose output joins back to the input exactly, 48 rules with 11 mitigations and exception markers, and the Haunt Score with per-room ceilings (the highest reachable score is 97). One server route calls Gemini with a 15-second timeout, validates every answer with Zod, and logs only an outcome code. All art is inline SVG and CSS made for this project; the fonts are open-licensed and self-hosted; the optional sound is synthesised in the browser.
 
 The whole build ran in Kiro, from three specs to five verification agents (see "Kiro usage" below). Tests: 856 unit and property tests and 85 end-to-end tests, with line coverage at 96.87%.
 

@@ -12,7 +12,7 @@ It is not legal advice, and the app says so.
 
 ## How it works
 
-The analysis runs in the browser. A clause splitter breaks the text into clauses, and a property test checks that joining them back gives the input exactly. 45 rules give each risky clause a room and a severity, and 11 mitigations lower it when the clause reassures you ("We do not sell your data."). An exception marker such as "but" or "except" in the same clause cancels the reassurance, so "We do not sell your data, but we may share it with advertising partners." stays serious. Each room's worst ghost sets a ceiling on how much that room adds to the score, so a long but mild policy stays low. The highest reachable score is 97.
+The analysis runs in the browser. A clause splitter breaks the text into clauses, and a property test checks that joining them back gives the input exactly. 48 rules give each risky clause a room and a severity, and 11 mitigations lower it when the clause reassures you ("We do not sell your data."). An exception marker such as "but" or "except" in the same clause cancels the reassurance, so "We do not sell your data, but we may share it with advertising partners." stays serious. Each room's worst ghost sets a ceiling on how much that room adds to the score, so a long but mild policy stays low. The highest reachable score is 97.
 
 There is no login, no database and no stored text. The app works fully with no API key. If the site has a Gemini key and you opt in, only the flagged clauses go to a server route for a plainer reading, which can raise or confirm a severity but never lower it.
 

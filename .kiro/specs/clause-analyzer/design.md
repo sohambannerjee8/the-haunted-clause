@@ -135,12 +135,14 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Cellar | `cellar.ad-partners` | 3 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \badvertis\w*\s+partners?\b`, or (C19) the same verbs, then `data\|information\|e-?mail\|details`, then `with\|to`, then `advertisers?` |
 | Cellar | `cellar.third-parties` | 2 | `\b(share\|disclose\|provide\|transfer)\w*\b G{0,80} \b(third[- ]part(y\|ies)\|partners\|affiliates)\b`, or (C19) the same verbs, then `data\|information\|e-?mail\|details`, then `with\|to`, then `sponsors?` |
 | Cellar | `cellar.merger` (C12.2) | 2 | `\b(transfer\|disclos\|shar\|pass\|provid)\w*\b G{0,100} \b(merger\|acquisition\|reorgani[sz]ation\|bankruptcy\|change (of\|in) control\|sale of … (business\|company\|assets))\b`, or the event word first and the transfer verb after |
+| Cellar | `cellar.supplement` (C21) | 2 | `\b(supplement\|enrich\|augment)\w*\b G{0,80} \b(information\|data\|profile)\b G{0,80} \b(from\|with\|provided by\|obtained from)\b G{0,40}` then third parties, data or information providers, data brokers, partners, other sources or companies, publicly available sources or demographic data; or `\b(data\|information) providers?\b G{0,200} \b(supplement\|enrich\|augment)\w*` |
 | Cellar | `cellar.retention` (C12.2) | 2 | `\b(retain\|keep\|store\|hold)\w*\b G{0,80} \b(indefinitely\|permanently\|forever\|for an? (unlimited\|indefinite) (period\|time)\|as long as we (see fit\|wish\|like\|want\|choose\|deem (necessary\|appropriate)))\b` |
 | Portraits | `portraits.cross-site` | 3 | `\btrack\w*\b G{0,60} \b(across\|on) (other \|third[- ]party )?(websites\|sites\|apps\|services\|devices)\b` |
 | Portraits | `portraits.profile` | 2 | `\b(build\|create\|compile)\w*\b G{0,40} \bprofiles?\b` or `\bprofiling\b` |
 | Portraits | `portraits.location` | 2 | `\b(collect\|track\|record\|use)\w*\b G{0,40} \b(precise \|exact )?(location\|geolocation)\b` |
 | Portraits | `portraits.targeted-ads` | 2 | `\b(behaviou?ral\|targeted\|personali[sz]ed\|interest-based) (advertis\w*\|ads)\b` |
 | Portraits | `portraits.trackers` | 1 | `\b(cookies\|pixels\|web beacons\|tracking technologies\|device fingerprint\w*)\b` |
+| Portraits | `portraits.derived-location` (C21) | 1 | location `based on\|from\|using\|derived from\|inferred from` an IP address; IP addresses mapped `to\|into` location; third parties, partners, providers, advertisers or ad networks that `provide\|give\|share\|send` location; or `receive\|obtain\|get` location data or information `from` someone |
 | Vault | `vault.charge-no-notice` | 3 | `\bcharge\w*\b G{0,60} \bwithout (prior \|advance \|any )?notice\b` |
 | Vault | `vault.auto-renew` | 2 | `\b(automatically\|auto[- ]?)renew\w*` or `\brenew\w*\s+automatically\b` |
 | Vault | `vault.no-refund` | 2 | `\bnon[- ]?refundable\b` or `\bno refunds?\b` |
@@ -172,10 +174,11 @@ All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so
 | Shifting Stairs | `stairs.no-notice` | 3 | `\b(change\|modify\|update\|amend\|revise)\w*\b G{0,80} \bwithout (prior \|advance \|any )?notice\b` |
 | Shifting Stairs | `stairs.no-notify` | 3 | `\b(not\|never\|no obligation to)\b G{0,20} \b(notify\|inform\|tell) you\b G{0,40} \bchanges?\b` |
 | Shifting Stairs | `stairs.any-time` | 2 | `\b(change\|modify\|update\|amend\|revise)\w*\b G{0,60} \b(terms\|agreement\|polic(y\|ies))\b G{0,40} \b(at any time\|from time to time)\b` |
-| Shifting Stairs | `stairs.continued-use` | 2 | `\bcontinued use\b G{0,60} \b(accept\|agree\|constitut)\w*` |
+| Shifting Stairs | `stairs.continued-use` | 2 | `\bcontinued use\b G{0,60} \b(accept\|agree\|constitut)\w*`, or (C21) `continued use` G{0,120} `means` G{0,80} `updated\|revised\|new\|changed` then terms, policy or agreement |
 | Shifting Stairs | `stairs.sole-discretion` | 1 | `\b(sole\|absolute) discretion\b` |
+| Shifting Stairs | `stairs.may-modify` (C21, listed last so older rules win ties) | 1 | `\b(can\|may\|might\|reserve the right to)\b G{0,20} \b(change\|modify\|update\|amend\|revise)\w*\b G{0,20} \b(this\|these\|our)\b G{0,10} \b(polic(y\|ies)\|statement\|notice\|terms\|agreement)\b` |
 
-There are 45 rules: five per room, plus five added by PLAN_DECISIONS.md C12.2 (Cellar 7, Locked Door 6, Mirror Room 6, Trapdoor 6). Every room has at least three, which meets R2.6.
+There are 48 rules: five per room, plus five added by PLAN_DECISIONS.md C12.2 and three by C21 (Cellar 8, Watching Portraits 6, Locked Door 6, Mirror Room 6, Trapdoor 6, Shifting Stairs 6). Every room has at least three, which meets R2.6.
 
 ### Mitigations
 
@@ -270,6 +273,7 @@ Every row is one unit test in `classifier.test.ts`. "Pos" rows must be assigned 
 | Cellar | Pos (C12.2) | We may disclose your personal data to a buyer as part of a sale of our business. | 2, `cellar.merger` |
 | Cellar | Pos (C12.2) | We keep your personal information indefinitely. | 2, `cellar.retention` |
 | Cellar | Pos (C12.2) | We retain your data for as long as we see fit. | 2, `cellar.retention` |
+| Cellar, Portraits, Stairs | Pos and Neg (C21) | Nine positive and six negative generic sentences for `stairs.may-modify`, `stairs.continued-use`, `portraits.derived-location` and `cellar.supplement`; the list is in `examples.test-util.ts` under "C21" | see the file |
 | Cellar | Neg (C12.2) | Our company was founded after a merger of two small studios. | no finding |
 | Cellar | Neg (C12.2) | We keep your data for as long as necessary to provide the service. | no finding |
 
@@ -390,7 +394,7 @@ All properties use fast-check with `fc.assert(property, { numRuns: 1000 })` (tes
 The generators are:
 - `anyString`: `fc.string({ unit: "binary", maxLength: 2_000 })`, all code points.
 - `utf16String`: `fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((n) => String.fromCharCode(n)), maxLength: 2_000 })`. It includes unpaired surrogates and control characters.
-- `policyLike`: fragments joined from a pool. The pool holds all the room example clauses (45 positive and 24 negative after C12.2 and C19), the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
+- `policyLike`: fragments joined from a pool. The pool holds all the room example clauses (54 positive and 30 negative after C12.2, C19 and C21), the abbreviations, `"\n\n"`, `"\r\n"`, `"  - "`, `"1. "`, `"(a) "`, emoji (`👻🕯️`), `"; "`, `"... "` and random words. This exercises real splitting paths.
 - `bigString`: a fragment from `policyLike` repeated up to a length drawn from `fc.integer({ min: 0, max: 50_000 })`, so sizes up to the cap are covered.
 - `overCapString`: a fragment from `policyLike` repeated to a length drawn from `fc.integer({ min: 50_001, max: 60_000 })`, for the splitter's over-cap criterion (R1.12) and the analyzer's typed error (R6.2, R8.2).
 
@@ -399,7 +403,7 @@ The five generators are exported from one shared test-support module, `src/lib/a
 | # | Property (PLAN.md section 4) | Requirement | Test file | Generator |
 | --- | --- | --- | --- | --- |
 | P1 | The Haunt Score is always a whole number from 0 to 100. | R5.2 | `score.property.test.ts` | Arrays of up to 400 `{ room, severity }`, and `analyze` on `policyLike` |
-| P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the positive room examples (45 after C12.2 and C19) `r`: `score(t + "\n\n" + r) >= score(t)` |
+| P2 | Adding a risky clause to any text never lowers the score. | R5.5 | `analyze.property.test.ts` | `policyLike` text `t` (trimmed to the cap minus the clause), plus one of the positive room examples (54 after C12.2, C19 and C21) `r`: `score(t + "\n\n" + r) >= score(t)` |
 | P3 | Every finding quotes text that appears in the input, character for character. | R4.1, R4.2 | `analyze.property.test.ts` | `policyLike`, `utf16String`: `f.quote === input.slice(f.start, f.end)`, non-empty, no edge whitespace |
 | P4 | The analyzer never throws, for any string up to the size cap, including empty text and emoji. | R6.1, R6.2 | `analyze.property.test.ts` | `fc.oneof(anyString, utf16String, policyLike, bigString)` plus explicit `""`, whitespace and emoji cases in unit tests; `overCapString` always gives the typed `too-long` result without throwing |
 | P5 | The same input always gives the same rule-based result. | R7.1, R7.3 | `analyze.property.test.ts` | Pairs `(x, y)`: `analyze(x)` deep-equals `analyze(x)` called again after `analyze(y)` |
@@ -417,7 +421,7 @@ Further properties that support the six (also at 1,000 runs):
 | --- | --- | --- |
 | `splitter.test.ts` | Unit | Each of the 11 abbreviations mid-sentence (one test each); `etc.` before a paragraph break; the four boundary-resolution rows above; terminators with closers; CRLF; empty input; whitespace only; emoji; `zinc. Then` still splits; list markers `-`, `*`, `•`, `1.`, `12)`, `a)`, `(iv)` |
 | `splitter.property.test.ts` | Property | P6, P8 |
-| `classifier.test.ts` | Unit | The 69 room examples (R2.7: 44, plus 18 from C12.2 and 7 from C19); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
+| `classifier.test.ts` | Unit | The 84 room examples (R2.7: 44, plus 18 from C12.2, 7 from C19 and 15 from C21); room tie-break; rule tie-break; case-insensitivity; whitespace-only clause |
 | `mitigation.test.ts` | Unit | The 19 mitigation and marker rows (R3), including the three R3.10 cases |
 | `mitigation-phrasing.test.ts` | Unit | Each mitigation's accepted wordings, including "we will never sell" (C12.1, R3.2) |
 | `mitigation-texts.test.ts` | Unit | Every mitigation's own texts, used when it lowers a finding; a cancelled one keeps the rule's (C13, R4.5) |

@@ -34,7 +34,7 @@ Paste any Terms & Conditions or privacy policy (up to 50,000 characters), or ope
 
 ## How we built it
 
-Next.js 16 with TypeScript, Tailwind CSS and Motion, tested with Vitest, fast-check and Playwright with axe scans. The analyzer is pure TypeScript: a clause splitter whose output joins back to the input exactly, 45 rules with 11 mitigations and exception markers, and the Haunt Score. All art is inline SVG and CSS drawn for this project, the fonts are open-licensed and self-hosted, and the sound is synthesised in the browser.
+Next.js 16 with TypeScript, Tailwind CSS and Motion, tested with Vitest, fast-check and Playwright with axe scans. The analyzer is pure TypeScript: a clause splitter whose output joins back to the input exactly, 48 rules with 11 mitigations and exception markers, and the Haunt Score. All art is inline SVG and CSS drawn for this project, the fonts are open-licensed and self-hosted, and the sound is synthesised in the browser.
 
 The whole build ran in Kiro: three specs with 236 acceptance criteria and a traceability matrix, six steering files, four hooks, five verification agents that gate each phase, Playwright MCP for in-browser accessibility review, and 36 property-based tests at 1,000 runs each. [docs/KIRO_USAGE.md](KIRO_USAGE.md) describes how, including what did not work.
 

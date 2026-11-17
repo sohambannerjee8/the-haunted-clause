@@ -65,6 +65,12 @@ export const RULES: readonly Rule[] = Object.freeze([
     "Data kept forever can leak, be sold or be used in ways you never expected, years from now."),
 
   // The Watching Portraits: tracking and profiling
+  // C21: your data topped up with data from others
+  rule("cellar.supplement", "cellar", 2, re(
+      `\\b(?:supplement|enrich|augment)\\w*\\b${G}{0,80}\\b(?:information|data|profile)\\b${G}{0,80}\\b(?:from|with|provided by|obtained from)\\b${G}{0,40}\\b(?:third[- ]part(?:y|ies)|data providers?|information providers?|data brokers?|partners|other sources|other companies|publicly available sources|demographic data)\\b`,
+      `\\b(?:data|information) providers?\\b${G}{0,200}\\b(?:supplement|enrich|augment)\\w*`),
+    "The company adds data from other sources to what it knows about you.",
+    "Combining sources builds a fuller picture of you than you ever handed over."),
   rule("portraits.cross-site", "portraits", 3, re(`\\btrack\\w*\\b${G}{0,60}\\b(?:across|on) (?:other |third[- ]party )?(?:websites|sites|apps|services|devices)\\b`),
     "The company follows what you do on other websites, apps or devices.",
     "Tracking beyond this service builds a picture of your life that you never agreed to share here."),
@@ -82,6 +88,14 @@ export const RULES: readonly Rule[] = Object.freeze([
     "Some trackers are needed to run a site, but others follow you for advertising."),
 
   // The Coin Vault: auto-renewal, fees and billing
+  // C21: location worked out from your IP address or handed over by others
+  rule("portraits.derived-location", "portraits", 1, re(
+      `\\b(?:location|geolocation)\\b${G}{0,60}\\b(?:based on|from|using|derived from|inferred from)\\b${G}{0,20}\\bIP address(?:es)?\\b`,
+      `\\bIP address(?:es)?\\b${G}{0,40}\\b(?:to|into)\\b${G}{0,30}\\blocation\\b`,
+      `\\b(?:third[- ]part(?:y|ies)|partners|providers|advertisers|ad networks)\\b${G}{0,60}\\b(?:provide|give|share|send)\\w*\\b${G}{0,30}\\blocation\\b`,
+      `\\b(?:receive|obtain|get)\\w*\\b${G}{0,30}\\blocation (?:data|information)\\b${G}{0,30}\\bfrom\\b`),
+    "The company works out roughly where you are, from your IP address or from other companies.",
+    "Even an approximate location, kept over time, can show where you live and travel."),
   rule("vault.charge-no-notice", "vault", 3, re(`\\bcharge\\w*\\b${G}{0,60}\\bwithout (?:prior |advance |any )?notice\\b`),
     "The company can charge you without telling you first.",
     "Surprise charges are hard to spot and hard to get back."),
@@ -201,12 +215,19 @@ export const RULES: readonly Rule[] = Object.freeze([
   rule("stairs.any-time", "stairs", 2, re(`\\b(?:change|modify|update|amend|revise)\\w*\\b${G}{0,60}\\b(?:terms|agreement|polic(?:y|ies))\\b${G}{0,40}\\b(?:at any time|from time to time)\\b`),
     "The company can change these terms whenever it likes.",
     "What you agreed to today may not be what applies tomorrow."),
-  rule("stairs.continued-use", "stairs", 2, re(`\\bcontinued use\\b${G}{0,60}\\b(?:accept|agree|constitut)\\w*`),
+  rule("stairs.continued-use", "stairs", 2, re(`\\bcontinued use\\b${G}{0,60}\\b(?:accept|agree|constitut)\\w*`,
+      // C21: "continued use … means … the updated policy"
+      `\\bcontinued use\\b${G}{0,120}\\bmeans\\b${G}{0,80}\\b(?:updated|revised|new|changed)\\s+(?:privacy\\s+)?(?:terms|polic(?:y|ies)|agreement)\\b`),
     "Simply keeping on using the service counts as accepting new terms.",
     "You can agree to changes without ever reading or approving them."),
   rule("stairs.sole-discretion", "stairs", 1, re(`\\b(?:sole|absolute) discretion\\b`),
     "The company decides on its own, with no rules it has to follow.",
     "\"Sole discretion\" leaves you nothing to point to if a decision goes against you."),
+  // C21: the company says it can change this policy or these terms (listed last, so older rules win ties)
+  rule("stairs.may-modify", "stairs", 1, re(
+      `\\b(?:can|may|might|reserve the right to)\\b${G}{0,20}\\b(?:change|modify|update|amend|revise)\\w*\\b${G}{0,20}\\b(?:this|these|our)\\b${G}{0,10}\\b(?:polic(?:y|ies)|statement|notice|terms|agreement)\\b`),
+    "The company says it can change this policy or these terms.",
+    "The rules you read today may not be the rules that apply later."),
 ]);
 
 const mitigation = (id: string, room: RoomId, level: 0 | 1, pattern: RegExp, explanation: string, whyItMatters: string): Mitigation =>

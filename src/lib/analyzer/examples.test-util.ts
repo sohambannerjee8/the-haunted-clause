@@ -62,6 +62,16 @@ export const POSITIVE_EXAMPLES: readonly PositiveExample[] = [
   { room: "cellar", severity: 2, ruleId: "cellar.third-parties", text: "We provide your contact details to event sponsors." },
   { room: "cellar", severity: 3, ruleId: "cellar.ad-partners", text: "We disclose your personal information to advertisers." },
   { room: "cellar", severity: 3, ruleId: "cellar.ad-partners", text: "We may transfer your e-mail to advertisers who run campaigns on our site." },
+  // C21: generic sentences for gaps found by the real-policy audit
+  { room: "stairs", severity: 1, ruleId: "stairs.may-modify", text: "We can modify this policy." },
+  { room: "stairs", severity: 1, ruleId: "stairs.may-modify", text: "We may update this privacy policy, and material changes will be posted here." },
+  { room: "stairs", severity: 2, ruleId: "stairs.continued-use", text: "Your continued use after notice means you accept the updated policy." },
+  { room: "stairs", severity: 2, ruleId: "stairs.continued-use", text: "Continued use of the service after we post a notice means your data is subject to the updated policy." },
+  { room: "portraits", severity: 1, ruleId: "portraits.derived-location", text: "We estimate your general location based on your IP address." },
+  { room: "portraits", severity: 1, ruleId: "portraits.derived-location", text: "Our partners may provide us with your approximate location." },
+  { room: "portraits", severity: 1, ruleId: "portraits.derived-location", text: "We receive location information from third parties such as ad networks." },
+  { room: "cellar", severity: 2, ruleId: "cellar.supplement", text: "We supplement the information we hold about you with data from third parties." },
+  { room: "cellar", severity: 2, ruleId: "cellar.supplement", text: "Data providers help us enrich your profile with demographic information." },
 ];
 
 export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
@@ -91,4 +101,11 @@ export const NEGATIVE_EXAMPLES: readonly NegativeExample[] = [
   { room: "cellar", text: "We provide reports to advertisers about how their ads performed." },
   { room: "cellar", text: "Our summer events are supported by local sponsors." },
   { room: "cellar", text: "Sponsors may share their own logos with us for the event page." },
+  // C21
+  { room: "stairs", text: "You may change your privacy settings whenever you like." },
+  { room: "stairs", text: "Please read this policy carefully before you sign up." },
+  { room: "portraits", text: "Your IP address is used to deliver the page you asked for." },
+  { room: "portraits", text: "You can add a location to a post if you choose." },
+  { room: "cellar", text: "You can supplement your weekly plan with extra lessons." },
+  { room: "cellar", text: "Our data providers are listed on the suppliers page." },
 ];

@@ -161,3 +161,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Then add the sponsors and advertisers alternatives to the two rules in `rules.ts`, requiring the data, information, email or details to be named. Keep the rule count at 45.
   - The sample scores stay 14, 59 and 97 with the same findings, so `sample-explanations.json` stays consistent.
   - _Requirements: 2.2, 2.7_
+- [x] 16.8 Rules for gaps found by the real-policy audit (user request, PLAN_DECISIONS.md C21)
+  - Tests first, generic sentences only: nine positive and six negative room examples in `examples.test-util.ts` (checked by `classifier.test.ts`) for `stairs.may-modify` (1), the wider `stairs.continued-use` (2), `portraits.derived-location` (1) and `cellar.supplement` (2); the rule count in `rules.test.ts` goes from 45 to 48. See them fail.
+  - Then add the rules to `rules.ts`. The sample scores stay 14, 59 and 97 with the same findings.
+  - _Requirements: 2.2, 2.7_
