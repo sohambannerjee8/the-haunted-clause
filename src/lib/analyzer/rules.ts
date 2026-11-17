@@ -165,18 +165,23 @@ export const RULES: readonly Rule[] = Object.freeze([
 
 const mitigation = (id: string, room: RoomId, level: 0 | 1, pattern: RegExp): Mitigation => Object.freeze({ id, room, level, pattern });
 
+// A negation, alone or doubled ("we do not and will not"), so every common way of saying "we never"
+// is read the same (PLAN_DECISIONS.md C12.1: "We will never sell" used to be missed).
+const NOT_ONE = "(?:(?:do|does|will|shall|would|can) (?:not|never)|cannot|can't|don't|doesn't|won't|shan't|never)";
+const NOT = `${NOT_ONE}(?:,? (?:and|or) ${NOT_ONE})?(?: ever)?`;
+
 export const MITIGATIONS: readonly Mitigation[] = Object.freeze([
-  mitigation("cellar.no-sell", "cellar", 0, re(`\\bwe (?:do not|don't|never|will not|won't) sell\\b`)),
-  mitigation("cellar.no-share", "cellar", 0, re(`\\bwe (?:do not|don't|never|will not|won't) share\\b`)),
+  mitigation("cellar.no-sell", "cellar", 0, re(`\\bwe ${NOT} sell\\b`)),
+  mitigation("cellar.no-share", "cellar", 0, re(`\\bwe ${NOT} share\\b`)),
   mitigation("cellar.consent", "cellar", 1, re(`\\bonly with your (?:explicit |prior )?consent\\b`)),
-  mitigation("portraits.no-track", "portraits", 0, re(`\\bwe (?:do not|don't|never) (?:track|profile|build profiles)\\b`)),
-  mitigation("portraits.opt-out", "portraits", 1, re(`\\byou (?:can|may) (?:opt[- ]out|turn (?:this|these|it) off|decline)\\b`)),
-  mitigation("vault.reminder", "vault", 1, re(`\\b(?:remind|notify|email|tell) you\\b${G}{0,40}\\bbefore\\b`)),
-  mitigation("locked.delete-anytime", "locked-door", 0, re(`\\byou (?:can|may) (?:delete|close|cancel)\\b${G}{0,60}\\b(?:at any time|anytime|instantly|immediately)\\b`)),
+  mitigation("portraits.no-track", "portraits", 0, re(`\\bwe ${NOT} (?:track|profile|build profiles)\\b`)),
+  mitigation("portraits.opt-out", "portraits", 1, re(`\\byou (?:can|may|will be able to) (?:always |still )?(?:opt[- ]out|turn (?:this|these|it) off|decline)\\b`)),
+  mitigation("vault.reminder", "vault", 1, re(`\\b(?:remind|notify|email|tell) you\\b${G}{0,40}\\bbefore\\b`, `\\bsend you (?:a |an )?(?:reminder|notice|email)\\b${G}{0,40}\\bbefore\\b`)),
+  mitigation("locked.delete-anytime", "locked-door", 0, re(`\\byou (?:can|may|are free to|will be able to) (?:always )?(?:delete|close|cancel)\\b${G}{0,60}\\b(?:at any time|anytime|instantly|immediately)\\b`)),
   mitigation("court.opt-out", "court", 1, re(`\\bopt[- ]out of (?:this |the )?arbitration\\b`)),
-  mitigation("mirror.you-own", "mirror", 1, re(`\\byou (?:retain|keep) (?:all )?(?:ownership|rights)\\b`, `\\byou own your content\\b`)),
-  mitigation("trapdoor.carve-out", "trapdoor", 1, re(`\\bnothing in (?:these|this)\\b${G}{0,60}\\blimits?\\b${G}{0,40}\\bliability\\b`)),
-  mitigation("stairs.advance-notice", "stairs", 1, re(`\\b(?:will|we'll) (?:notify|tell|email|inform) you\\b${G}{0,60}\\b\\d+ days\\b`, `\\bat least \\d+ days'? notice\\b`)),
+  mitigation("mirror.you-own", "mirror", 1, re(`\\byou (?:will |always |still )?(?:retain|keep) (?:all )?(?:(?:of )?your )?(?:ownership|rights)\\b`, `\\byou (?:still |always )?own your content\\b`)),
+  mitigation("trapdoor.carve-out", "trapdoor", 1, re(`\\bnothing in (?:these|this)\\b${G}{0,60}\\b(?:limits?|excludes?|restricts?)\\b${G}{0,40}\\bliability\\b`)),
+  mitigation("stairs.advance-notice", "stairs", 1, re(`\\b(?:will|we'll|shall) (?:always )?(?:notify|tell|email|inform|give) you\\b${G}{0,60}\\b\\d+ days\\b`, `\\bat least \\d+ days'? notice\\b`)),
 ]);
 
 /** The eight exception markers (R3.8, PLAN_DECISIONS.md C10.2), on word boundaries. */

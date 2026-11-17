@@ -300,3 +300,15 @@ The full task text is in the execution handoff the user approved; the summary of
 ## C11. Changes approved during Phase 4 (16 November 2026)
 
 1. **Push after every finished task as well as after every gate.** The user asked for the uncommitted Task 27.1–27.2 work to be committed and pushed at once, and from then on for a push after each finished task and after each gate, each logged in BUILD_LOG.md. This extends C10.21 ("push after every gate"). Before each push the builder runs `check:secrets`, `check:history`, `check:rules` and `check:trace`.
+
+## C12. Changes approved before Gate 4 (16 November 2026)
+
+The user asked for three fixes before Gate 4, each test first. They are clause-analyzer Tasks 16.3 and 16.4 (added after Phase 2), plus a change to how spec tasks are run.
+
+1. **Mitigation phrasing gap (bug).** "We will never sell your personal data." scored Cellar severity 3, because the no-sell reassurance accepted "never" only straight after "we". The cellar no-sell and no-share mitigations must accept "will never". Every other mitigation is checked for the same gap (a missing modal or adverb form), and each mitigation gets a test for the form it now accepts.
+2. **Rule calibration.**
+   - Mirror Room: an ordinary licence (for example a royalty-free licence to host and display your content) is severity 1 or 2. Severity 3 is kept for licences that are perpetual, irrevocable, sublicensable or that let the company sell your content.
+   - Trapdoor: an ordinary exclusion of indirect or consequential damages is severity 1 or 2. Severity 3 is kept for total liability exclusions.
+   - New rules: cancellation only by phone or in person (Locked Door); disclosure in a merger or acquisition (Cellar); open-ended data retention (Cellar).
+   - Each change gets positive and negative examples. The sample bands (C7) must still hold.
+3. **Run spec tasks from Kiro's spec task panel.** From now on each remaining spec task is started from Kiro's spec task interface ("Start task") rather than by editing its checkbox, so the Spec sync hook (`PostTaskExec`) fires. The first time it fires is logged in BUILD_LOG.md.

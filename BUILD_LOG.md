@@ -718,3 +718,25 @@ PLAN.md and PLAN_DECISIONS.md re-read at the start of the phase, together with t
 
 ### Gate 4 preparation
 - ui-a11y-reviewer item 15 runs `npx playwright test --grep "axe"`. Only the `shell.spec.ts` and `lights.spec.ts` titles said "axe", so the grep would have skipped `a11y.spec.ts`. Its seven titles now start with "axe:" (titles only, no assertion changed); `--grep "axe" --list` selects 11 tests. `--grep "reduced motion"` selects the motion test, as item 12 expects.
+- **Push (Gate 4 prep):** `acc865d..a5f8aa8` to `origin/main` after the four pre-push checks passed (`check:secrets` 202 files).
+
+### Fixes before Gate 4 (PLAN_DECISIONS.md C12), started 16 November 2026
+The ui-a11y-reviewer run for Gate 4 was cancelled by the user before it reported, so there is no Gate 4 report yet. The user asked for three fixes first; they were recorded as PLAN_DECISIONS.md C12 and added as clause-analyzer Tasks 16.3 and 16.4.
+
+#### Running tasks from the spec task panel (C12.3)
+- I tried to start Task 16.3 through Kiro's spec task mechanism by dispatching it to a `spec-task-execution` sub-agent with the task ID and `tasks.md` path. Kiro answered "Agent 'spec-task-execution' not found in registry". My tools cannot press the panel's "Start task" button, so I cannot make the `PostTaskExec` Spec sync hook fire myself.
+- So Tasks 16.3 and 16.4 were done test first as usual, but **their checkboxes were left unticked**. The user decides whether to start them from the panel (so the hook fires) or to let me tick them by hand as before. The Spec sync hook has still never fired; that is logged here when it first does.
+
+#### Task 16.3: mitigation phrasing gap (C12.1)
+- `src/lib/analyzer/mitigation-phrasing.test.ts` (one or more cases per mitigation, a check that every mitigation except `cellar.consent` is covered, the exception-marker rule, and two positive statements) was written first: 16 of 20 failed, including the reported "We will never sell your personal data." (Cellar 3). `court.opt-out` already accepted "opt out of the arbitration agreement", so its case passed before the fix.
+- The gap I found in each mitigation, and the fix:
+  - `cellar.no-sell`, `cellar.no-share` and `portraits.no-track` accepted only a negation straight after "we". They now share one negation pattern: "do/does/will/shall/would/can not or never", "cannot", "can't", "don't", "doesn't", "won't", "shan't" and "never", optionally doubled ("we do not and will not sell") and followed by "ever". `portraits.no-track` also lacked "will not" and "won't".
+  - `portraits.opt-out`: "you can always opt out" and "you will be able to opt out".
+  - `vault.reminder`: "we will send you a reminder before".
+  - `locked.delete-anytime`: "you can always cancel" and "you are free to cancel".
+  - `mirror.you-own`: "you will retain ownership" and "you retain all of your rights".
+  - `trapdoor.carve-out`: "excludes" and "restricts" as well as "limits".
+  - `stairs.advance-notice`: "we will give you 30 days' notice" and "shall notify you".
+  - `cellar.consent` ("only with your consent") has no modal to vary, so it got a test that it still applies.
+- After writing the fix, a "We cannot share…" case was added; it failed until "cannot" and "can't" joined the negation pattern.
+- Result: 21 of 21 phrasing tests pass, and all 271 analyzer and sample tests pass, including every property at 1,000 runs. Sample scores are unchanged (14, 59, 97) and so are their finding IDs, so `sample-explanations.json` did not need regenerating.

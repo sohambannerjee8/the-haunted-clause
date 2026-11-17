@@ -135,3 +135,15 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Save its report unchanged to `docs/gate-reports/phase-2-test-verifier-attempt-N.md`.
   - Append the result to BUILD_LOG.md.
   - Pass when all tests pass, every property runs at least 1,000 cases and analyzer line coverage is 90% or higher.
+- [ ] 16.3 Mitigation phrasing gap (user request before Gate 4, PLAN_DECISIONS.md C12.1)
+  - Write failing tests first: "We will never sell your personal data." and "We will never share your personal data." give Cellar severity 0 with the no-sell and no-share mitigations; one test per mitigation for each modal or adverb form it now accepts.
+  - Then widen the cellar no-sell and no-share mitigations to accept "will never", and fix every other mitigation that has the same gap.
+  - The sample bands (C7) still hold, and `sample-explanations.json` is regenerated (no key) if the sample finding IDs change.
+  - _Requirements: 3.2, 3.3_
+- [ ] 16.4 Rule calibration (user request before Gate 4, PLAN_DECISIONS.md C12.2)
+  - Write failing positive and negative examples first, in `examples.test-util.ts` and the design's "Room examples":
+    - an ordinary royalty-free licence to host and display content is Mirror severity 2; perpetual, irrevocable, sublicensable or content-selling licences stay severity 3;
+    - an ordinary exclusion of indirect or consequential damages is Trapdoor severity 2; total exclusions stay severity 3;
+    - new rules: cancellation only by phone or in person (Locked Door, severity 3); disclosure in a merger or acquisition (Cellar, severity 2); open-ended data retention (Cellar, severity 2).
+  - Then change the rule table, update the design's rule table and the rule count in `rules.test.ts`, and keep the sample bands (C7).
+  - _Requirements: 2.1, 2.2, 2.7, 11.4–11.6_
