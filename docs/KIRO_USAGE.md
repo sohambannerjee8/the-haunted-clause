@@ -10,7 +10,7 @@ The Haunted Clause was built in Kiro from a written brief (`PLAN.md`) and a file
 | Steering files | 6, all always included | `.kiro/steering/` |
 | Hooks | 4 | `.kiro/hooks/` |
 | Custom agents | 5 | `.kiro/agents/` |
-| MCP servers | 2 configured, 1 used through Kiro | `.kiro/settings/mcp.json` |
+| MCP servers | 3 configured, 2 used through Kiro (Playwright and Vercel) | `.kiro/settings/mcp.json` |
 | Property-based tests | 36 `fc.assert` calls in 10 files, each at 1,000 runs | `src/**/*.property.test.ts` and others |
 | Gate reports | 17 | `docs/gate-reports/` |
 
@@ -93,9 +93,10 @@ What they changed, all recorded in BUILD_LOG.md:
 
 ## MCP
 
-Two servers are configured in `.kiro/settings/mcp.json`. Kiro protects `.kiro/settings/` from agent writes, so the author created that file by hand.
+Three servers are configured in `.kiro/settings/mcp.json`. Kiro protects `.kiro/settings/` from agent writes, so the author created that file by hand, and added the Vercel server himself after the build.
 
-- **Playwright MCP** was used through Kiro. An early snapshot of the running app showed a 404 for the favicon, which led to the project's own ghost icon. At Gates 4 and 5 the ui-a11y-reviewer agent used it to open the production build and use the app as a person would: the full flow, keyboard use and the edge states. At Gate 5 it confirmed in the browser that clause headings no longer appear in quotes.
+- **Playwright MCP** was used through Kiro. An early snapshot of the running app showed a 404 for the favicon, which led to the project's own ghost icon. At Gates 4 and 5 the ui-a11y-reviewer agent used it to open the production build and use the app as a person would: the full flow, keyboard use and the edge states. At Gate 5 it confirmed in the browser that clause headings no longer appear in quotes. After deployment the agent used it on the live site: it opened the three samples (14, 59 and 97), pasted a short test text, pressed "Ask the medium" once, and read the request body (only the one flagged clause), the response (`source: "llm"`) and the "Medium's reading" badge in the detail panel. The console showed no errors.
+- **Vercel MCP** (`mcp-remote` to `https://mcp.vercel.com`) deployed the app. Its first start hit the same 60-second connect timeout as Context7; a reconnect worked. Two more things needed the author: approving a team-access consent link (the first `list_projects` returned 403 for the personal team scope), and reconnecting GitHub inside Vercel (the first `create_git_project` returned `repo_not_found`, and listing repositories returned `401 github_response_error`). After that the agent created the project linked to the GitHub repository, checked that no environment variables were set, read the build logs, redeployed production once the author had added the key in the dashboard, and read the runtime logs, where the one medium call logged `explain outcome=llm clauses=1 ms=1921`. Some calls failed once with "mcp-remote: fetch failed" on a slow network and worked on retry. The agent never set or read the key.
 - **Context7 was never connected in Kiro.** At session start Kiro installed both servers with `npx` at the same time. Context7's first download ran past Kiro's 60-second connect timeout, and Kiro's MCP log shows "Failed to connect: MCP server 'context7' connection timed out after 60000ms". The download also left a half-written npx cache folder. The agent removed that folder from the shell, and the server then started and answered over stdio, so the config itself works. Reconnecting from the MCP Server view did not bring its tools into the session. Library facts (Next.js 16, fast-check 4, `@google/genai`) were read from the installed packages in `node_modules` and the vendors' own docs instead.
 
 ## Property-based tests

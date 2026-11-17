@@ -11,6 +11,12 @@
       "args": ["-y", "@playwright/mcp@0.0.85", "--headless", "--isolated"],
       "disabled": false,
       "autoApprove": []
-    }
+    },
+  "vercel": {
+  "command": "npx",
+  "args": ["-y", "mcp-remote", "https://mcp.vercel.com"],
+  "disabled": false,
+  "autoApprove": []
+}
   }
 }

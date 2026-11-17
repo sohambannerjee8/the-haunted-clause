@@ -6,7 +6,7 @@
 
 Phases 0 to 7 are finished, and the last result of every gate is PASS. The final commit before this report, `6c047f6`, was cloned fresh from GitHub with no `.env.local` and `GEMINI_API_KEY` empty. In that clone `npm ci`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm run test:coverage` (809 passed) and `CI=1 npm run test:e2e` (85 passed) all exited 0, with no test skipped.
 
-The app is **not deployed**, the video is **not recorded** and the entry is **not submitted**. Those are the author's steps (section 8).
+*(Updated after the build, 17 November 2026.)* The app is deployed at https://the-haunted-clause.vercel.app, at the author's request, through the Vercel MCP server; the author added the key in the Vercel dashboard himself (docs/DEPLOY.md, "The live deployment"). The video is **not recorded** and the entry is **not submitted**. Those are the author's steps (section 8).
 
 ## 2. What works
 
@@ -121,7 +121,7 @@ The write-up is `docs/KIRO_USAGE.md`; the record is `BUILD_LOG.md`.
 ## 7. Known issues and anything not done
 
 - **The sample readings are rule-based, by decision.** *(Updated after the build.)* The author ran the precompute with a real key on 17 November 2026 and rejected the medium's readings for the samples, because they added claims beyond the clause text (PLAN_DECISIONS.md C18). `src/lib/samples/sample-explanations.json` stays rule-based, and the medium is an opt-in feature for pasted text only.
-- **The real Gemini API was called only by the precompute script.** *(Updated after the build.)* Every LLM test uses a mock, and the llm-ui E2E server runs behind a dead proxy. On 17 November 2026 the precompute's `models.get` check accepted both `gemini-4-hydrogen` and `gemini-3.5-flash-lite`. The default is now `gemini-3.5-flash-lite`, for speed (C17.1). In each of the two runs one sample failed with a timeout or an unrecorded error, so the medium can fail on a request; the app then keeps the rule reading. The deployed route has not yet been tried with a real key.
+- **The real Gemini API was called only by the precompute script.** *(Updated after the build.)* Every LLM test uses a mock, and the llm-ui E2E server runs behind a dead proxy. On 17 November 2026 the precompute's `models.get` check accepted both `gemini-4-hydrogen` and `gemini-3.5-flash-lite`. The default is now `gemini-3.5-flash-lite`, for speed (C17.1). In each of the two runs one sample failed with a timeout or an unrecorded error, so the medium can fail on a request; the app then keeps the rule reading. One real call on the deployed route returned the medium's reading (`explain outcome=llm clauses=1 ms=1921`).
 - **Context7 was never used through Kiro.** Its first download ran past Kiro's 60-second MCP connect timeout, and reconnecting did not bring its tools into the session. Library facts were read from `node_modules` and vendor docs instead.
 - **Spec sync hook limits.** The original `PostTaskExec` trigger and the spec task panel route never worked (`spec-task-execution` was not in the agent registry, and a task started from the panel left no trace). The `PostFileSave` replacement fires on every save of a `tasks.md`, including saves that only add a task, and not when a script edits the file. Every task ticked before Task 31.4, and parent Tasks 31 and 33 (ticked by a script edit), were therefore logged by the builder without the hook.
 - **The agents' shell allow-list is not enforced as written.** At Gate 5 the rules-auditor read files with `cat`, `sed`, `head` and `npx --no-install`, which its allow-list does not include. They only read. No agent has a write tool.
@@ -140,7 +140,7 @@ The write-up is `docs/KIRO_USAGE.md`; the record is `BUILD_LOG.md`.
 | 1 | Get a Gemini API key (paid tier recommended) and put it in `.env.local`. (`.env.local` already holds a key line; check that it is the one you intend.) | `.env.example`; `docs/DEPLOY.md` "Environment variables" |
 | 2 | *(Done, 17 November 2026.)* The precompute was run with `gemini-4-hydrogen` and then `gemini-3.5-flash-lite`; the readings were rejected and the samples stay rule-based (C17, C18). Nothing to commit. | `docs/DEPLOY.md` "The sample readings stay rule-based" |
 | 3 | The public GitHub repository already exists and everything is pushed (`origin/main`). The C17 and C18 changes are pushed. | `README.md` |
-| 4 | Deploy to Vercel: import the repository, set `GEMINI_API_KEY` (and `GEMINI_MODEL` if wanted), deploy, and share only the production domain. Redeploy after any key change. | `docs/DEPLOY.md` "Deploy on Vercel" and "A key change needs a redeploy" |
+| 4 | *(Done, 17 November 2026.)* Deployed at https://the-haunted-clause.vercel.app with `GEMINI_API_KEY` for Production. Share only that domain, and redeploy after any key change. | `docs/DEPLOY.md` "Deploy on Vercel" and "A key change needs a redeploy" |
 | 5 | Record the demo video (about 2:30, no music) and upload it to YouTube. | `docs/VIDEO_SCRIPT.md` |
 | 6 | Rewrite the Kiro write-up in your own words. | `docs/KIRO_USAGE.md` (draft) |
 | 7 | Fill in and submit the Devpost form (category: Costume Contest), adding the app and video links. | `docs/DEVPOST_DESCRIPTION.md` |

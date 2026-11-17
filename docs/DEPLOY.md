@@ -46,6 +46,16 @@ These steps follow Vercel's [Deploying Git Repositories](https://vercel.com/docs
 
 Vercel deploys again by itself on every push to `main`.
 
+### The live deployment (17 November 2026)
+
+The production site is **https://the-haunted-clause.vercel.app**. It was set up this way, through the Vercel MCP server in Kiro instead of the dashboard import:
+
+- The project `the-haunted-clause` was created linked to the GitHub repository (production branch `main`). Vercel clones the repository itself, so no local file, and never `.env.local`, is uploaded.
+- The first build had no environment variables. The author then added `GEMINI_API_KEY` for **Production** only, as a sensitive variable, in the project's Environment Variables page; `GEMINI_MODEL` is unset, so the default model is used. A production redeploy followed.
+- Checked after the redeploy: the build compiled with no errors; the page reports the medium as available; the three samples score 14 · Mostly quiet, 59 · Haunted and 97 · Run and make no request to `/api/explain`; pasted text shows the opt-in notice and the "Ask the medium" button; the browser console logged no errors or warnings; Vercel reported no runtime errors.
+- One real call of the medium, on a four-sentence text written for the test, returned the medium's reading with the "Medium's reading" badge in about 2 seconds. The server's only log line for it was `explain outcome=llm clauses=1 ms=1921`.
+- Generated deployment URLs (`the-haunted-clause-<hash>-….vercel.app`) redirect to a Vercel sign-in, because the team's default Vercel Authentication covers everything except the production domain. Share only the production domain.
+
 ## A key change needs a redeploy
 
 The page reads `llmAvailable` (whether a key is set) at build time, when the page is built. Adding, changing or removing `GEMINI_API_KEY` on Vercel has no effect on the opt-in button until you redeploy.
