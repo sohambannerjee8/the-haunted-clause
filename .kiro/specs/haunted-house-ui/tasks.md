@@ -90,9 +90,9 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - _Requirements: 11.1, 11.3, 11.4_
 
 - [ ] 27. Roving-tabindex keyboard navigation (C1.8)
-- [ ] 27.1 Write `roving.test.ts` and `roving.property.test.ts` (U3), then `src/lib/ui/roving.ts`
+- [x] 27.1 Write `roving.test.ts` and `roving.property.test.ts` (U3), then `src/lib/ui/roving.ts`
   - _Requirements: 9.3_
-- [ ] 27.2 Extend `Room.test.tsx`, then wire `Room` to `nextIndex`
+- [x] 27.2 Extend `Room.test.tsx`, then wire `Room` to `nextIndex`
   - Tests:
     - Exactly one `tabindex="0"` per room.
     - Arrows, Home and End move focus, wrapping around.

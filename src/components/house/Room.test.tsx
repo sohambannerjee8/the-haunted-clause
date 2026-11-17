@@ -43,3 +43,65 @@ describe("Room (R4.1, R4.3–R4.5, R9.2)", () => {
     expect(container.querySelector(".hc-ghost")).toBeNull();
   });
 });
+
+describe("Room roving tabindex (R9.1, R9.3, R9.4)", () => {
+  const three = () => buildHouseModel([f(0, "vault", 3), f(10, "vault", 2), f(20, "vault", 0)])[2];
+  const tabStops = () => screen.getAllByRole("button").filter((b) => b.getAttribute("tabindex") === "0");
+
+  it("has exactly one tabindex=0 and the rest -1", () => {
+    render(<Room model={three()} onOpen={() => {}} />);
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.map((b) => b.getAttribute("tabindex"))).toEqual(["0", "-1", "-1"]);
+  });
+  it("arrows, Home and End move focus, wrapping around", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    render(<Room model={three()} onOpen={() => {}} />);
+    const [a, b, c] = screen.getAllByRole("button");
+    a.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(b).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(c).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(a).toHaveFocus(); // wraps
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(c).toHaveFocus(); // wraps back
+    await userEvent.keyboard("{ArrowUp}");
+    expect(b).toHaveFocus();
+    await userEvent.keyboard("{Home}");
+    expect(a).toHaveFocus();
+    await userEvent.keyboard("{End}");
+    expect(c).toHaveFocus();
+    expect(tabStops()).toEqual([c]);
+  });
+  it("keeps tabindex=0 on the last-focused ghost (focus memory)", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    render(
+      <>
+        <Room model={three()} onOpen={() => {}} />
+        <button type="button">after</button>
+      </>,
+    );
+    const [a, b] = screen.getAllByRole("button");
+    a.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(b).toHaveFocus();
+    await userEvent.tab();
+    expect(screen.getByRole("button", { name: "after" })).toHaveFocus();
+    expect(b).toHaveAttribute("tabindex", "0");
+    await userEvent.tab({ shift: true });
+    expect(b).toHaveFocus();
+  });
+  it("Tab leaves the room instead of visiting the next ghost (R9.5)", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    render(
+      <>
+        <Room model={three()} onOpen={() => {}} />
+        <button type="button">after</button>
+      </>,
+    );
+    screen.getAllByRole("button")[0].focus();
+    await userEvent.tab();
+    expect(screen.getByRole("button", { name: "after" })).toHaveFocus();
+  });
+});

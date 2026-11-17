@@ -1,13 +1,25 @@
-// One room of the house (haunted-house-ui R4, R9). Keyboard moves are added in Task 27.
-import { useState } from "react";
+// One room of the house (haunted-house-ui R4, R9). Each room with findings is one Tab stop;
+// arrows, Home and End move between its ghosts (roving tabindex, PLAN_DECISIONS.md C1.8).
+import { useRef, useState, type KeyboardEvent } from "react";
 import type { Finding } from "../../lib/analyzer/types";
 import { roomLabel, roomStatus, type RoomModel } from "../../lib/ui/houseModel";
+import { nextIndex } from "../../lib/ui/roving";
 import { Ghost } from "./Ghost";
 
 export function Room({ model, onOpen }: { model: RoomModel; onOpen: (finding: Finding, opener: HTMLButtonElement) => void }) {
   const [active, setActive] = useState(0);
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const label = roomLabel(model);
   const quiet = model.items.length === 0;
+
+  function onKeyDown(e: KeyboardEvent<HTMLButtonElement>, i: number) {
+    const n = nextIndex(e.key, i, model.items.length);
+    if (n === null) return; // Tab, Enter and Space keep their normal meaning
+    e.preventDefault();
+    setActive(n);
+    buttons.current[n]?.focus();
+  }
+
   return (
     <section
       aria-label={label}
@@ -26,7 +38,18 @@ export function Room({ model, onOpen }: { model: RoomModel; onOpen: (finding: Fi
       ) : (
         <div role="group" aria-label={label} className="mt-2 flex flex-wrap items-end gap-1">
           {model.items.map((f, i) => (
-            <Ghost key={f.id} finding={f} room={model.room} tabIndex={i === active ? 0 : -1} onOpen={onOpen} onFocus={() => setActive(i)} />
+            <Ghost
+              key={f.id}
+              finding={f}
+              room={model.room}
+              tabIndex={i === active ? 0 : -1}
+              onOpen={onOpen}
+              onFocus={() => setActive(i)}
+              onKeyDown={(e) => onKeyDown(e, i)}
+              buttonRef={(el) => {
+                buttons.current[i] = el;
+              }}
+            />
           ))}
         </div>
       )}
