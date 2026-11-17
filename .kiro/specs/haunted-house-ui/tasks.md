@@ -231,7 +231,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - **Done when** these tests pass and the full suites, type-check, lint and `check:trace` are clean; commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 17.1–17.5_
 
-- [ ] 33. Performance, clean clone and Gate 5 (Phase 5)
+- [x] 33. Performance, clean clone and Gate 5 (Phase 5)
 - [x] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
   - **Read first:** PLAN.md section 2 and `.kiro/steering/tech.md` "Performance budget"; requirements R17.1 and R18; traceability rows HU-R17.1, HU-R18.1 and HU-R18.2.
   - **Files:** new `e2e/perf.spec.ts` (no-key project, Chromium CDP `Network.emulateNetworkConditions` and `Network.setCacheDisabled`); update `.kiro/steering/tech.md`.
@@ -248,7 +248,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Every command must exit 0 with zero errors, zero failed and zero skipped tests.
   - **Files:** none in the repository except BUILD_LOG.md: log each command, its exit code and its summary line, and the commit hash cloned. Delete the `/tmp` clone afterwards. No gate in this task.
   - _Requirements: PLAN.md section 7_
-- [ ] 33.3 Run Gate 5
+- [x] 33.3 Run Gate 5
   - **Read first:** PLAN.md section 6 "Phase 5" (gate: all five agents) and "Rules for every gate"; PLAN_DECISIONS.md C10.21, C11 and C12; all five files in `.kiro/agents/`; the end of BUILD_LOG.md.
   - Run all five agents as sub-agents, one after the other, never in parallel (several of them build into `.next`):
     1. `spec-reviewer` (gate name "Gate 5, spec-reviewer, attempt N"; the specs changed since Gate 1 by C12, C13, C14 and C15, so it re-checks all three specs and `npm run check:trace`);
