@@ -786,3 +786,10 @@ The user said Task 31.4 (Gate 4) had finished from the spec task panel. I found 
 #### Spec sync moved to PostFileSave (PLAN_DECISIONS.md C12.4)
 - At the user's instruction, the panel route was dropped. The Spec sync hook was rewritten with Kiro's `createHook` tool: trigger `PostFileSave`, matcher `\.kiro/specs/[^/]+/tasks\.md$`, and the same agent prompt word for word. Kiro reported "The hook will be active on the next session start", so it may not fire during this session.
 - Task 31.4's checkbox will be ticked only after Gate 4 passes; the result is logged below.
+- **Push (C12.4):** `f7160a6..7ccddf4` to `origin/main` after the four pre-push checks passed.
+
+### Gate 4 (Task 31.4), run by the builder at the user's request
+- Builder checks first, not the gate: type-check 0 errors, lint 0 problems, `npm run test:coverage` 67 files and 723 tests passed (lines 93.21%), `CI=1 npm run test:e2e` 71 passed, 0 failed or skipped.
+- **ui-a11y-reviewer, attempt 1: PASS.** Report saved unchanged to `docs/gate-reports/phase-4-ui-a11y-reviewer-attempt-1.md`. All 15 items due at Gate 4 answered Yes (item 16 is a Gate 5 item). It used the app through Playwright MCP against `next start` on port 3100 with no key, and ran the "reduced motion" (1 passed) and "axe" (11 passed) E2E tests.
+  - Problems it reported, neither failing a checklist item: (1) on a mitigated severity 0 finding, the rule's explanation states the opposite of the clause (for example "We do not sell your data." reads "This clause lets the company sell what it knows about you."), and Lights on mode does not show the panel's mitigation note; (2) its full `npx playwright test` run also ran the `@screenshots` spec, which wrote 12 untracked PNGs to `docs/screenshots/`. I deleted those PNGs; the committed set is made in Task 31.5.
+- **test-verifier, first invocation: interrupted** before it reported (the tool call was cut off). It left no report and no running process. It is re-run below as attempt 1, because no verdict was ever returned.
