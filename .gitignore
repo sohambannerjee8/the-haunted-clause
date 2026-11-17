@@ -16,6 +16,8 @@
 
 # next.js
 /.next/
+# second E2E build (llm-ui Playwright project)
+/.next-e2e-llm/
 /out/
 
 # production

@@ -4,7 +4,7 @@ Tasks 23–33 of the build plan (PLAN_DECISIONS.md section D). Tasks 23–31 are
 
 Each task is test first: write the failing test, run it and see it fail, write the code, then run it and see it pass. Every property uses `fc.assert(..., { numRuns: 1000 })`. Commit after each task.
 
-- [ ] 23. Design tokens, fonts, page shell
+- [x] 23. Design tokens, fonts, page shell
 - [x] 23.1 Commit the fonts
   - Download Creepster Regular and Atkinson Hyperlegible Regular and Bold, with their `OFL.txt` files, from the official `google/fonts` repository (`ofl/creepster`, `ofl/atkinsonhyperlegible`) into `src/app/fonts/`.
   - Record the source URLs and licence in BUILD_LOG.md.
@@ -21,7 +21,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - `no-storage.test.ts`: `src/` has no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB` (R1.6); and `src/lib/llm/` and `src/app/api/` import no `fs`/`node:fs`, call no `cookies()`, and use no `"use cache"`, `unstable_cache` or `cacheTag` (llm-explainer R11.1).
     - axe finds no serious or critical issue on the empty page.
   - _Requirements: 1.1–1.6, 11.4, 13.1, 19.2, 19.3_
-- [ ] 23.3 Wire `page.tsx` to `isLlmAvailable()` and pass only the boolean to `HauntedApp`
+- [x] 23.3 Wire `page.tsx` to `isLlmAvailable()` and pass only the boolean to `HauntedApp`
   - Confirm that the prerendered page reads the variable with Cache Components on. If Next.js refuses, use the `connection()` + `<Suspense>` fallback from the design and log which one was used.
   - Add `next.config.ts` `distDir: process.env.HC_DIST_DIR || ".next"`, and add `.next-e2e-llm` to `.gitignore`.
   - Add the second Playwright project (`llm-ui`, port 3101, placeholder key), with its `next start` behind a dead local proxy (`NODE_USE_ENV_PROXY=1`, `HTTPS_PROXY`/`HTTP_PROXY=http://127.0.0.1:9`, `NO_PROXY=localhost,127.0.0.1`).
