@@ -123,8 +123,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - axe passes in both modes.
   - _Requirements: 8.3, 19.1_
 
-- [ ] 29. Asking the medium about pasted text
-- [ ] 29.1 Write `OptInPanel.test.tsx`, then `OptInPanel` and the `Notices` "no medium" line
+- [x] 29. Asking the medium about pasted text
+- [x] 29.1 Write `OptInPanel.test.tsx`, then `OptInPanel` and the `Notices` "no medium" line
   - Tests:
     - Hidden when `llmAvailable` is false, with the line shown.
     - Hidden for samples.
@@ -134,7 +134,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - Each failure message, and re-enabling except after `no-key`.
     - No call without a press.
   - _Requirements: 14.1–14.7_
-- [ ] 29.2 E2E `optin.spec.ts` (llm-ui project, `page.route` stubs) and `optin-hidden.spec.ts` (no-key project)
+- [x] 29.2 E2E `optin.spec.ts` (llm-ui project, `page.route` stubs) and `optin-hidden.spec.ts` (no-key project)
   - Success updates the badges and the score.
   - `rate-limited`, `timeout` and a network abort keep the rules and show the messages.
   - The request body holds only flagged-clause text, and unflagged sentences are absent.
