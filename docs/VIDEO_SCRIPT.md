@@ -54,7 +54,7 @@ Everything on screen is the real app, running at a 1440 px wide window, except t
 4. `.kiro/agents/` with its five agents, then the list of reports in `docs/gate-reports/`.
 5. A property test with `numRuns: 1000`, for example `src/lib/analyzer/analyze.property.test.ts`.
 
-**Narration:** "I built it with Kiro. Three specs took each part from requirements to design to tasks: two hundred and thirty-six acceptance criteria, each mapped to a named test, after the spec reviewer failed the specs three times on exactly that. Six steering files held the rules. Four hooks ran tests and a secret scan on every save and logged each finished task. Five verification agents, with no write tool and a shell limited to build and test commands, checked every phase, one of them using the app in a real browser through MCP. And thirty-six property-based tests, at a thousand runs each, caught a splitter bug no unit test did."
+**Narration:** "I built it with Kiro. Three specs, from requirements to design to tasks, with all two hundred and thirty-six criteria mapped to tests, after the spec reviewer failed them three times on exactly that. Six steering files held the rules. Hooks ran the tests and a secret scan as files were saved. Five verification agents, with no write tool, checked every phase, one through a real browser over MCP. And property-based tests, a thousand runs each, caught a bug no unit test did."
 
 ### 2:22–2:30 · End card
 
@@ -75,4 +75,4 @@ Everything on screen is the real app, running at a 1440 px wide window, except t
 | End card | 2:22 | 2:30 | 8 s |
 | **Total** | | | **2:30** |
 
-The narration is about 330 words, which fits 2:30 at a calm pace with pauses for the on-screen moments.
+The narration is about 300 words (the Kiro segment about 85 words in 36 s), which fits 2:30 at a calm pace with pauses for the on-screen moments.

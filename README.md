@@ -72,7 +72,7 @@ npm run test:e2e                 # Playwright end-to-end tests
 - Other checks: `npm run typecheck`, `npm run lint`, `npm run check:secrets` (secret scan of tracked files), `npm run check:history` (secret scan of git history), `npm run check:rules` (repository rules), `npm run check:bundle` (builds with a canary key and checks it never reaches the browser bundle), `npm run check:trace` (every spec criterion has a named test).
 - `npm run screenshots` regenerates the review screenshots in `docs/screenshots/`.
 
-Results at the end of the build (17 November 2026): 772 unit and property tests in 71 files, 85 end-to-end tests across the two projects, all passing; line coverage 96.86%.
+Results at the end of the build (17 November 2026): 809 unit and property tests in 72 files, 85 end-to-end tests across the two projects, all passing; line coverage 96.86%.
 
 ## Architecture
 

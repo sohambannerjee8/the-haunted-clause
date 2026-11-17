@@ -36,7 +36,7 @@ The build started from a written brief and a file of approved decisions, and Kir
 
 ## Numbers
 
-- 772 unit and property tests and 85 end-to-end tests, all passing; line coverage 96.86%.
+- 809 unit and property tests and 85 end-to-end tests, all passing; line coverage 96.86%.
 - First-load JavaScript of 142,493 bytes gzip-encoded; the paste box responds after about 1.65 s on a throttled 1.6 Mbps connection.
 - The three sample companies were checked by web search to make sure no real company uses their names.
 

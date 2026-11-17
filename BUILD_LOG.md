@@ -980,3 +980,17 @@ PLAN.md (sections 3, 6 and 7) and PLAN_DECISIONS.md re-read at the start of the 
 - The failures are written up as they happened: the Gate 1 traceability loop (three FAILs, the stop, the matrix and `check:trace`), the spec task panel (`spec-task-execution` not found, the panel-started 31.4 that left no trace, the move to `PostFileSave` and its limits), Context7 (the 60-second connect timeout, the half-written npx cache, shell-only use), the two steering drifts, and the rules-auditor's reads outside its allow-list.
 - VIDEO_SCRIPT: 2:30 in seven segments; "97 · Run" by 0:16; the keyboard path (Tab, arrow keys, Enter), one detail panel, the mild house in Lights on mode, then 36 s on Kiro and an end card. Narration is 331 words. No music, no third-party names on screen or in the narration, and the optional medium panel is left out because it names an outside service.
 - Full suite: 72 files, 809 tests pass. Lint and type-check clean.
+- **Push (submission pack):** `70b987a..1702c1d` to `origin/main` after the four pre-push checks passed (239 tracked files).
+
+### Gate 6 (final): rules-auditor, attempt 1: PASS
+- Ports 3100 and 3101 were free first. The `rules-auditor` custom agent ran as a sub-agent with fresh context, on every checklist item (R1–R8, A1–A4, S1–S6, K1, K2). Report saved unchanged to `docs/gate-reports/phase-6-rules-auditor-attempt-1.md`.
+- **Verdict: PASS.** All 20 items Yes. It ran build, `test:coverage` (72 files, 809 tests, lines 96.86%), typecheck, lint, `CI=1 npm run test:e2e` (85 passed; perf 1,635 ms and 142,493 B), `check:rules`, `check:secrets` (239 files), `check:history`, `check:trace` (236 rows), `check:bundle` (20 files) and `license-checker`, all exit 0, and `git status` was clean before and after.
+- Problems it listed, none breaking an item, and what I did:
+  - README and BLOG_DRAFT still gave the Phase 5 count of 772 tests. **Fixed:** 809 tests in 72 files.
+  - The video script's Kiro segment was about 110 words in 36 s, faster than the rest, and "ran tests … on every save" overstated Test on save, which only matches `src/**/*.ts(x)`. **Fixed:** the narration is now 84 words ("Hooks ran the tests and a secret scan as files were saved"), and the whole narration about 300 words.
+  - KIRO_USAGE said 16 gate reports and had no Gate 6 result. **Fixed:** 17 reports, Gate 6 PASS.
+  - SOCIAL_POST's draft note and heading must be removed before posting. Left as it is, because the user asked for the draft mark (C16.3); the note says so.
+  - It noted that its `npm run build` read the git-ignored `.env.local`. **I checked, without printing the value:** `.env.local` exists (55 bytes, modified 17 November 2026 23:11, during Phase 6) and holds a non-empty `GEMINI_API_KEY` line. I did not create it; it looks like the user has started manual step 1. It is ignored by git (`.gitignore` line 37, `.env*`), `check:secrets` and `check:history` are clean, `check:bundle` found neither the canary nor the key name in `.next/static`, and the E2E servers build with the key set to empty. No test or build calls Google, and `npm run precompute:samples` has not been run.
+- `npx vitest --run scripts` passed 144 tests after the fixes (`submission-docs.test.mts` and `docs.test.mts` included). The fixes are text only; no code or test changed.
+
+**Gate 6 passed. Phase 6 complete.**

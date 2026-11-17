@@ -12,7 +12,7 @@ The Haunted Clause was built in Kiro from a written brief (`PLAN.md`) and a file
 | Custom agents | 5 | `.kiro/agents/` |
 | MCP servers | 2 configured, 1 used through Kiro | `.kiro/settings/mcp.json` |
 | Property-based tests | 36 `fc.assert` calls in 10 files, each at 1,000 runs | `src/**/*.property.test.ts` and others |
-| Gate reports | 16 | `docs/gate-reports/` |
+| Gate reports | 17 | `docs/gate-reports/` |
 
 ## Which Kiro app
 
@@ -81,7 +81,7 @@ Five verification agents in `.kiro/agents/`: `spec-reviewer`, `test-verifier`, `
 | 3 | security-reviewer PASS, test-verifier PASS |
 | 4 | ui-a11y-reviewer PASS, test-verifier PASS |
 | 5 | spec-reviewer FAIL then PASS; security-reviewer, rules-auditor, ui-a11y-reviewer and test-verifier PASS |
-| 6 | rules-auditor (final) |
+| 6 | rules-auditor (final audit of the whole rules checklist) PASS |
 
 What they changed, all recorded in BUILD_LOG.md:
 
