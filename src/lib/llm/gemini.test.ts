@@ -32,11 +32,11 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("defaultModel", () => {
-  it("is gemini-4-hydrogen when GEMINI_MODEL is unset, empty or whitespace", () => {
-    expect(DEFAULT_MODEL).toBe("gemini-4-hydrogen");
+  it("is gemini-3.5-flash-lite when GEMINI_MODEL is unset, empty or whitespace", () => {
+    expect(DEFAULT_MODEL).toBe("gemini-3.5-flash-lite");
     for (const v of [undefined, "", "   "]) {
       vi.stubEnv("GEMINI_MODEL", v);
-      expect(defaultModel()).toBe("gemini-4-hydrogen");
+      expect(defaultModel()).toBe("gemini-3.5-flash-lite");
       expect(modelSource()).toBe("default");
     }
   });
@@ -54,7 +54,7 @@ describe("createGeminiProvider (R4.2, R11.2)", () => {
     expect(text).toBe('{"findings":[]}');
     expect(generateContent).toHaveBeenCalledTimes(1);
     const [params] = generateContent.mock.calls[0];
-    expect(params.model).toBe("gemini-4-hydrogen");
+    expect(params.model).toBe("gemini-3.5-flash-lite");
     expect(params.contents).toBe(renderClauses(clauses));
     expect(params.config).toMatchObject({
       systemInstruction: SYSTEM_INSTRUCTION,
@@ -100,10 +100,10 @@ describe("createGeminiProvider (R4.2, R11.2)", () => {
     await expect(createGeminiProvider().explain(clauses, { signal })).rejects.toThrow("network down");
   });
   it("getModel calls models.get once for the model, with the signal and the key read at call time (R16.12)", async () => {
-    getModel.mockResolvedValue({ name: "models/gemini-4-hydrogen" });
-    await expect(fetchModel("gemini-4-hydrogen", signal)).resolves.toEqual({ name: "models/gemini-4-hydrogen" });
+    getModel.mockResolvedValue({ name: "models/gemini-3.5-flash-lite" });
+    await expect(fetchModel("gemini-3.5-flash-lite", signal)).resolves.toEqual({ name: "models/gemini-3.5-flash-lite" });
     expect(getModel).toHaveBeenCalledTimes(1);
-    expect(getModel).toHaveBeenCalledWith({ model: "gemini-4-hydrogen", config: { abortSignal: signal } });
+    expect(getModel).toHaveBeenCalledWith({ model: "gemini-3.5-flash-lite", config: { abortSignal: signal } });
     expect(ctorArgs).toEqual([{ apiKey: fakeKey() }]);
     expect(generateContent).not.toHaveBeenCalled();
   });

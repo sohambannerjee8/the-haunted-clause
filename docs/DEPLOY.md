@@ -7,7 +7,7 @@ The app runs on the Vercel free (Hobby) plan. It has no database and no login. I
 | Name | Required | What it does |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | No | Turns on the optional "medium's reading" for pasted text. Without it the opt-in button is hidden and the app shows rule-based readings. |
-| `GEMINI_MODEL` | No | Overrides the default model, `gemini-4-hydrogen`. |
+| `GEMINI_MODEL` | No | Overrides the default model, `gemini-3.5-flash-lite` (stable, and the fastest model in Google's 3.5 family). |
 
 Set them in Vercel under the project's Settings, Environment Variables. Locally, put them in `.env.local`, which git ignores. Never put a key in a tracked file.
 

@@ -139,7 +139,7 @@ describe("GEMINI_OUTPUT_JSON_SCHEMA", () => {
 
 describe("SampleExplanationsFile (R16.7)", () => {
   const rules = { source: "rules", model: null, findingIds: ["c-0"], llmFindings: [] };
-  const llm = { source: "llm", model: "gemini-4-hydrogen", findingIds: ["c-0"], llmFindings: [finding()] };
+  const llm = { source: "llm", model: "gemini-3.5-flash-lite", findingIds: ["c-0"], llmFindings: [finding()] };
   const file = (s: Record<string, unknown>) => ({ version: 1, samples: { mild: rules, average: rules, terrible: rules, ...s } });
   it("accepts rules and llm entries", () => {
     expect(SampleExplanationsFile.safeParse(file({})).success).toBe(true);

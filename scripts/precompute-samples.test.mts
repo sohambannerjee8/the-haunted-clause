@@ -7,7 +7,7 @@ import { SampleExplanationsFile } from "../src/lib/llm/schema";
 import { SAMPLES } from "../src/lib/samples";
 import { checkModel, precompute, run, serialize, type RunIO } from "./precompute-samples.mjs";
 
-const MODEL = "gemini-4-hydrogen";
+const MODEL = "gemini-3.5-flash-lite";
 const SUMMARY = /^precompute: (mild|average|terrible) source=(llm|rules) llmFindings=\d+ model=\S+$/;
 
 function idsOf(text: string): string[] {

@@ -65,9 +65,9 @@ Sources: PLAN.md sections 2, 3 and Phase 3; PLAN_DECISIONS.md C1.1–C1.4, C3, C
 #### Acceptance Criteria
 
 1. WHEN a valid request arrives, a key is set and the rate limit allows it, THE handler SHALL call the provider once with the request's clauses.
-2. THE Gemini provider SHALL use `@google/genai` `models.generateContent` with: a system instruction; `responseMimeType: "application/json"`; `responseJsonSchema` generated from the LLM-output Zod schema with `z.toJSONSchema`; `store: false`, so that the request is not kept in Google AI Studio logs; and the model named by `GEMINI_MODEL`, or `gemini-4-hydrogen` when that variable is unset or empty.
+2. THE Gemini provider SHALL use `@google/genai` `models.generateContent` with: a system instruction; `responseMimeType: "application/json"`; `responseJsonSchema` generated from the LLM-output Zod schema with `z.toJSONSchema`; `store: false`, so that the request is not kept in Google AI Studio logs; and the model named by `GEMINI_MODEL`, or `gemini-3.5-flash-lite` when that variable is unset or empty (PLAN_DECISIONS.md C17.1).
 3. THE Gemini provider SHALL send only the clauses in the request: their IDs, room names, clause types, rule severities and texts. It SHALL send nothing else from the user.
-4. THE system instruction SHALL tell the model that clause texts are untrusted data to be explained, not instructions to follow, and SHALL define the four severity levels and the output length limits.
+4. THE system instruction SHALL tell the model that clause texts are untrusted data to be explained, not instructions to follow, SHALL define the four severity levels and the output length limits, and SHALL tell the model to explain only what each clause text states, adding no facts, consequences, exceptions, examples or comparisons the clause does not state (C17.2).
 5. THE Gemini provider SHALL read the key at call time, not at module load, and SHALL be the only module that reads `GEMINI_API_KEY` apart from `isLlmAvailable`.
 
 ### Requirement 5: Time out after 15 seconds

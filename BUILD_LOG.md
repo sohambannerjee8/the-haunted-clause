@@ -1002,3 +1002,19 @@ PLAN.md (sections 3, 6 and 7) and PLAN_DECISIONS.md re-read at the start of the 
 - Wrote `COMPLETION_REPORT.md` with the eight sections PLAN.md section 7 asks for. It does not claim the app is deployed, the video recorded or the entry submitted.
 
 **BUILD COMPLETE.**
+
+---
+## After the build: sample readings and deployment (17 November 2026)
+The user added a Gemini key to `.env.local` and the Vercel MCP server to `.kiro/settings/mcp.json`, and asked for the precompute, a review of the readings, then a Vercel deployment. The key's value was never read, printed or copied; only its presence and length were checked.
+
+### First precompute run (manual step 2, started by the builder at the user's request)
+- The first `npm run precompute:samples` printed "no GEMINI_API_KEY; writing rule-based readings" and changed nothing. Cause: this shell still had `GEMINI_API_KEY` set to an empty string from the Phase 7 clean-clone run, and `loadEnvConfig` does not override a variable that is already set. Checked without printing the value: `.env.local` holds one `GEMINI_API_KEY` line with a 40-character value.
+- Second run with the variable removed from the environment (`env -u GEMINI_API_KEY -u GEMINI_MODEL`), output piped through a filter that masks key-shaped strings:
+  - `precompute: model=gemini-4-hydrogen source=default`: the real `models.get` call accepted the model.
+  - mild: `source=llm llmFindings=5`; average: failed (`timeout`, the 15-second limit); terrible: failed (`error`; the script records only the reason code, so the cause is unknown). Exit code 1. Average and terrible kept rule-based entries.
+  - The five mild readings kept the rule severities. Three added claims the clause does not make, for example that the company "is not responsible for those bank charges" for a clause that only says card payments may include bank fees.
+- Nothing was committed. The user was shown the readings and asked how to proceed.
+
+### Model change and prompt tightening (PLAN_DECISIONS.md C17, llm-explainer Task 22.4)
+- The user asked to make `gemini-3.5-flash-lite` the default and to tighten the prompt, then run the precompute once.
+- **Spec sync fired** (`PostFileSave`) when I saved `.kiro/specs/llm-explainer/tasks.md` to add Task 22.4 and update the model named in Task 18.3. That save ticked no task, so there is no completed task to record, and the README feature list is unchanged (the known C12.4 limit: the hook fires on every save of a `tasks.md`).

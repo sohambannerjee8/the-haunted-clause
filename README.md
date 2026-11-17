@@ -44,7 +44,7 @@ You need Node.js 20.9 or newer (the build was made and tested on Node 26.13.1 wi
    | Name | Required | What it does |
    | --- | --- | --- |
    | `GEMINI_API_KEY` | No | Shows the opt-in button that asks Gemini for a plain-English reading of the flagged clauses in pasted text. Without it, every finding shows the rule-based reading. |
-   | `GEMINI_MODEL` | No | Overrides the default model ID. |
+   | `GEMINI_MODEL` | No | Overrides the default model ID, `gemini-3.5-flash-lite`. |
 
    `.env.local` is ignored by git. Never put a key in a tracked file. See [docs/DEPLOY.md](docs/DEPLOY.md) for the paid-tier recommendation and for refreshing the sample readings with `npm run precompute:samples`.
 

@@ -42,7 +42,7 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Both files import `server-only`.
   - Add the `server-only` alias to the empty module in `vitest.config.mts`.
   - Tests:
-    - The config has `store: false`, `responseMimeType: "application/json"`, `responseJsonSchema`, the system instruction, thinking level low, and the model (default `gemini-4-hydrogen` and the `GEMINI_MODEL` override).
+    - The config has `store: false`, `responseMimeType: "application/json"`, `responseJsonSchema`, the system instruction, thinking level low, and the model (default `gemini-3.5-flash-lite` since C17.1, and the `GEMINI_MODEL` override).
     - The key is read at call time.
     - An empty `res.text` returns `""`.
     - `isLlmAvailable` treats unset, empty and whitespace as `false`.
@@ -137,3 +137,9 @@ Tasks 17–22 of the build plan (PLAN_DECISIONS.md section D). Each task is test
   - Run the `security-reviewer` and `test-verifier` sub-agents in parallel.
   - Save each report unchanged to `docs/gate-reports/phase-3-<agent>-attempt-N.md`, and append the results to BUILD_LOG.md.
   - Pass when the key never reaches the browser bundle, pasted text is not logged or stored, and the app works with no key.
+
+- [ ] 22.4 Default model and prompt tightening (PLAN_DECISIONS.md C17)
+  - Tests first: `gemini.test.ts` expects the default model `gemini-3.5-flash-lite`; `prompt.test.ts` expects the system instruction to keep both texts to what the clause states and to describe a protecting promise as one. See them fail, then change `DEFAULT_MODEL` in `gemini.ts` and `SYSTEM_INSTRUCTION` in `prompt.ts`.
+  - Update R4.2, R4.4, the design's facts table and prompt text, docs/DEPLOY.md, README.md and `.kiro/steering/tech.md`.
+  - Run `npm run precompute:samples` once and show every generated explanation to the user. Commit `src/lib/samples/sample-explanations.json` only after the user approves.
+  - _Requirements: 4.2, 4.4_

@@ -21,6 +21,17 @@ describe("SYSTEM_INSTRUCTION (R4.4)", () => {
     expect(SYSTEM_INSTRUCTION).toMatch(/Do not lower it/);
     expect(SYSTEM_INSTRUCTION).toMatch(/Do not give legal advice/);
   });
+  it("keeps both texts to what the clause itself states (R4.4, C17.2)", () => {
+    expect(SYSTEM_INSTRUCTION).toMatch(/Explain only what the clause text itself states/);
+    expect(SYSTEM_INSTRUCTION).toMatch(
+      /Do not add facts, consequences, exceptions, examples or comparisons that the clause does not state/,
+    );
+    expect(SYSTEM_INSTRUCTION).toMatch(/Do not guess what other parts of the policy say/);
+    expect(SYSTEM_INSTRUCTION).toMatch(/whyItMatters, at most 400 characters, saying how what this clause states could affect the reader/);
+  });
+  it("asks for a promise that protects the reader to be described as one (C17.2)", () => {
+    expect(SYSTEM_INSTRUCTION).toMatch(/If the clause is a promise that protects the reader, say so plainly/);
+  });
 });
 
 describe("renderClauses (R4.3)", () => {

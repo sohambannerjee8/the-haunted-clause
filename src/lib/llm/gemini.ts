@@ -7,7 +7,9 @@ import { SYSTEM_INSTRUCTION, renderClauses } from "./prompt";
 import type { Provider } from "./provider";
 import { GEMINI_OUTPUT_JSON_SCHEMA } from "./schema";
 
-export const DEFAULT_MODEL = "gemini-4-hydrogen";
+// Google lists gemini-3.5-flash-lite as stable and the fastest 3.5 model, with structured output and
+// thinking levels minimal to high (aistudio.google.com/docs/models, /docs/thinking; PLAN_DECISIONS.md C17.1).
+export const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 
 /** GEMINI_MODEL when set, otherwise the default. Read on every call. */
 export function defaultModel(): string {
