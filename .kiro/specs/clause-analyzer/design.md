@@ -65,7 +65,7 @@ export interface Finding {
   ruleId: string;
   mitigationId: string | null;           // a mitigation lowered the severity (R3.6)
   cancelledMitigationId: string | null;  // a reassurance was undercut by an exception marker (R3.11)
-  explanation: string;     // from the rule, 1..400 chars
+  explanation: string;     // from the rule, or from the applied mitigation (C13); 1..400 chars
   whyItMatters: string;    // from the rule, 1..400 chars
 }
 
@@ -116,7 +116,7 @@ When an indented list item follows a paragraph break, both R1.8 and R1.9 fire. *
    - **None applies, at least one cancelled (R3.11):** copy the clause text and replace every cancelled mitigation match with spaces of the same length. Then re-run the room's rules on that masked copy. The severity becomes `min(raw, max(highestMaskedMatch, 1))`. `ruleId` is the masked match's rule, or the original rule if nothing else matched. `cancelledMitigationId` is the first cancelled mitigation in table order.
    - **No mitigation matched:** the severity stays at the raw severity.
 4. Choose the room with the highest severity after mitigations. Ties go to the room that comes first in room order (R2.4).
-5. Build the finding: `id` = clause ID, `start = s`, `end = e`, `quote = input.slice(s, e)`, plus `explanation` and `whyItMatters` from the rule (R4). A severity 0 result is still a finding (R3.7).
+5. Build the finding: `id` = clause ID, `start = s`, `end = e`, `quote = input.slice(s, e)`, plus `explanation` and `whyItMatters` from the rule, or from the mitigation when one was applied (R4.5, C13). A severity 0 result is still a finding (R3.7).
 
 All patterns use the `i` flag (R2.8), and the flags never include `g` or `y`, so no `lastIndex` state leaks between calls (R7.3). Gaps between words use `[^.;]{0,N}` with a fixed `N`, so matching stays linear in the clause length (R6.3).
 
@@ -191,6 +191,8 @@ There are 45 rules: five per room, plus five added by PLAN_DECISIONS.md C12.2 (C
 | Mirror Room | `mirror.you-own` | 1 | `\byou (will \|always \|still )?(retain\|keep) (all )?((of )?your )?(ownership\|rights)\b` or `\byou (still \|always )?own your content\b` |
 | Trapdoor | `trapdoor.carve-out` | 1 | `\bnothing in (these\|this)\b G{0,60} \b(limits?\|excludes?\|restricts?)\b G{0,40} \bliability\b` |
 | Shifting Stairs | `stairs.advance-notice` | 1 | `\b(will\|we'll\|shall) (always )?(notify\|tell\|email\|inform\|give) you\b G{0,60} \b\d+ days\b` or `\bat least \d+ days'? notice\b` |
+
+Each mitigation also carries its own `explanation` and `whyItMatters` texts (C13), written as a reassurance, for example `cellar.no-sell`: "This clause promises not to sell your data." When a mitigation is applied, the finding takes these texts instead of the rule's (R4.5). A cancelled mitigation (R3.11) applies nothing, so the finding keeps the rule's texts. `mitigation-texts.test.ts` checks every mitigation.
 
 `NOT` (C12.1) is one negation, optionally doubled and followed by "ever": `(do|does|will|shall|would|can) (not|never)`, `cannot`, `can't`, `don't`, `doesn't`, `won't`, `shan't` or `never`, as in "we do not and will not sell". Each mitigation's newly accepted wording has a test in `mitigation-phrasing.test.ts`.
 

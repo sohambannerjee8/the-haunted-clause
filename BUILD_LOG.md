@@ -806,3 +806,10 @@ The user said Task 31.4 (Gate 4) had finished from the spec task panel. I found 
   - Tests, as run before and during the gate: `npm run test:coverage` 723 passed, 0 failed; `CI=1 npm run test:e2e` 71 passed, 0 failed; the test-verifier's own runs gave the same counts. After the matrix fix, `npm run check:trace` passed with 236 rows.
   - Kiro features used: the spec (task 31.4), the Spec sync hook (`PostFileSave`), two custom agents run as sub-agents (ui-a11y-reviewer with the Playwright MCP server, and test-verifier; each has no write tool; shell limited to build/test commands), and property-based tests (36 `fc.assert` calls at 1,000 runs, checked by test-verifier).
   - The README feature list between the markers now lists the nine user-facing features whose spec tasks are complete. The Phase 5 edge-case and loading tasks are not listed as finished features.
+- **Push after Gate 4:** `7fe610c..b86b5a3` to `origin/main` after `check:secrets` (205 files), `check:history`, `check:rules` (0 FAIL) and `check:trace` passed.
+
+### Mitigation texts (PLAN_DECISIONS.md C13), approved by the user after Gate 4
+#### Step 1: specs
+- clause-analyzer R4.5 now says a finding with an applied mitigation takes that mitigation's explanation and "why it matters" texts, and every rule and mitigation has both texts (1 to 400 characters). haunted-house-ui R8.2 now requires the line "A reassurance in this clause lowers its severity." in Lights on mode for a mitigated finding.
+- The clause-analyzer design (types comment, classifier step 5, Mitigations section) and the traceability rows CA-R4.5 and HU-R8.2 were updated. New tasks: clause-analyzer 16.5 (`mitigation-texts.test.ts`) and haunted-house-ui 28.3 (`LightsOnList.test.tsx`). `check:trace` passes (236 rows).
+- These edits were made with a shell script, not the editor tools, so the Spec sync hook (`PostFileSave`) did not fire for them; the tasks are not ticked yet.

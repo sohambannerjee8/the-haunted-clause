@@ -105,7 +105,7 @@ Sources: PLAN.md sections 2 and 4, and PLAN_DECISIONS.md C1.7, C1.10, C4 and C7.
 2. FOR every finding, THE analyzer SHALL set `start` and `end` to the clause's span with leading and trailing whitespace removed, so that `quote` neither starts nor ends with whitespace and is non-empty.
 3. FOR every finding, THE analyzer SHALL set `id` to the ID of the clause it came from, and the IDs of all findings SHALL be unique.
 4. THE analyzer SHALL return findings in the order their clauses appear in the input.
-5. FOR every finding, THE analyzer SHALL set `explanation` and `whyItMatters` to the texts of the rule named by `ruleId`, each non-empty and at most 400 characters.
+5. FOR every finding with no applied mitigation (`mitigationId` is `null`), THE analyzer SHALL set `explanation` and `whyItMatters` to the texts of the rule named by `ruleId`. FOR every finding with an applied mitigation, THE analyzer SHALL set them to the texts of the mitigation named by `mitigationId`, so that a reassurance is described as a reassurance. Every rule and every mitigation SHALL have both texts, each non-empty and at most 400 characters. (Changed by PLAN_DECISIONS.md C13.)
 
 ### Requirement 5: Haunt Score
 

@@ -130,7 +130,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 #### Acceptance Criteria
 
 1. THE house view SHALL have a toggle button "Lights on" with `aria-pressed`, which switches between the house and the Lights on list.
-2. THE Lights on list SHALL list all eight rooms in room order as headings, and under each room every finding in input order with its severity numeral and label, its exact quote, explanation, "why it matters" and source badge; a quiet room SHALL show "Quiet".
+2. THE Lights on list SHALL list all eight rooms in room order as headings, and under each room every finding in input order with its severity numeral and label, its exact quote, explanation, "why it matters" and source badge, and for a finding with `mitigationId` the line "A reassurance in this clause lowers its severity." (as in the detail panel, R6.3; PLAN_DECISIONS.md C13); a quiet room SHALL show "Quiet".
 3. THE Lights on list SHALL contain exactly the same findings, with the same severities and texts, as the house.
 4. THE Lights on list SHALL contain no ghost art, no animation and no decorative images.
 5. WHEN the user switches modes, focus SHALL stay on the toggle button.

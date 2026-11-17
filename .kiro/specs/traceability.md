@@ -44,7 +44,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | CA-R4.2 | `analyze.property.test.ts` (P3), `classifier.test.ts` (trimmed span) | 12.2, 14.3 |
 | CA-R4.3 | `analyze.property.test.ts` (P8, findings) | 14.3 |
 | CA-R4.4 | `analyze.test.ts` (input order) | 14.2 |
-| CA-R4.5 | `rules.test.ts` (text lengths), `classifier.test.ts` (texts equal the rule's) | 12.1, 12.2 |
+| CA-R4.5 | `rules.test.ts` (text lengths), `classifier.test.ts` (rule texts when no mitigation applies), `mitigation-texts.test.ts` (mitigation texts when one applies, C13) | 12.1, 12.2, 16.5 |
 | CA-R5.1 | `score.test.ts` | 13.1 |
 | CA-R5.2 | `score.property.test.ts` (P1) | 13.2 |
 | CA-R5.3 | `score.test.ts` (no findings) | 13.1 |
@@ -198,7 +198,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R7.2 | `flow.spec.ts` (score equals `hauntScore`), `OptInPanel.test.tsx` (score after merge) | 25.3, 29.1 |
 | HU-R7.3 | `ScoreBadge.test.tsx` (announcement on change) | 25.2 |
 | HU-R8.1 | `Toolbar.test.tsx` (Lights on toggle, `aria-pressed`), `lights.spec.ts` | 28.1, 28.2 |
-| HU-R8.2 | `LightsOnList.test.tsx` | 28.1 |
+| HU-R8.2 | `LightsOnList.test.tsx` (including the reassurance line, C13) | 28.1, 28.3 |
 | HU-R8.3 | `houseModel.property.test.ts` (U1), `lights.spec.ts` | 25.1, 28.2 |
 | HU-R8.4 | `LightsOnList.test.tsx` (no SVG, no animation classes) | 28.1 |
 | HU-R8.5 | `LightsOnList.test.tsx`, `lights.spec.ts` (focus stays on the toggle) | 28.1, 28.2 |
