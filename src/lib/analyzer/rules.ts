@@ -17,6 +17,9 @@ export interface Mitigation {
   readonly room: RoomId;
   readonly level: 0 | 1;
   readonly pattern: RegExp;
+  /** Shown instead of the rule's texts when this mitigation lowers a finding (R4.5, PLAN_DECISIONS.md C13). */
+  readonly explanation: string;
+  readonly whyItMatters: string;
 }
 
 const G = "[^.;]";
@@ -199,7 +202,8 @@ export const RULES: readonly Rule[] = Object.freeze([
     "\"Sole discretion\" leaves you nothing to point to if a decision goes against you."),
 ]);
 
-const mitigation = (id: string, room: RoomId, level: 0 | 1, pattern: RegExp): Mitigation => Object.freeze({ id, room, level, pattern });
+const mitigation = (id: string, room: RoomId, level: 0 | 1, pattern: RegExp, explanation: string, whyItMatters: string): Mitigation =>
+  Object.freeze({ id, room, level, pattern, explanation, whyItMatters });
 
 // A negation, alone or doubled ("we do not and will not"), so every common way of saying "we never"
 // is read the same (PLAN_DECISIONS.md C12.1: "We will never sell" used to be missed).
@@ -207,17 +211,39 @@ const NOT_ONE = "(?:(?:do|does|will|shall|would|can) (?:not|never)|cannot|can't|
 const NOT = `${NOT_ONE}(?:,? (?:and|or) ${NOT_ONE})?(?: ever)?`;
 
 export const MITIGATIONS: readonly Mitigation[] = Object.freeze([
-  mitigation("cellar.no-sell", "cellar", 0, re(`\\bwe ${NOT} sell\\b`)),
-  mitigation("cellar.no-share", "cellar", 0, re(`\\bwe ${NOT} share\\b`)),
-  mitigation("cellar.consent", "cellar", 1, re(`\\bonly with your (?:explicit |prior )?consent\\b`)),
-  mitigation("portraits.no-track", "portraits", 0, re(`\\bwe ${NOT} (?:track|profile|build profiles)\\b`)),
-  mitigation("portraits.opt-out", "portraits", 1, re(`\\byou (?:can|may|will be able to) (?:always |still )?(?:opt[- ]out|turn (?:this|these|it) off|decline)\\b`)),
-  mitigation("vault.reminder", "vault", 1, re(`\\b(?:remind|notify|email|tell) you\\b${G}{0,40}\\bbefore\\b`, `\\bsend you (?:a |an )?(?:reminder|notice|email)\\b${G}{0,40}\\bbefore\\b`)),
-  mitigation("locked.delete-anytime", "locked-door", 0, re(`\\byou (?:can|may|are free to|will be able to) (?:always )?(?:delete|close|cancel)\\b${G}{0,60}\\b(?:at any time|anytime|instantly|immediately)\\b`)),
-  mitigation("court.opt-out", "court", 1, re(`\\bopt[- ]out of (?:this |the )?arbitration\\b`)),
-  mitigation("mirror.you-own", "mirror", 1, re(`\\byou (?:will |always |still )?(?:retain|keep) (?:all )?(?:(?:of )?your )?(?:ownership|rights)\\b`, `\\byou (?:still |always )?own your content\\b`)),
-  mitigation("trapdoor.carve-out", "trapdoor", 1, re(`\\bnothing in (?:these|this)\\b${G}{0,60}\\b(?:limits?|excludes?|restricts?)\\b${G}{0,40}\\bliability\\b`)),
-  mitigation("stairs.advance-notice", "stairs", 1, re(`\\b(?:will|we'll|shall) (?:always )?(?:notify|tell|email|inform|give) you\\b${G}{0,60}\\b\\d+ days\\b`, `\\bat least \\d+ days'? notice\\b`)),
+  mitigation("cellar.no-sell", "cellar", 0, re(`\\bwe ${NOT} sell\\b`),
+    "This clause promises not to sell your data.",
+    "A written promise not to sell is a good sign. Check the rest of the policy for sharing that is not called selling."),
+  mitigation("cellar.no-share", "cellar", 0, re(`\\bwe ${NOT} share\\b`),
+    "This clause promises not to share your data with other companies.",
+    "Data that stays with one company has fewer places to leak from. Check the rest of the policy for exceptions."),
+  mitigation("cellar.consent", "cellar", 1, re(`\\bonly with your (?:explicit |prior )?consent\\b`),
+    "Your data is shared only if you agree to it first.",
+    "You stay in control: nothing is passed on unless you say yes. Read what you are agreeing to before you do."),
+  mitigation("portraits.no-track", "portraits", 0, re(`\\bwe ${NOT} (?:track|profile|build profiles)\\b`),
+    "This clause promises not to track or profile you.",
+    "Not being watched across other sites keeps more of your life private. Check the cookie settings too."),
+  mitigation("portraits.opt-out", "portraits", 1, re(`\\byou (?:can|may|will be able to) (?:always |still )?(?:opt[- ]out|turn (?:this|these|it) off|decline)\\b`),
+    "You can turn this tracking off.",
+    "Tracking you can switch off is less of a worry, but it may be on until you change the setting."),
+  mitigation("vault.reminder", "vault", 1, re(`\\b(?:remind|notify|email|tell) you\\b${G}{0,40}\\bbefore\\b`, `\\bsend you (?:a |an )?(?:reminder|notice|email)\\b${G}{0,40}\\bbefore\\b`),
+    "The company promises to remind you before it charges you again.",
+    "A reminder gives you time to cancel before you pay for another period."),
+  mitigation("locked.delete-anytime", "locked-door", 0, re(`\\byou (?:can|may|are free to|will be able to) (?:always )?(?:delete|close|cancel)\\b${G}{0,60}\\b(?:at any time|anytime|instantly|immediately)\\b`),
+    "You can cancel or delete your account whenever you like.",
+    "Being free to leave at any time means the company cannot hold you to a service you no longer want."),
+  mitigation("court.opt-out", "court", 1, re(`\\bopt[- ]out of (?:this |the )?arbitration\\b`),
+    "You can opt out of arbitration and keep your right to go to court.",
+    "Opting out usually has a deadline, so act within the time the terms give you."),
+  mitigation("mirror.you-own", "mirror", 1, re(`\\byou (?:will |always |still )?(?:retain|keep) (?:all )?(?:(?:of )?your )?(?:ownership|rights)\\b`, `\\byou (?:still |always )?own your content\\b`),
+    "You keep ownership of what you post.",
+    "Owning your content means you can still use it, though the licence you give the company still applies."),
+  mitigation("trapdoor.carve-out", "trapdoor", 1, re(`\\bnothing in (?:these|this)\\b${G}{0,60}\\b(?:limits?|excludes?|restricts?)\\b${G}{0,40}\\bliability\\b`),
+    "The company's limits on liability do not cover everything; some harms are left out of them.",
+    "Limits that leave out serious harms, such as fraud, keep the company answerable when it matters most."),
+  mitigation("stairs.advance-notice", "stairs", 1, re(`\\b(?:will|we'll|shall) (?:always )?(?:notify|tell|email|inform|give) you\\b${G}{0,60}\\b\\d+ days\\b`, `\\bat least \\d+ days'? notice\\b`),
+    "The company promises to tell you about changes before they apply.",
+    "Notice gives you time to read the new terms and leave if you do not like them."),
 ]);
 
 /** The eight exception markers (R3.8, PLAN_DECISIONS.md C10.2), on word boundaries. */

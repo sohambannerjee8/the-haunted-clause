@@ -30,6 +30,8 @@ interface RoomReading {
   readonly rule: Rule;
   readonly mitigationId: string | null;
   readonly cancelledMitigationId: string | null;
+  /** The applied mitigation, whose texts replace the rule's (R4.5, C13). */
+  readonly mitigation?: Mitigation;
 }
 
 /** Replace [start, end) with spaces of the same length, so offsets do not move (R3.11). */
@@ -59,7 +61,7 @@ function readRoom(room: RoomId, text: string): RoomReading | null {
   if (applying !== null) {
     // R3.2, R3.6: lower to the mitigation's level unless already lower.
     if (applying.level < raw) {
-      return { room, severity: applying.level, rule, mitigationId: applying.id, cancelledMitigationId: null };
+      return { room, severity: applying.level, rule, mitigationId: applying.id, cancelledMitigationId: null, mitigation: applying };
     }
     return { room, severity: raw, rule, mitigationId: null, cancelledMitigationId: null };
   }
@@ -102,7 +104,8 @@ export function classifyClause(clause: Clause, input: string): Finding | null {
     ruleId: best.rule.id,
     mitigationId: best.mitigationId,
     cancelledMitigationId: best.cancelledMitigationId,
-    explanation: best.rule.explanation,
-    whyItMatters: best.rule.whyItMatters,
+    // A reassurance that lowered the finding is described as a reassurance (R4.5, C13).
+    explanation: (best.mitigation ?? best.rule).explanation,
+    whyItMatters: (best.mitigation ?? best.rule).whyItMatters,
   };
 }

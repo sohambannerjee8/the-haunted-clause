@@ -129,7 +129,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Lights on mode has the `h2` "Lights on", and every room heading is an `h3` (R19.3).
   - axe passes in both modes.
   - _Requirements: 8.3, 19.1_
-- [ ] 28.3 Reassurance line in Lights on mode (PLAN_DECISIONS.md C13)
+- [x] 28.3 Reassurance line in Lights on mode (PLAN_DECISIONS.md C13)
   - Extend `LightsOnList.test.tsx` first: a finding with `mitigationId` shows "A reassurance in this clause lowers its severity.", and one without does not; on the mild sample the mitigated Cellar finding shows the mitigation's explanation.
   - Then add the line to `LightsOnList.tsx`.
   - _Requirements: 8.2, 8.3_

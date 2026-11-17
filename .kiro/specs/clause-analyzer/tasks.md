@@ -147,7 +147,7 @@ Tasks 11–16 of the build plan (PLAN_DECISIONS.md section D). Each task is test
     - new rules: cancellation only by phone or in person (Locked Door, severity 3); disclosure in a merger or acquisition (Cellar, severity 2); open-ended data retention (Cellar, severity 2).
   - Then change the rule table, update the design's rule table and the rule count in `rules.test.ts`, and keep the sample bands (C7).
   - _Requirements: 2.1, 2.2, 2.7, 11.4–11.6_
-- [ ] 16.5 Mitigation texts (user request after Gate 4, PLAN_DECISIONS.md C13)
+- [x] 16.5 Mitigation texts (user request after Gate 4, PLAN_DECISIONS.md C13)
   - Write `mitigation-texts.test.ts` first: every mitigation has an explanation and a why-it-matters text of 1 to 400 characters; for each mitigation, a clause it lowers gives a finding with that mitigation's texts, not the rule's; "We do not sell your data." reads as a promise not to sell; a cancelled mitigation keeps the rule's texts.
   - Change the R4.5 test in `classifier.test.ts` with the requirement: rule texts for findings with no applied mitigation.
   - Then add the texts to `MITIGATIONS` in `rules.ts` and use them in `classifier.ts`. Check that `explanations.test.ts` (the committed `sample-explanations.json`) and the sample bands still pass.

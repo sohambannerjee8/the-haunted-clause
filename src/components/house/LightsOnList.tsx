@@ -32,6 +32,7 @@ export function LightsOnList({ model }: { model: RoomModel<ExplainedFinding>[] }
                       <strong>Why it matters: </strong>
                       <span>{f.whyItMatters}</span>
                     </p>
+                    {f.mitigationId && <p className="mt-1">A reassurance in this clause lowers its severity.</p>}
                     <p className="mt-1 text-sm">
                       <span>{f.source === "llm" ? "Medium's reading" : "Rule reading"}</span>
                     </p>
