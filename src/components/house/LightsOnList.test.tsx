@@ -56,6 +56,29 @@ describe("LightsOnList (R8.2–R8.4, R13.1)", () => {
       expect(el.getAttribute("style") ?? "").not.toMatch(/animation|transition/i);
     }
   });
+  it("shows the reassurance line for a mitigated finding, and only there (R8.2, C13)", () => {
+    const { model } = modelFor("mild");
+    const { container } = render(<LightsOnList model={model} />);
+    const all = model.flatMap((m) => m.items);
+    const mitigated = all.filter((f) => f.mitigationId !== null);
+    expect(mitigated.length).toBeGreaterThan(0);
+    expect(all.length).toBeGreaterThan(mitigated.length);
+    for (const f of all) {
+      const li = container.querySelector(`li[data-finding-id="${f.id}"]`) as HTMLElement;
+      const line = within(li).queryByText("A reassurance in this clause lowers its severity.");
+      if (f.mitigationId) expect(line, f.id).not.toBeNull();
+      else expect(line, f.id).toBeNull();
+    }
+  });
+  it("mild sample: the mitigated Cellar finding shows the mitigation's explanation, not the rule's (C13)", () => {
+    const { model } = modelFor("mild");
+    render(<LightsOnList model={model} />);
+    const cellar = model.find((m) => m.room.id === "cellar")!.items[0];
+    expect(cellar.mitigationId).toBe("cellar.no-sell");
+    const section = screen.getByRole("region", { name: "The Cellar" });
+    expect(within(section).getByText(/promises not to sell/i)).toBeInTheDocument();
+    expect(within(section).queryByText(/lets the company sell/i)).toBeNull();
+  });
   it("starts with the Not legal advice notice", () => {
     const { container } = render(<LightsOnList model={modelFor("mild").model} />);
     expect(container.firstElementChild!.textContent).toMatch(/^Not legal advice/);

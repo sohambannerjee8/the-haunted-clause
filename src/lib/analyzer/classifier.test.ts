@@ -90,9 +90,11 @@ describe("classifyClause rules", () => {
     expect(f.quote).toBe("We may sell your data.");
   });
 
-  it("takes the explanation and why-it-matters texts from the rule named by ruleId (R4.5)", () => {
+  it("takes the explanation and why-it-matters texts from the rule named by ruleId when no mitigation applies (R4.5)", () => {
+    // Mitigated findings take the mitigation's texts instead (C13): mitigation-texts.test.ts.
     for (const e of POSITIVE_EXAMPLES) {
       const f = classify(e.text)!;
+      expect(f.mitigationId, e.text).toBeNull(); // so this loop checks every positive example
       const r = RULES.find((x) => x.id === f.ruleId)!;
       expect(f.explanation).toBe(r.explanation);
       expect(f.whyItMatters).toBe(r.whyItMatters);
