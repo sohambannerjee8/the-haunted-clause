@@ -134,3 +134,14 @@ main:focus-visible {
   display: block;
   overflow: visible;
 }
+
+/* Detail panel size: fits the viewport and scrolls inside (R12.3). */
+.hc-dialog {
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+.hc-quote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

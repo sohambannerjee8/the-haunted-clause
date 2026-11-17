@@ -70,8 +70,8 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - The score equals `hauntScore`.
   - _Requirements: 4, 5, 7, 15.1, 15.3, 19.3_
 
-- [ ] 26. Ghost detail panel
-- [ ] 26.1 Write `DetailDialog.test.tsx`, then `DetailDialog`
+- [x] 26. Ghost detail panel
+- [x] 26.1 Write `DetailDialog.test.tsx`, then `DetailDialog`
   - Tests:
     - All fields are shown.
     - Both mitigation notes appear when they apply.
@@ -80,11 +80,11 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - Close returns focus to the opener.
     - The dialog title is an `h2` inside the dialog (R19.3).
   - _Requirements: 6.1–6.7, 13.1_
-- [ ] 26.2 E2E in `flow.spec.ts`: clicking a ghost opens the panel
+- [x] 26.2 E2E in `flow.spec.ts`: clicking a ghost opens the panel
   - The quote equals `text.slice(start, end)` exactly, with the right source badge, for at least one finding per sample.
   - Escape closes the panel.
   - _Requirements: 6.2, 6.6_
-- [ ] 26.3 Write `sound.test.ts` with a mocked `AudioContext`, then `src/lib/ui/sound.ts`
+- [x] 26.3 Write `sound.test.ts` with a mocked `AudioContext`, then `src/lib/ui/sound.ts`
   - Tests: no context before `enable()`; pitch per severity; duration ≤ 600 ms.
   - Wire the call into the dialog open path.
   - _Requirements: 11.1, 11.3, 11.4_

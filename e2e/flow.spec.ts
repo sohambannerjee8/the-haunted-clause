@@ -155,3 +155,52 @@ test.describe("the house matches the analyzer (R4, R5, R7, R15, R19.3)", () => {
     expect([...levels].sort()).toEqual([0, 1, 2, 3]);
   });
 });
+
+// --- Task 26.2: clicking a ghost opens the panel with the exact quote and the right badge. ---
+test.describe("the detail panel (R6.1, R6.2, R6.6, R15.1)", () => {
+  for (const m of SAMPLE_META) {
+    test(`${m.id}: one ghost per room opens with the exact quote and its badge; Escape closes it`, async ({ page }) => {
+      const want = expected(m.id);
+      await page.goto("/");
+      await page.getByRole("button", { name: `Open this house: ${m.company}` }).click();
+      await expect(page.getByRole("heading", { level: 2, name: "Inside the house" })).toBeVisible();
+      // The first finding of each non-quiet room.
+      const firsts = ROOMS.map((r) => want.findings.find((f) => f.room === r.id)).filter((f) => f !== undefined);
+      expect(firsts.length).toBeGreaterThan(0);
+      for (const f of firsts) {
+        const ghost = page.locator(`button.hc-ghost[data-finding-id="${f.id}"]`);
+        await ghost.click();
+        const dialog = page.getByRole("dialog");
+        await expect(dialog).toBeVisible();
+        await expect(dialog.getByRole("heading", { level: 2 })).toHaveText(ROOMS.find((r) => r.id === f.room)!.name);
+        const quote = await dialog.locator("blockquote").evaluate((el) => el.textContent);
+        expect(quote).toBe(want.sample.text.slice(f.start, f.end));
+        expect(quote).toBe(f.quote);
+        await expect(dialog.getByText(f.source === "llm" ? "Medium's reading" : "Rule reading", { exact: true })).toBeVisible();
+        await expect(dialog.getByText(f.explanation, { exact: true })).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(dialog).toBeHidden();
+        await expect(ghost).toBeFocused();
+      }
+    });
+  }
+
+  test("pasted text shows rule texts and Rule reading badges (llm-explainer R3.3)", async ({ page }) => {
+    const r = analyze(PASTED);
+    if (!r.ok) throw new Error("too long");
+    expect(r.findings.length).toBeGreaterThan(0);
+    await page.goto("/");
+    await page.getByLabel("Paste a Terms & Conditions or privacy policy").fill(PASTED);
+    await page.getByRole("button", { name: "Analyze" }).click();
+    for (const f of r.findings) {
+      await page.locator(`button.hc-ghost[data-finding-id="${f.id}"]`).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog.locator("blockquote")).toHaveText(PASTED.slice(f.start, f.end));
+      await expect(dialog.getByText(f.explanation, { exact: true })).toBeVisible();
+      await expect(dialog.getByText(f.whyItMatters, { exact: true })).toBeVisible();
+      await expect(dialog.getByText("Rule reading", { exact: true })).toBeVisible();
+      await dialog.getByRole("button", { name: "Close" }).click();
+      await expect(dialog).toBeHidden();
+    }
+  });
+});
