@@ -176,6 +176,7 @@ test.describe("the detail panel (R6.1, R6.2, R6.6, R15.1)", () => {
         const quote = await dialog.locator("blockquote").evaluate((el) => el.textContent);
         expect(quote).toBe(want.sample.text.slice(f.start, f.end));
         expect(quote).toBe(f.quote);
+        expect(quote, "no clause heading in the quote (C14.6)").not.toMatch(/^\d+\.\s/);
         await expect(dialog.getByText(f.source === "llm" ? "Medium's reading" : "Rule reading", { exact: true })).toBeVisible();
         await expect(dialog.getByText(f.explanation, { exact: true })).toBeVisible();
         await page.keyboard.press("Escape");

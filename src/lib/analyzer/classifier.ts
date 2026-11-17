@@ -76,6 +76,32 @@ function readRoom(room: RoomId, text: string): RoomReading | null {
   return { room, severity: raw, rule, mitigationId: null, cancelledMitigationId: null };
 }
 
+const MAX_HEADING = 60;
+const BARE_NUMBER = /^(?:\d{1,3}|[a-z]|[ivx]{1,4})[.)]$/i;
+
+/**
+ * If [s, e) starts with a heading line (at most 60 characters, then a line break and more text, not
+ * ending in sentence punctuation unless it is only a list number), return the index of the first
+ * non-whitespace character after it. Otherwise return s.
+ */
+function skipHeading(input: string, s: number, e: number): number {
+  let nl = -1;
+  for (let i = s; i < e && i - s <= MAX_HEADING + 1; i++) {
+    const c = input[i];
+    if (c === "\n" || c === "\r") {
+      nl = i;
+      break;
+    }
+  }
+  if (nl === -1) return s;
+  const line = input.slice(s, nl).trimEnd();
+  if (line.length === 0 || line.length > MAX_HEADING) return s;
+  if (/[.;:?!]$/.test(line) && !BARE_NUMBER.test(line)) return s;
+  let next = nl;
+  while (next < e && WS.test(input[next])) next++;
+  return next < e ? next : s;
+}
+
 export function classifyClause(clause: Clause, input: string): Finding | null {
   // Step 1: trim to the non-whitespace span (R2.3, R4.2).
   let s = clause.start;
@@ -83,6 +109,7 @@ export function classifyClause(clause: Clause, input: string): Finding | null {
   while (s < e && WS.test(input[s])) s++;
   while (e > s && WS.test(input[e - 1])) e--;
   if (s === e) return null;
+  s = skipHeading(input, s, e); // R4.2, C14.6: leave a heading line out of the quote and the reading
   const text = input.slice(s, e);
 
   // Steps 2–4: read every room in order; keep the highest severity, ties to the earlier room (R2.4).
