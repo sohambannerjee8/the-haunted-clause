@@ -89,7 +89,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Wire the call into the dialog open path.
   - _Requirements: 11.1, 11.3, 11.4_
 
-- [ ] 27. Roving-tabindex keyboard navigation (C1.8)
+- [x] 27. Roving-tabindex keyboard navigation (C1.8)
 - [x] 27.1 Write `roving.test.ts` and `roving.property.test.ts` (U3), then `src/lib/ui/roving.ts`
   - _Requirements: 9.3_
 - [x] 27.2 Extend `Room.test.tsx`, then wire `Room` to `nextIndex`
@@ -98,7 +98,7 @@ Each task is test first: write the failing test, run it and see it fail, write t
     - Arrows, Home and End move focus, wrapping around.
     - The last-focused ghost keeps `tabindex="0"`.
   - _Requirements: 9.1–9.4_
-- [ ] 27.3 E2E `keyboard.spec.ts` on the terrible sample
+- [x] 27.3 E2E `keyboard.spec.ts` on the terrible sample
   - Tab visits the 8 rooms in order, with one stop each.
   - Arrows, Home and End reach every ghost in each room.
   - A focused ghost has a computed 3 px solid candle-amber (`rgb(242, 181, 68)`) outline with a 2 px offset (R5.6), and so does every other control reached by Tab on both screens (R19.4).
