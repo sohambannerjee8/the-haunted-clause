@@ -19,6 +19,25 @@ export function buildHouseModel<F extends Finding>(findings: readonly F[]): Room
   });
 }
 
+/** The most ghosts a room draws before it offers "+N more" (PLAN_DECISIONS.md C22.2). */
+export const ROOM_GHOST_CAP = 12;
+
+/**
+ * The items a collapsed room draws: all of them up to the cap; above it, the `cap` most severe,
+ * ties going to the earlier finding, shown in input order. Lights on mode never uses this.
+ */
+export function capRoom<F extends Finding>(items: readonly F[], cap = ROOM_GHOST_CAP): { shown: readonly F[]; hidden: number } {
+  if (items.length <= cap) return { shown: items, hidden: 0 };
+  const keep = new Set(
+    items
+      .map((f, i) => ({ f, i }))
+      .sort((a, b) => b.f.severity - a.f.severity || a.i - b.i)
+      .slice(0, cap)
+      .map((x) => x.f),
+  );
+  return { shown: items.filter((f) => keep.has(f)), hidden: items.length - cap };
+}
+
 export const BANDS = ["Mostly quiet", "Uneasy", "Haunted", "Run"] as const;
 export type Band = (typeof BANDS)[number];
 

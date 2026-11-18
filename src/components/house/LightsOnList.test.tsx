@@ -83,4 +83,14 @@ describe("LightsOnList (R8.2–R8.4, R13.1)", () => {
     const { container } = render(<LightsOnList model={modelFor("mild").model} />);
     expect(container.firstElementChild!.textContent).toMatch(/^Not legal advice/);
   });
+  it("lists every finding of a room with more than 12 (C22.2: the cap is for the house only)", () => {
+    const text = Array.from({ length: 20 }, (_, i) => `We use cookies to remember your choices on screen ${i + 1}.`).join("\n\n");
+    const r = analyze(text);
+    if (!r.ok) throw new Error("too long");
+    const model = buildHouseModel(mergeFindings(r.findings, []));
+    expect(model[1].items).toHaveLength(20);
+    render(<LightsOnList model={model} />);
+    const section = screen.getByRole("region", { name: "The Watching Portraits" });
+    for (let i = 1; i <= 20; i++) expect(within(section).getByText(`We use cookies to remember your choices on screen ${i}.`)).toBeInTheDocument();
+  });
 });

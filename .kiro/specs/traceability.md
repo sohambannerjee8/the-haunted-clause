@@ -181,6 +181,8 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R4.4 | `Room.test.tsx`, `flow.spec.ts` (per-room counts) | 25.2, 25.3 |
 | HU-R4.5 | `Room.test.tsx` (section and group accessible names, quiet rooms) | 25.2 |
 | HU-R4.6 | `House.test.tsx` (frame `aria-hidden`) | 25.2 |
+| HU-R4.7 | `House.test.tsx` (`items-start`), `crowded.spec.ts` (no stretched rows at 1440 and 360 px) | 32.3 |
+| HU-R4.8 | `houseModel.test.ts` (`capRoom`), `houseModel.property.test.ts` (U5), `Room.test.tsx` (crowded room), `LightsOnList.test.tsx` (every finding), `crowded.spec.ts` | 32.3 |
 | HU-R5.1 | `Ghost.test.tsx` | 25.2 |
 | HU-R5.2 | `Ghost.test.tsx`, `houseModel.property.test.ts` (U4) | 25.1, 25.2 |
 | HU-R5.3 | `Ghost.test.tsx` (numeral) | 25.2 |
@@ -209,6 +211,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R9.5 | `keyboard.spec.ts` (Tab to the next room) | 27.3 |
 | HU-R9.6 | `keyboard.spec.ts` (Enter, Escape, focus return) | 27.3 |
 | HU-R9.7 | `keyboard.spec.ts` (tab order) | 27.3 |
+| HU-R9.8 | `Room.test.tsx` (button in the roving set), `crowded.spec.ts` (Enter, Space, Tab leaves the room) | 32.3 |
 | HU-R10.1 | `motion.spec.ts` (level 3 animated) | 30.1 |
 | HU-R10.2 | `motion.spec.ts` (reduced motion) | 30.1 |
 | HU-R10.3 | `motion.spec.ts` (no running repeating animation on any element), `HauntedApp.test.tsx` (`MotionConfig`) | 30.1 |

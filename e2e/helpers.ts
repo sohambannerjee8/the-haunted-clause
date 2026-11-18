@@ -14,6 +14,13 @@ export const JAPANESE =
   "サブスクリプションは毎年自動的に更新され、アカウント設定からいつでも解約できます。";
 export const NO_RISK = "Thanks for reading our policy. We hope you enjoy the app and have a lovely day.";
 export const ONLY_WISPS = "We do not sell your personal information.";
+/** Made up for the crowded-room tests (C22): 40 Watching Portraits findings and 3 in the Cellar. */
+export const CROWDED = [
+  "Made-up crowded-room test policy.",
+  ...Array.from({ length: 26 }, (_, i) => `We use cookies to remember your choices on screen ${i + 1}.`),
+  ...Array.from({ length: 14 }, (_, i) => `We show interest-based ads in section ${i + 1} of the app.`),
+  ...Array.from({ length: 3 }, (_, i) => `We may share your data with our affiliates for purpose ${i + 1}.`),
+].join("\n\n");
 
 // Guard the fixtures themselves, so a rule change cannot silently empty a state.
 const ok = (t: string) => {
@@ -26,6 +33,7 @@ if (!ok(ONLY_WISPS).findings.length || ok(ONLY_WISPS).findings.some((f) => f.sev
 if (!ok(SPANISH).likelyNonEnglish) throw new Error("SPANISH fixture is not flagged");
 if (!ok(JAPANESE).likelyNonEnglish) throw new Error("JAPANESE fixture is not flagged");
 if (ok(RISKY).findings.length === 0) throw new Error("RISKY fixture has no findings");
+if (ok(CROWDED).findings.filter((f) => f.room === "portraits").length !== 40) throw new Error("CROWDED fixture does not give 40 Portraits findings");
 
 /** Wait until every one-off animation (the 200 ms fades) has finished; repeating ghost motion is ignored. */
 export async function waitForFades(page: Page) {

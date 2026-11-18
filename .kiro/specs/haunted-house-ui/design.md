@@ -315,3 +315,11 @@ Coverage target: 80% of lines for `src/` outside the analyzer and llm folders, e
 | Render error in the house | Error boundary message |
 | Medium fails or is limited | The rule reading stays, with a short message |
 | `llmAvailable` false | No opt-in button, and the "no medium" line |
+
+## Crowded rooms (PLAN_DECISIONS.md C22)
+
+- The house grid uses `items-start`, so each room is as tall as its own content (R4.7).
+- `capRoom(items, cap = 12)` in `src/lib/ui/houseModel.ts` returns the items a collapsed room draws: all of them up to 12; above that, the 12 most severe, ties to the earlier finding, kept in input order, plus the number hidden. Property U5 (1,000 runs) checks the count, the order and that no hidden finding is more severe than, or an earlier tie of, a shown one (R4.8).
+- `Room.tsx` draws `capRoom(...).shown` and, when anything is hidden, a `button[data-room-toggle]` after the ghost group: visible text "+N more" or "Show fewer", accessible name "+N more ghosts in <room>" or "Show fewer ghosts in <room>", `aria-expanded`, `aria-controls` pointing at the group. It is the last index in the room's roving set, so arrows, Home and End reach it and the room stays one Tab stop; toggling keeps focus on it (R9.8). The room's accessible name and status line come from `roomLabel` and `roomStatus`, which count every finding.
+- Lights on mode renders `model.items`, never `capRoom`, so it lists every finding.
+- Tests: `houseModel.test.ts`, `houseModel.property.test.ts` (U5), `Room.test.tsx`, `House.test.tsx`, `LightsOnList.test.tsx`, and `e2e/crowded.spec.ts` (made-up 40-ghost `CROWDED` text at 1440 and 360 px).

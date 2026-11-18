@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ROOMS } from "../analyzer/rooms";
 import type { Finding, RoomId, Severity } from "../analyzer/types";
-import { bandFor, buildHouseModel, ghostLabel, roomLabel, roomStatus, severityLabel } from "./houseModel";
+import { bandFor, buildHouseModel, capRoom, ghostLabel, ROOM_GHOST_CAP, roomLabel, roomStatus, severityLabel } from "./houseModel";
 
 const f = (start: number, room: RoomId, severity: Severity): Finding => ({
   id: `c-${start}`,
@@ -75,5 +75,31 @@ describe("bandFor (R7.1)", () => {
     [97, "Run"],
   ])("%i is %s", (score, band) => {
     expect(bandFor(score)).toBe(band);
+  });
+});
+
+describe("capRoom (C22.2)", () => {
+  it("caps at 12", () => {
+    expect(ROOM_GHOST_CAP).toBe(12);
+  });
+  it("shows every item when there are 12 or fewer", () => {
+    const items = Array.from({ length: 12 }, (_, i) => f(i * 10, "portraits", 1));
+    expect(capRoom(items)).toEqual({ shown: items, hidden: 0 });
+  });
+  it("keeps the 12 most severe, ties in input order, and shows them in input order", () => {
+    // 10 at severity 1, then 5 at severity 3, then 5 at severity 2: keep all five 3s, all five 2s, and the first two 1s.
+    const items = [
+      ...Array.from({ length: 10 }, (_, i) => f(i, "portraits", 1)),
+      ...Array.from({ length: 5 }, (_, i) => f(100 + i, "portraits", 3)),
+      ...Array.from({ length: 5 }, (_, i) => f(200 + i, "portraits", 2)),
+    ];
+    const { shown, hidden } = capRoom(items);
+    expect(hidden).toBe(8);
+    expect(shown.map((x) => x.start)).toEqual([0, 1, 100, 101, 102, 103, 104, 200, 201, 202, 203, 204]);
+  });
+  it("the room's accessible name still counts every finding", () => {
+    const items = Array.from({ length: 40 }, (_, i) => f(i, "portraits", 1));
+    const m = buildHouseModel(items)[1];
+    expect(roomLabel(m)).toBe("The Watching Portraits, 40 ghosts, worst: mild concern");
   });
 });

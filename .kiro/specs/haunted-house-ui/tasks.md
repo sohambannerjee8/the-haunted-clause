@@ -231,6 +231,11 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - **Done when** these tests pass and the full suites, type-check, lint and `check:trace` are clean; commit, push and log the push (C11.1). No gate in this task.
   - _Requirements: 17.1–17.5_
 
+- [x] 32.3 Crowded rooms (user request after the real-policy audit, PLAN_DECISIONS.md C22)
+  - Tests first: `capRoom` in `houseModel.test.ts` and property U5 (1,000 runs) in `houseModel.property.test.ts`; the crowded-room cases in `Room.test.tsx`; `items-start` in `House.test.tsx`; every finding in `LightsOnList.test.tsx`. See them fail.
+  - Then `capRoom` and `ROOM_GHOST_CAP` in `houseModel.ts`, the "+N more" button in `Room.tsx`, and `items-start` on the house grid. Add `e2e/crowded.spec.ts` with the made-up `CROWDED` text at 1440 and 360 px: no stretched rows, the button by mouse and keyboard, no horizontal scroll, axe clean.
+  - The sample scores stay 14, 59 and 97 (no sample room has more than 4 findings).
+  - _Requirements: 4.4, 4.7, 4.8, 9.8_
 - [x] 33. Performance, clean clone and Gate 5 (Phase 5)
 - [x] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
   - **Read first:** PLAN.md section 2 and `.kiro/steering/tech.md` "Performance budget"; requirements R17.1 and R18; traceability rows HU-R17.1, HU-R18.1 and HU-R18.2.

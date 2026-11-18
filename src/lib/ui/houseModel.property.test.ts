@@ -4,7 +4,7 @@ import { analyze } from "../analyzer/analyze";
 import { policyLike } from "../analyzer/arbitraries.test-util";
 import { ROOMS } from "../analyzer/rooms";
 import type { Finding, RoomId, Severity } from "../analyzer/types";
-import { BANDS, bandFor, buildHouseModel, ghostLabel, severityLabel } from "./houseModel";
+import { BANDS, bandFor, buildHouseModel, capRoom, ghostLabel, ROOM_GHOST_CAP, severityLabel } from "./houseModel";
 
 const RUNS = { numRuns: 1000 };
 const ROOM_IDS = ROOMS.map((r) => r.id);
@@ -84,6 +84,28 @@ describe("houseModel properties", () => {
           }
           // Button order is item order, which is input order.
           for (let i = 1; i < r.items.length; i++) if (r.items[i - 1].start >= r.items[i].start) return false;
+        }
+        return true;
+      }),
+      RUNS,
+    );
+  });
+  it("U5: capRoom shows min(n, 12) items in input order, never hiding a more severe one or an earlier tie (C22.2)", () => {
+    fc.assert(
+      fc.property(anyFindings, (findings) => {
+        for (const m of buildHouseModel(findings)) {
+          const { shown, hidden } = capRoom(m.items);
+          const n = m.items.length;
+          if (shown.length !== Math.min(n, ROOM_GHOST_CAP) || hidden !== n - shown.length) return false;
+          const pos = shown.map((x) => m.items.indexOf(x));
+          if (pos.some((p, k) => p < 0 || (k > 0 && p <= pos[k - 1]))) return false; // a subsequence, in input order
+          const kept = new Set(shown);
+          for (const out of m.items.filter((x) => !kept.has(x))) {
+            for (const inn of shown) {
+              if (out.severity > inn.severity) return false;
+              if (out.severity === inn.severity && m.items.indexOf(out) < m.items.indexOf(inn)) return false;
+            }
+          }
         }
         return true;
       }),

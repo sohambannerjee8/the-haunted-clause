@@ -82,9 +82,11 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 1. THE house SHALL show all eight rooms in room order, each with its name as a heading and its clause type as text.
 2. WHILE the viewport is narrower than 768 px, THE house SHALL lay the rooms out in 2 columns and 4 rows; WHILE it is 768 px or wider, in 4 columns and 2 rows. The visual order SHALL match the DOM order.
 3. WHEN a room has no findings, THE room SHALL be drawn calm, with no ghost art, and SHALL show the visible text "Quiet".
-4. WHEN a room has findings, THE room SHALL show one ghost or wisp per finding, in input order, and a visible count such as "3 ghosts" (wisps counted separately as "1 checked, looks fine").
+4. WHEN a room has findings, THE room SHALL show one ghost or wisp per finding, in input order (up to the cap in criterion 8), and a visible count of every finding such as "3 ghosts" (wisps counted separately as "1 checked, looks fine").
 5. EACH room SHALL have an accessible name made of its room name and its status: for example "The Cellar, 3 ghosts, worst: serious concern", "The Mirror Room, 1 checked, looks fine" or "The Trapdoor, quiet".
 6. THE decorative house frame SHALL be hidden from assistive technology (`aria-hidden="true"`) and SHALL carry no information that is not also in text.
+7. THE rooms in one row of the house SHALL be aligned to the top of the row, so a room with many ghosts grows alone and does not stretch the other rooms in its row (PLAN_DECISIONS.md C22.1).
+8. WHEN a room has more than 12 findings, THE room SHALL draw its 12 most severe (ties going to the earlier finding), in input order, and a button "+N more" (N being the number not drawn) that expands the room in place to every finding and changes to "Show fewer", which collapses it again; the button SHALL carry `aria-expanded`, and the room's accessible name and visible count SHALL still count every finding. Lights on mode SHALL list every finding (C22.2).
 
 ### Requirement 5: Ghosts and wisps
 
@@ -148,6 +150,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 5. Tab and Shift+Tab SHALL move to the next or previous room (or other control), not the next ghost.
 6. Enter and Space SHALL open the detail panel (Requirement 6); Escape SHALL close it and return focus to the same ghost.
 7. ALL controls on both screens SHALL be reachable and usable with the keyboard alone, in a logical order: skip link, toolbar, score, rooms in room order, footer.
+8. WHEN a room has a "+N more" or "Show fewer" button, THE button SHALL be the last stop in that room's roving set (after its ghosts, reached with the arrows, Home and End, still one Tab stop for the room), Enter and Space SHALL toggle it, and focus SHALL stay on it after toggling (C22.3).
 
 ### Requirement 10: Motion
 

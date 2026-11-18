@@ -22,4 +22,8 @@ describe("House (R4.1, R4.6)", () => {
     const grid = container.querySelector("[data-house-grid]");
     expect(grid).toHaveClass("grid-cols-2", "md:grid-cols-4");
   });
+  it("aligns rooms to the top of their row, so a crowded room does not stretch its neighbours (C22.1)", () => {
+    const { container } = render(<House model={buildHouseModel([])} onOpen={() => {}} />);
+    expect(container.querySelector("[data-house-grid]")).toHaveClass("items-start");
+  });
 });
