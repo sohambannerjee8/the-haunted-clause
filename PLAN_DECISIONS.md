@@ -375,3 +375,7 @@ Written from generic example sentences only; no real policy text is in the repos
 2. A room with more than 12 findings draws its 12 most severe (ties to the earlier finding, shown in input order) and a "+N more" button that expands the room in place and becomes "Show fewer". The room's accessible name and visible count still count every finding. Lights on mode lists every finding.
 3. The button is the last stop in the room's roving set (arrows, Home, End), Enter and Space toggle it, focus stays on it, and Tab still leaves the room.
 4. New criteria: haunted-house-ui R4.7, R4.8 and R9.8, with R4.4 noting the cap (239 criteria). Task: haunted-house-ui 32.3. E2E: `e2e/crowded.spec.ts` with a made-up 40-ghost text. The sample scores are unchanged, because no sample room has more than four findings.
+## C23. Closing changes (approved by the user after C22, 17 November 2026)
+1. **One test timeout:** "P6 over the cap" in `src/lib/analyzer/splitter.property.test.ts` gets a 15-second timeout instead of Vitest's 5-second default. It had timed out twice (5,371 ms and 5,686 ms) when coverage ran alongside lint and the E2E suite; on its own it takes about 1 s, or about 4.4 s under coverage. `numRuns` stays 1,000 and every assertion is unchanged: this changes how long it may take, not what it checks. No other test's timeout changes.
+2. **Screenshots:** `npm run screenshots` is re-run so `docs/screenshots/` matches the current app after C22 (rooms aligned to the top of their row).
+After this, the builder's work is finished unless the user reports a problem.

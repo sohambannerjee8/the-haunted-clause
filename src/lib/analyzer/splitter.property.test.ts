@@ -33,7 +33,9 @@ describe("splitter properties", () => {
     fc.assert(fc.property(anyInput, p6Holds), RUNS);
   });
 
-  it("P6 over the cap: the same holds for inputs longer than 50,000 (R1.12)", () => {
+  // 15 s instead of Vitest's 5 s default (PLAN_DECISIONS.md C23.1): 1,000 inputs over 50,000 characters each
+  // took up to 5.7 s under coverage when other suites ran at the same time. Same runs, same assertions.
+  it("P6 over the cap: the same holds for inputs longer than 50,000 (R1.12)", { timeout: 15_000 }, () => {
     fc.assert(fc.property(overCapString, p6Holds), RUNS);
   });
 

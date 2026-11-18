@@ -1126,3 +1126,8 @@ No real company name or policy text is recorded here; they stay in the git-ignor
 - **Samples:** no analyzer file changed, and no sample room has more than four findings, so the scores stay 14, 59 and 97 and no sample room shows the button.
 - **After:** `/tmp/hc-crowded/after-1440.png`, `after-360.png`, `after-expanded-1440.png` and `after-expanded-360.png`. Collapsed, the crowded room is 410 px at 1440 px and its row-mates 176 px; at 360 px, 509 px and 218 px. Expanded to all 40: 754 px and 1,181 px. No horizontal scroll at either width.
 - The committed review screenshots in `docs/screenshots/` were taken before this change; rooms in the sample houses are now as tall as their own content, so those images no longer match exactly. They were not regenerated.
+
+### Closing changes (PLAN_DECISIONS.md C23)
+- **Timeout:** "P6 over the cap" now passes `{ timeout: 15_000 }` to `it`, with a comment citing C23.1. `git diff` shows only that line and the comment; `RUNS` (`numRuns: 1000`) and `p6Holds` are unchanged. On its own it passed in 988 ms. Full `npm run test:coverage`: 74 files, 883 passed, lines 96.97%.
+- **Screenshots:** `CI=1 npm run screenshots` (3 passed, fresh no-key build) rewrote the 13 images; 8 changed (the five house views at 1440 px, the three sample houses at 360 px, the detail panel at 1440 px and the motion-on image), and the input, Lights on and detail-at-360 images came out identical. Checked by eye: `house-average-1440.png` shows each room only as tall as its content.
+- The builder's work is finished here unless the user reports a problem.
