@@ -2,6 +2,16 @@
 
 Paste any Terms & Conditions or privacy policy and it becomes a haunted house. Each room is a type of clause, and the worse the clause, the scarier the ghost. Built for Kiroween 2026 (category: Costume Contest).
 
+**Try it:** https://the-haunted-clause.vercel.app (no login, no key needed)
+
+**Demo video (2:14):** https://youtu.be/TypYIh6JZeo
+
+**Devpost:** https://devpost.com/software/the-haunted-clause
+
+**How I built it:** https://dev.to/sohambannerjee8/i-turned-privacy-policies-into-a-haunted-house-with-kiro-10kn
+
+![The terrible sample house, Haunt Score 97 · Run, with ghosts in all eight rooms](docs/screenshots/house-terrible-motion-1440.png)
+
 **Not legal advice.**
 
 Every spooky element carries information. The room says what kind of clause it is, the ghost's size, shape, colour and numeral say how bad it is (severity 0 to 3), and the Haunt Score says how haunted the whole policy is. "Lights on" mode shows the same findings as a plain list.
