@@ -323,3 +323,9 @@ Coverage target: 80% of lines for `src/` outside the analyzer and llm folders, e
 - `Room.tsx` draws `capRoom(...).shown` and, when anything is hidden, a `button[data-room-toggle]` after the ghost group: visible text "+N more" or "Show fewer", accessible name "+N more ghosts in <room>" or "Show fewer ghosts in <room>", `aria-expanded`, `aria-controls` pointing at the group. It is the last index in the room's roving set, so arrows, Home and End reach it and the room stays one Tab stop; toggling keeps focus on it (R9.8). The room's accessible name and status line come from `roomLabel` and `roomStatus`, which count every finding.
 - Lights on mode renders `model.items`, never `capRoom`, so it lists every finding.
 - Tests: `houseModel.test.ts`, `houseModel.property.test.ts` (U5), `Room.test.tsx`, `House.test.tsx`, `LightsOnList.test.tsx`, and `e2e/crowded.spec.ts` (made-up 40-ghost `CROWDED` text at 1440 and 360 px).
+
+## Score scale line (PLAN_DECISIONS.md C24)
+
+- `src/components/house/ScoreScale.tsx` renders `<p data-testid="score-scale" class="text-base text-mist">` with the fixed lead "Scores run from 0 to 97, the most haunted a policy can be: " and the four bands from `BANDS`, separated by " · ". The band from `bandFor(score)` is a `<strong aria-current="true">` in bone; the others are plain text. Mist on ink is 8.91:1 and bone 15.90:1.
+- `HouseView.tsx` renders it right after `ScoreBadge`, so it shows in both modes (R7.4). `LightsOnList.tsx` renders a second copy after the "Not legal advice" notice, using `hauntScore` of its own findings, which equals the house view's score (R7.2, R8.6). In Lights on mode the page therefore shows the line twice: under the panel and at the top of the list.
+- Tests: `ScoreScale.test.tsx`, `LightsOnList.test.tsx`, `e2e/score-scale.spec.ts`; the existing axe and layout specs scan every state with the line present.

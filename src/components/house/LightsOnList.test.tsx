@@ -93,4 +93,17 @@ describe("LightsOnList (R8.2–R8.4, R13.1)", () => {
     const section = screen.getByRole("region", { name: "The Watching Portraits" });
     for (let i = 1; i <= 20; i++) expect(within(section).getByText(`We use cookies to remember your choices on screen ${i}.`)).toBeInTheDocument();
   });
+  it("shows the score scale line near the top, after the notice and before the first room, with the current band highlighted (R8.6, C24)", () => {
+    const { container } = render(<LightsOnList model={modelFor("mild").model} />);
+    const scale = screen.getByTestId("score-scale");
+    expect(scale).toHaveTextContent("Scores run from 0 to 97, the most haunted a policy can be:");
+    expect(scale.querySelector("[aria-current]")).toHaveTextContent("0–24 Mostly quiet"); // mild scores 14
+    const firstRoom = container.querySelector("section");
+    expect(scale.compareDocumentPosition(firstRoom!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.firstElementChild!.textContent).toMatch(/^Not legal advice/);
+  });
+  it("highlights the band of the shown findings' score: terrible is 75+ Run", () => {
+    render(<LightsOnList model={modelFor("terrible").model} />);
+    expect(screen.getByTestId("score-scale").querySelector("[aria-current]")).toHaveTextContent("75+ Run");
+  });
 });

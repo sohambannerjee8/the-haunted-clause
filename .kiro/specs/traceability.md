@@ -199,11 +199,13 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R7.1 | `ScoreBadge.test.tsx` | 25.2 |
 | HU-R7.2 | `flow.spec.ts` (score equals `hauntScore`), `OptInPanel.test.tsx` (score after merge) | 25.3, 29.1 |
 | HU-R7.3 | `ScoreBadge.test.tsx` (announcement on change) | 25.2 |
+| HU-R7.4 | `ScoreScale.test.tsx` (text, font, band highlight), `score-scale.spec.ts` (under the panel, bold, mist, axe, 360 px) | 32.4 |
 | HU-R8.1 | `Toolbar.test.tsx` (Lights on toggle, `aria-pressed`), `lights.spec.ts` | 28.1, 28.2 |
 | HU-R8.2 | `LightsOnList.test.tsx` (including the reassurance line, C13) | 28.1, 28.3 |
 | HU-R8.3 | `houseModel.property.test.ts` (U1), `lights.spec.ts` | 25.1, 28.2 |
 | HU-R8.4 | `LightsOnList.test.tsx` (no SVG, no animation classes) | 28.1 |
 | HU-R8.5 | `LightsOnList.test.tsx`, `lights.spec.ts` (focus stays on the toggle) | 28.1, 28.2 |
+| HU-R8.6 | `LightsOnList.test.tsx` (scale line at the top), `score-scale.spec.ts` (Lights on) | 32.4 |
 | HU-R9.1 | `Room.test.tsx` (one `tabindex="0"`) | 27.2 |
 | HU-R9.2 | `Room.test.tsx` (quiet room has no buttons), `keyboard.spec.ts` | 25.2, 27.3 |
 | HU-R9.3 | `roving.property.test.ts` (U3), `Room.test.tsx` | 27.1, 27.2 |

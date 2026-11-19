@@ -1,14 +1,19 @@
 // Lights on mode: the same findings as a plain semantic list (haunted-house-ui R8, R13.1).
 // No ghost art, no animation, no decorative images (R8.4).
+import { hauntScore } from "../../lib/analyzer/score";
 import type { ExplainedFinding } from "../../lib/llm/merge";
 import { severityLabel, type RoomModel } from "../../lib/ui/houseModel";
+import { ScoreScale } from "./ScoreScale";
 
 export function LightsOnList({ model }: { model: RoomModel<ExplainedFinding>[] }) {
+  // The same score as the house view: hauntScore of the findings shown (R7.2).
+  const score = hauntScore(model.flatMap((m) => m.items));
   return (
     <div className="mt-4">
       <p className="rounded-md border border-mist p-3">
         <strong>Not legal advice.</strong> The readings are automated and can be wrong.
       </p>
+      <ScoreScale score={score} className="mt-3" />
       {model.map((m) => {
         const headingId = `lights-${m.room.id}`;
         return (

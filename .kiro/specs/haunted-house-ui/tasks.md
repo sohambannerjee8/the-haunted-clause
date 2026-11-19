@@ -236,6 +236,11 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Then `capRoom` and `ROOM_GHOST_CAP` in `houseModel.ts`, the "+N more" button in `Room.tsx`, and `items-start` on the house grid. Add `e2e/crowded.spec.ts` with the made-up `CROWDED` text at 1440 and 360 px: no stretched rows, the button by mouse and keyboard, no horizontal scroll, axe clean.
   - The sample scores stay 14, 59 and 97 (no sample room has more than 4 findings).
   - _Requirements: 4.4, 4.7, 4.8, 9.8_
+- [x] 32.4 Score scale line (user request, PLAN_DECISIONS.md C24)
+  - Tests first: `ScoreScale.test.tsx` (the exact line, body font and mist at 16 px, the current band bold and `aria-current` for scores 0, 14, 24, 25, 49, 50, 59, 74, 75 and 97); two `LightsOnList.test.tsx` tests (the line after the notice and before the first room, mild 0–24 and terrible 75+); `e2e/score-scale.spec.ts` (the three samples at 1440 and 360 px: under the panel, bold, mist, Atkinson Hyperlegible, no horizontal scroll or clipping, axe clean; Lights on). See them fail.
+  - Then `ScoreScale.tsx`, rendered under `ScoreBadge` in `HouseView.tsx` and after the notice in `LightsOnList.tsx`.
+  - The sample scores stay 14, 59 and 97.
+  - _Requirements: 7.4, 8.6_
 - [x] 33. Performance, clean clone and Gate 5 (Phase 5)
 - [x] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
   - **Read first:** PLAN.md section 2 and `.kiro/steering/tech.md` "Performance budget"; requirements R17.1 and R18; traceability rows HU-R17.1, HU-R18.1 and HU-R18.2.

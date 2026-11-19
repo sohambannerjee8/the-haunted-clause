@@ -379,3 +379,8 @@ Written from generic example sentences only; no real policy text is in the repos
 1. **One test timeout:** "P6 over the cap" in `src/lib/analyzer/splitter.property.test.ts` gets a 15-second timeout instead of Vitest's 5-second default. It had timed out twice (5,371 ms and 5,686 ms) when coverage ran alongside lint and the E2E suite; on its own it takes about 1 s, or about 4.4 s under coverage. `numRuns` stays 1,000 and every assertion is unchanged: this changes how long it may take, not what it checks. No other test's timeout changes.
 2. **Screenshots:** `npm run screenshots` is re-run so `docs/screenshots/` matches the current app after C22 (rooms aligned to the top of their row).
 After this, the builder's work is finished unless the user reports a problem.
+## C24. Score scale line (requested by the user, 17 November 2026)
+1. Under the Haunt Score panel, always visible, in the body font and mist colour: "Scores run from 0 to 97, the most haunted a policy can be: 0–24 Mostly quiet · 25–49 Uneasy · 50–74 Haunted · 75+ Run." The current band is bold and `aria-current="true"`, so the highlight does not rely on colour.
+2. The same line at the top of Lights on mode, with the same band highlighted.
+   - Builder's reading, reported to the user: "at the top" is placed directly after the "Not legal advice" notice, which stays the first thing in the list (an existing test pins it there), and before the first room. Because the line under the score panel also stays visible in Lights on mode, the line appears twice in that mode.
+3. New criteria haunted-house-ui R7.4 and R8.6 (241 criteria). Task: haunted-house-ui 32.4. No analyzer change, so the sample scores stay 14, 59 and 97.

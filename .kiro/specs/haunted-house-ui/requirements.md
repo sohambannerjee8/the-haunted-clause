@@ -124,6 +124,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 1. THE house view SHALL show the Haunt Score as a whole number and its band label, in the form "<score> · <band>", with no "/100" suffix.
 2. THE Haunt Score SHALL equal the clause-analyzer `hauntScore` of the findings currently shown, including severities raised by the medium.
 3. WHEN the score changes (after a new analysis or after the medium's reading arrives), THE app SHALL announce "Haunt Score <score>, <band>" once in a polite live region.
+4. THE house view SHALL always show, directly under the Haunt Score panel, in the body font and mist colour at 16 px or larger, the line "Scores run from 0 to 97, the most haunted a policy can be: 0–24 Mostly quiet · 25–49 Uneasy · 50–74 Haunted · 75+ Run.", with the current score's band in bold and marked `aria-current="true"`, so the highlight is not colour alone (PLAN_DECISIONS.md C24).
 
 ### Requirement 8: Lights on mode
 
@@ -136,6 +137,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 3. THE Lights on list SHALL contain exactly the same findings, with the same severities and texts, as the house.
 4. THE Lights on list SHALL contain no ghost art, no animation and no decorative images.
 5. WHEN the user switches modes, focus SHALL stay on the toggle button.
+6. THE Lights on list SHALL show the same score scale line as R7.4, with the same band highlighted, at the top of the list: after the "Not legal advice" notice and before the first room (C24).
 
 ### Requirement 9: Keyboard navigation (PLAN_DECISIONS.md C1.8)
 

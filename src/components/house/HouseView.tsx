@@ -17,6 +17,7 @@ import { Notices } from "./Notices";
 import type { Medium } from "./OptInPanel";
 import type { Prepared } from "./prepare";
 import { ScoreBadge } from "./ScoreBadge";
+import { ScoreScale } from "./ScoreScale";
 import { Toolbar } from "./Toolbar";
 
 export { prepare } from "./prepare";
@@ -79,6 +80,7 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
         onToggleSound={toggleSound}
       />
       <ScoreBadge score={score} />
+      <ScoreScale score={score} className="mt-2" />
       <Notices
         llmAvailable={llmAvailable}
         pasted={prepared.source.kind === "pasted"}
