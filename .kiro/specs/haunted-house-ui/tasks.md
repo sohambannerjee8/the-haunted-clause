@@ -241,6 +241,11 @@ Each task is test first: write the failing test, run it and see it fail, write t
   - Then `ScoreScale.tsx`, rendered under `ScoreBadge` in `HouseView.tsx` and after the notice in `LightsOnList.tsx`.
   - The sample scores stay 14, 59 and 97.
   - _Requirements: 7.4, 8.6_
+- [x] 32.5 Explanations for a first-time visitor (user request, PLAN_DECISIONS.md C25)
+  - Tests first: the input note (`InputScreen.test.tsx`), the "(this policy)" marker (`ScoreScale.test.tsx`), `HouseLegend.test.tsx`, the legend placement and the medium's first sentence (`OptInPanel.test.tsx`), the badge explanations (`DetailDialog.test.tsx`), the footer link (`Footer.test.tsx`), the Lights on top block (`LightsOnList.test.tsx`); E2E `first-visit.spec.ts` at 1440 and 360 px, and updates to `score-scale.spec.ts`, `optin.spec.ts` and the tab order in `keyboard.spec.ts`. See them fail.
+  - Then `src/lib/ui/copy.ts`, `HouseLegend.tsx`, and the changes to `InputScreen`, `ScoreScale`, `HouseView`, `LightsOnList`, `OptInPanel`, `DetailDialog` and `Footer`.
+  - The sample scores stay 14, 59 and 97.
+  - _Requirements: 1.7, 2.7, 4.9, 6.8, 7.4, 8.6, 14.9_
 - [x] 33. Performance, clean clone and Gate 5 (Phase 5)
 - [x] 33.1 E2E `perf.spec.ts` (CDP throttling 150 ms latency, 200,000 B/s down, 93,750 B/s up, cache disabled)
   - **Read first:** PLAN.md section 2 and `.kiro/steering/tech.md` "Performance budget"; requirements R17.1 and R18; traceability rows HU-R17.1, HU-R18.1 and HU-R18.2.

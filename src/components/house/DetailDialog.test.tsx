@@ -71,6 +71,8 @@ describe("DetailDialog (R6, R13.1, R19.3)", () => {
     expect(within(dialog).getByText("Why it matters")).toBeInTheDocument();
     expect(within(dialog).getByText("Strangers may build a profile of you.")).toBeInTheDocument();
     expect(within(dialog).getByText("Rule reading")).toBeInTheDocument();
+    expect(within(dialog).getByText("From the app's built-in rules")).toBeInTheDocument(); // C25.6
+    expect(within(dialog).queryByText("Rewritten by the AI medium")).toBeNull();
     expect(within(dialog).getByText(/Not legal advice/)).toBeInTheDocument();
   });
   it("shows a quote containing <b> as literal text, never as HTML (R6.5)", async () => {
@@ -82,6 +84,8 @@ describe("DetailDialog (R6, R13.1, R19.3)", () => {
     const dialog = await openIt(finding({ source: "llm" }));
     expect(within(dialog).getByText("Medium's reading")).toBeInTheDocument();
     expect(within(dialog).queryByText("Rule reading")).toBeNull();
+    expect(within(dialog).getByText("Rewritten by the AI medium")).toBeInTheDocument(); // C25.6
+    expect(within(dialog).queryByText("From the app's built-in rules")).toBeNull();
   });
   it("shows the mitigation note when a reassurance lowered the severity (R6.3)", async () => {
     const dialog = await openIt(finding({ severity: 0, mitigationId: "m-no-sell" }));

@@ -12,4 +12,11 @@ describe("Footer (R1.2, R13.1)", () => {
     render(<Footer />);
     expect(screen.getByRole("contentinfo")).toHaveTextContent(/The readings are automated and can be wrong\./);
   });
+  it("links to how it works and the source code (C25.7)", () => {
+    render(<Footer />);
+    const link = screen.getByRole("link", { name: "How it works and source code" });
+    expect(link).toHaveAttribute("href", "https://github.com/sohambannerjee8/the-haunted-clause");
+    expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
+    expect(link).toHaveClass("underline"); // not colour alone
+  });
 });

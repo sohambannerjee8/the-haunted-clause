@@ -106,4 +106,13 @@ describe("LightsOnList (R8.2–R8.4, R13.1)", () => {
     render(<LightsOnList model={modelFor("terrible").model} />);
     expect(screen.getByTestId("score-scale").querySelector("[aria-current]")).toHaveTextContent("75+ Run");
   });
+  it("shows the ghost legend and the Quiet note at the top, after the scale line and before the first room (R8.6, C25.8)", () => {
+    const { container } = render(<LightsOnList model={modelFor("mild").model} />);
+    const legend = screen.getByTestId("house-legend");
+    const scale = screen.getByTestId("score-scale");
+    expect(legend).toHaveTextContent("Each ghost is one clause.");
+    expect(legend).toHaveTextContent("Quiet means no risky clause of this kind was found.");
+    expect(scale.compareDocumentPosition(legend) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(legend.compareDocumentPosition(container.querySelector("section")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

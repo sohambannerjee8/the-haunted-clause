@@ -103,4 +103,12 @@ describe("InputScreen (R2)", () => {
     render(<Harness initialNotice="too-long" />);
     expect(screen.getByText("That text is longer than 50,000 characters.")).toBeInTheDocument();
   });
+  it("explains, under the paste box, that the text stays in the browser and what the app does (C25.1)", () => {
+    render(<Harness />);
+    const note = screen.getByText("Your text is read in your browser and never stored. The app finds risky clauses and files each one in a room of the house.");
+    expect(note.tagName).toBe("P");
+    expect(note).toHaveClass("text-mist", "text-base");
+    expect(note.className).not.toMatch(/font-display/);
+    expect(textarea().compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

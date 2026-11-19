@@ -329,3 +329,10 @@ Coverage target: 80% of lines for `src/` outside the analyzer and llm folders, e
 - `src/components/house/ScoreScale.tsx` renders `<p data-testid="score-scale" class="text-base text-mist">` with the fixed lead "Scores run from 0 to 97, the most haunted a policy can be: " and the four bands from `BANDS`, separated by " · ". The band from `bandFor(score)` is a `<strong aria-current="true">` in bone; the others are plain text. Mist on ink is 8.91:1 and bone 15.90:1.
 - `HouseView.tsx` renders it right after `ScoreBadge`, so it shows in both modes (R7.4). `LightsOnList.tsx` renders a second copy after the "Not legal advice" notice, using `hauntScore` of its own findings, which equals the house view's score (R7.2, R8.6). In Lights on mode the page therefore shows the line twice: under the panel and at the top of the list.
 - Tests: `ScoreScale.test.tsx`, `LightsOnList.test.tsx`, `e2e/score-scale.spec.ts`; the existing axe and layout specs scan every state with the line present.
+
+## Explanations for a first-time visitor (PLAN_DECISIONS.md C25)
+
+- All new copy lives in `src/lib/ui/copy.ts`; the legend's severity words come from `severityLabel`, so they always match the ghosts' labels.
+- `InputScreen` shows `INPUT_NOTE` after the counter row (R2.7). `HouseView` shows `HouseLegend` (the ghost legend and the Quiet note) between the "Inside the house" heading and the house, only in house mode (R4.9); `LightsOnList` shows its own `HouseLegend` after the scale line (R8.6), so each mode has one legend.
+- `ScoreScale` follows the bold, `aria-current` band with the visible text "(this policy)" (R7.4). `OptInPanel` opens with `MEDIUM_INTRO`, then `OPT_IN_NOTICE` unchanged (so README.md still matches it word for word) and the terms link (R14.9). `DetailDialog` puts the badge's explanation next to it (R6.8). `Footer` has the underlined repository link (R1.7), which is the page's last Tab stop.
+- All new text is body font (Atkinson Hyperlegible) at 16 px or more: mist on ink is 8.91:1, mist on aubergine-900 8.24:1, the candle-amber link on aubergine-900 9.93:1.

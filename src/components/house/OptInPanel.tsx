@@ -2,6 +2,7 @@
 // click handler: no effect or timer can send it (R14.7).
 import type { Reason } from "../../lib/llm/schema";
 import { GEMINI_TERMS_URL, OPT_IN_NOTICE } from "../../lib/llm/privacy";
+import { MEDIUM_INTRO } from "../../lib/ui/copy";
 
 export type Medium = "idle" | "listening" | "spoken" | { failed: Reason };
 
@@ -20,7 +21,8 @@ export function OptInPanel({ medium, onAsk }: { medium: Medium; onAsk: () => voi
     <section aria-label="Ask the medium" className="mt-4 rounded-md border border-candle bg-aubergine-900 p-4">
       {medium !== "spoken" && (
         <>
-          <p>{OPT_IN_NOTICE}</p>
+          <p>{MEDIUM_INTRO}</p>
+          <p className="mt-1">{OPT_IN_NOTICE}</p>
           <p className="mt-1">
             <a href={GEMINI_TERMS_URL} className="text-candle underline" rel="noopener noreferrer" target="_blank">
               Google&apos;s Gemini API terms

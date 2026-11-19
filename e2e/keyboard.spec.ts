@@ -50,10 +50,13 @@ test("tab order: skip link, toolbar, then one stop per room in room order, then 
   expect(stops[1].text).toBe("Read another policy");
   const ghostStops = stops.filter((s) => s.id !== null);
   expect(ghostStops.map((s) => s.room)).toEqual(ROOMS.map((r) => r.id)); // one stop per room, all 8 have ghosts
-  // Toolbar controls come before the first room; nothing focusable follows the last room except the footer's content.
+  // Toolbar controls come before the first room. After the last room, exactly one stop follows:
+  // the footer's "How it works and source code" link (C25.7), which is the last stop on the page.
   const firstGhost = stops.findIndex((s) => s.id !== null);
+  const lastGhost = stops.map((s) => s.id !== null).lastIndexOf(true);
   expect(stops.slice(0, firstGhost).every((s) => s.id === null)).toBe(true);
-  expect(stops.slice(firstGhost).every((s) => s.id !== null)).toBe(true);
+  expect(stops.slice(firstGhost, lastGhost + 1).every((s) => s.id !== null)).toBe(true);
+  expect(stops.slice(lastGhost + 1).map((s) => s.text)).toEqual(["How it works and source code"]);
 });
 
 test("arrows, Home and End reach every ghost in each room (R9.3)", async ({ page }) => {

@@ -35,6 +35,8 @@ test("@llm-ui the button and notice show for pasted text, and nothing is sent be
   await expect(page.getByRole("button", { name: "Ask the medium" })).toBeVisible();
   await expect(page.getByText(OPT_IN_NOTICE)).toBeVisible();
   await expect(page.getByRole("link", { name: "Google's Gemini API terms" })).toBeVisible();
+  // C25.5: the panel's first sentence says what the medium is.
+  await expect(page.getByRole("region", { name: "Ask the medium" }).locator("p").first()).toHaveText("The medium is an AI that rewrites these readings in plainer words.");
   await page.waitForTimeout(1500);
   expect(calls).toEqual([]);
 });

@@ -384,3 +384,13 @@ After this, the builder's work is finished unless the user reports a problem.
 2. The same line at the top of Lights on mode, with the same band highlighted.
    - Builder's reading, reported to the user: "at the top" is placed directly after the "Not legal advice" notice, which stays the first thing in the list (an existing test pins it there), and before the first room. Because the line under the score panel also stays visible in Lights on mode, the line appears twice in that mode.
 3. New criteria haunted-house-ui R7.4 and R8.6 (241 criteria). Task: haunted-house-ui 32.4. No analyzer change, so the sample scores stay 14, 59 and 97.
+## C25. Explanations for a first-time visitor (requested by the user, 17 November 2026)
+1. Under the paste box: "Your text is read in your browser and never stored. The app finds risky clauses and files each one in a room of the house."
+2. The score scale line (C24) stays; the current band is bold, `aria-current`, and now also followed by the visible text marker "(this policy)".
+3. Above the house: "Each ghost is one clause. 0 looks fine · 1 mild concern · 2 real concern · 3 serious concern."
+4. In the legend (not repeated in every quiet room): "Quiet means no risky clause of this kind was found. It doesn't prove the policy is safe."
+5. The opt-in panel's first sentence: "The medium is an AI that rewrites these readings in plainer words." The privacy sentences follow unchanged, as their own paragraph, so `OPT_IN_NOTICE` and the README's copy of it are unchanged.
+6. In the detail panel, next to the badge: "From the app's built-in rules" or "Rewritten by the AI medium".
+7. Footer link "How it works and source code" to https://github.com/sohambannerjee8/the-haunted-clause. It becomes the last Tab stop on the house view, so the `keyboard.spec.ts` tab-order test now requires exactly that link after the last room, where it previously required nothing; this follows R9.7 ("…rooms in room order, footer").
+8. Items 2 to 4 at the top of Lights on mode, after the "Not legal advice" notice and before the first room.
+New criteria haunted-house-ui R1.7, R2.7, R4.9, R6.8 and R14.9, with R7.4 and R8.6 amended (246 criteria). Task: haunted-house-ui 32.5. No analyzer change, so the sample scores stay 14, 59 and 97.

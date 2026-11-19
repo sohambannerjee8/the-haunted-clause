@@ -1,6 +1,7 @@
 // The ghost detail panel: a native modal <dialog> (haunted-house-ui R6, R13.1).
 // Every text is a React text child; nothing is rendered as HTML (R6.5).
 import { m } from "motion/react";
+import { SOURCE_EXPLANATION } from "../../lib/ui/copy";
 import { useEffect, useId, useRef } from "react";
 import type { Room, Severity } from "../../lib/analyzer/types";
 import type { ExplainedFinding } from "../../lib/llm/merge";
@@ -73,7 +74,8 @@ export function DetailDialog({
       )}
 
       <p className="mt-4">
-        <span className="rounded border border-mist px-2 py-0.5 text-sm text-bone">{finding.source === "llm" ? "Medium's reading" : "Rule reading"}</span>
+        <span className="rounded border border-mist px-2 py-0.5 text-sm text-bone">{finding.source === "llm" ? "Medium's reading" : "Rule reading"}</span>{" "}
+        <span className="text-base text-mist">{finding.source === "llm" ? SOURCE_EXPLANATION.llm : SOURCE_EXPLANATION.rules}</span>
       </p>
       <p className="mt-4 text-sm text-mist">
         <strong className="text-bone">Not legal advice.</strong> The readings are automated and can be wrong.

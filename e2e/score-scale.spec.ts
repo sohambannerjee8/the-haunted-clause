@@ -5,6 +5,8 @@ import { AXE_TAGS, expect, test } from "./fixtures";
 import { openSample, waitForFades } from "./helpers";
 
 const LINE = "Scores run from 0 to 97, the most haunted a policy can be: 0–24 Mostly quiet · 25–49 Uneasy · 50–74 Haunted · 75+ Run.";
+/** The line as shown: the current band is followed by the visible marker "(this policy)" (C25.2). */
+const shown = (band: string) => LINE.replace(band, `${band} (this policy)`);
 const SAMPLES = [
   ["mild", "14 · Mostly quiet", "0–24 Mostly quiet"],
   ["average", "59 · Haunted", "50–74 Haunted"],
@@ -41,7 +43,7 @@ for (const width of [1440, 360]) {
         await expect(page.getByTestId("haunt-score")).toHaveText(score);
         const scale = page.getByTestId("score-scale").first();
         await expect(scale).toBeVisible();
-        await expect(scale).toHaveText(LINE);
+        await expect(scale).toHaveText(shown(band));
         const current = scale.locator("[aria-current='true']");
         await expect(current).toHaveCount(1);
         await expect(current).toHaveText(band);
@@ -71,7 +73,7 @@ for (const width of [1440, 360]) {
       const scales = page.getByTestId("score-scale");
       await expect(scales).toHaveCount(2); // under the score panel, and at the top of the list
       const top = scales.nth(1);
-      await expect(top).toHaveText(LINE);
+      await expect(top).toHaveText(shown("50–74 Haunted"));
       await expect(top.locator("[aria-current='true']")).toHaveText("50–74 Haunted");
       const lineBox = await top.boundingBox();
       const firstRoom = await page.getByRole("heading", { level: 3 }).first().boundingBox();

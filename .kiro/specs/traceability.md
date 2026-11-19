@@ -165,12 +165,14 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R1.4 | `shell.spec.ts` (no other-origin font), `assets.test.mts` (fonts and OFL files) | 23.2 |
 | HU-R1.5 | `shell.spec.ts` (no other-origin image), `assets.test.mts` (only `icon.svg`) | 23.2 |
 | HU-R1.6 | `no-storage.test.ts`, `flow.spec.ts` (storage, cookie, IndexedDB, hosts) | 23.2, 24.2 |
+| HU-R1.7 | `Footer.test.tsx` (link, href, underline), `first-visit.spec.ts` (footer link, Tab), `keyboard.spec.ts` (last stop) | 32.5 |
 | HU-R2.1 | `InputScreen.test.tsx` | 24.1 |
 | HU-R2.2 | `InputScreen.test.tsx` (`maxLength`), `edge.spec.ts` (50,001st blocked) | 24.1, 32.1 |
 | HU-R2.3 | `InputScreen.test.tsx`, `edge.spec.ts` (60,000-character paste) | 24.1, 32.1 |
 | HU-R2.4 | `InputScreen.test.tsx`, `edge.spec.ts` (empty input) | 24.1, 32.1 |
 | HU-R2.5 | `SampleCards.test.tsx` | 24.1 |
 | HU-R2.6 | `InputScreen.test.tsx` (`aria-live="off"`, no live ancestor) | 24.1 |
+| HU-R2.7 | `InputScreen.test.tsx` (note under the paste box), `first-visit.spec.ts` (body font, mist, 360 px, axe) | 32.5 |
 | HU-R3.1 | `flow.spec.ts` (pasted text) | 24.2 |
 | HU-R3.2 | `flow.spec.ts` (no request carries pasted text), `optin.spec.ts` (no request before the press) | 24.2, 29.2 |
 | HU-R3.3 | `flow.spec.ts` (samples, no `/api/explain`) | 24.2 |
@@ -183,6 +185,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R4.6 | `House.test.tsx` (frame `aria-hidden`) | 25.2 |
 | HU-R4.7 | `House.test.tsx` (`items-start`), `crowded.spec.ts` (no stretched rows at 1440 and 360 px) | 32.3 |
 | HU-R4.8 | `houseModel.test.ts` (`capRoom`), `houseModel.property.test.ts` (U5), `Room.test.tsx` (crowded room), `LightsOnList.test.tsx` (every finding), `crowded.spec.ts` | 32.3 |
+| HU-R4.9 | `HouseLegend.test.tsx`, `OptInPanel.test.tsx` (legend between the heading and the house), `first-visit.spec.ts` | 32.5 |
 | HU-R5.1 | `Ghost.test.tsx` | 25.2 |
 | HU-R5.2 | `Ghost.test.tsx`, `houseModel.property.test.ts` (U4) | 25.1, 25.2 |
 | HU-R5.3 | `Ghost.test.tsx` (numeral) | 25.2 |
@@ -196,16 +199,17 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R6.5 | `DetailDialog.test.tsx` (`<b>` shown literally) | 26.1 |
 | HU-R6.6 | `DetailDialog.test.tsx` (Close returns focus), `keyboard.spec.ts` (Escape returns focus) | 26.1, 27.3 |
 | HU-R6.7 | `keyboard.spec.ts` (Tab stays inside, `:modal`) | 27.3 |
+| HU-R6.8 | `DetailDialog.test.tsx` (badge explanations), `first-visit.spec.ts` (detail panel) | 32.5 |
 | HU-R7.1 | `ScoreBadge.test.tsx` | 25.2 |
 | HU-R7.2 | `flow.spec.ts` (score equals `hauntScore`), `OptInPanel.test.tsx` (score after merge) | 25.3, 29.1 |
 | HU-R7.3 | `ScoreBadge.test.tsx` (announcement on change) | 25.2 |
-| HU-R7.4 | `ScoreScale.test.tsx` (text, font, band highlight), `score-scale.spec.ts` (under the panel, bold, mist, axe, 360 px) | 32.4 |
+| HU-R7.4 | `ScoreScale.test.tsx` (text, font, band highlight, "(this policy)" marker), `score-scale.spec.ts` (under the panel, bold, mist, axe, 360 px) | 32.4, 32.5 |
 | HU-R8.1 | `Toolbar.test.tsx` (Lights on toggle, `aria-pressed`), `lights.spec.ts` | 28.1, 28.2 |
 | HU-R8.2 | `LightsOnList.test.tsx` (including the reassurance line, C13) | 28.1, 28.3 |
 | HU-R8.3 | `houseModel.property.test.ts` (U1), `lights.spec.ts` | 25.1, 28.2 |
 | HU-R8.4 | `LightsOnList.test.tsx` (no SVG, no animation classes) | 28.1 |
 | HU-R8.5 | `LightsOnList.test.tsx`, `lights.spec.ts` (focus stays on the toggle) | 28.1, 28.2 |
-| HU-R8.6 | `LightsOnList.test.tsx` (scale line at the top), `score-scale.spec.ts` (Lights on) | 32.4 |
+| HU-R8.6 | `LightsOnList.test.tsx` (scale line, legend and Quiet note at the top), `score-scale.spec.ts`, `first-visit.spec.ts` (Lights on) | 32.4, 32.5 |
 | HU-R9.1 | `Room.test.tsx` (one `tabindex="0"`) | 27.2 |
 | HU-R9.2 | `Room.test.tsx` (quiet room has no buttons), `keyboard.spec.ts` | 25.2, 27.3 |
 | HU-R9.3 | `roving.property.test.ts` (U3), `Room.test.tsx` | 27.1, 27.2 |
@@ -235,6 +239,7 @@ IDs: `CA` = clause-analyzer, `LE` = llm-explainer, `HU` = haunted-house-ui; `R3.
 | HU-R14.6 | `OptInPanel.test.tsx` (failure messages), `optin.spec.ts` | 29.1, 29.2 |
 | HU-R14.7 | `optin.spec.ts` (body holds only flagged-clause text) | 29.2 |
 | HU-R14.8 | `docs.test.mts` ("redeploy") | 22.2 |
+| HU-R14.9 | `OptInPanel.test.tsx` (first sentence), `optin.spec.ts` (first sentence) | 32.5 |
 | HU-R15.1 | `explanations.test.ts` (partial file), `flow.spec.ts` (badges) | 21.3, 25.3 |
 | HU-R15.2 | `flow.spec.ts` (no `/api/explain`), `package-scripts.test.mts` (build never calls Google) | 21.3, 24.2 |
 | HU-R15.3 | `Toolbar.test.tsx`, `flow.spec.ts` | 25.2, 25.3 |

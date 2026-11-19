@@ -3,6 +3,7 @@
 import { hauntScore } from "../../lib/analyzer/score";
 import type { ExplainedFinding } from "../../lib/llm/merge";
 import { severityLabel, type RoomModel } from "../../lib/ui/houseModel";
+import { HouseLegend } from "./HouseLegend";
 import { ScoreScale } from "./ScoreScale";
 
 export function LightsOnList({ model }: { model: RoomModel<ExplainedFinding>[] }) {
@@ -14,6 +15,7 @@ export function LightsOnList({ model }: { model: RoomModel<ExplainedFinding>[] }
         <strong>Not legal advice.</strong> The readings are automated and can be wrong.
       </p>
       <ScoreScale score={score} className="mt-3" />
+      <HouseLegend className="mt-2" />
       {model.map((m) => {
         const headingId = `lights-${m.room.id}`;
         return (

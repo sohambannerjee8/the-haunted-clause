@@ -39,6 +39,11 @@ describe("OptInPanel (R14)", () => {
     expect(ask()).toBeInTheDocument();
     expect(screen.getByText(OPT_IN_NOTICE)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Google's Gemini API terms" })).toHaveAttribute("href", GEMINI_TERMS_URL);
+    // C25.5: the panel opens by saying what the medium is, before the privacy sentences.
+    const panel = screen.getByRole("region", { name: "Ask the medium" });
+    const first = panel.querySelector("p")!;
+    expect(first).toHaveTextContent(/^The medium is an AI that rewrites these readings in plainer words\.$/);
+    expect(first.compareDocumentPosition(screen.getByText(OPT_IN_NOTICE)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await act(() => vi.advanceTimersByTimeAsync(30_000));
     expect(explain).not.toHaveBeenCalled();
   });
@@ -90,5 +95,17 @@ describe("OptInPanel (R14)", () => {
     expect(screen.getByTestId("haunt-score")).toHaveTextContent(new RegExp(`^${hauntScore(p.findings)} · `));
     if (reenabled) expect(ask()).toBeEnabled();
     else expect(ask()).toBeDisabled();
+  });
+  it("puts the ghost legend between the 'Inside the house' heading and the house, and not in Lights on twice (C25.3)", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { container } = render(<HouseView prepared={await prepared()} llmAvailable={false} onBack={() => {}} explain={vi.fn()} />);
+    const heading = screen.getByRole("heading", { level: 2, name: "Inside the house" });
+    const legend = screen.getByTestId("house-legend");
+    const grid = container.querySelector("[data-house-grid]")!;
+    expect(heading.compareDocumentPosition(legend) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(legend.compareDocumentPosition(grid) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Lights on" }));
+    expect(screen.getAllByTestId("house-legend")).toHaveLength(1);
   });
 });

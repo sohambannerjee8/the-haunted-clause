@@ -17,6 +17,7 @@ import { Notices } from "./Notices";
 import type { Medium } from "./OptInPanel";
 import type { Prepared } from "./prepare";
 import { ScoreBadge } from "./ScoreBadge";
+import { HouseLegend } from "./HouseLegend";
 import { ScoreScale } from "./ScoreScale";
 import { Toolbar } from "./Toolbar";
 
@@ -93,7 +94,14 @@ export function HouseView({ prepared, llmAvailable, onBack, explain = requestExp
         {lights ? "Lights on" : "Inside the house"}
       </h2>
       {/* Lights on renders no ghost, so every repeating animation stops (R10.5). */}
-      {lights ? <LightsOnList model={model} /> : <House model={model} onOpen={(finding, opener) => setOpen({ finding, opener, seq: ++openings.current })} />}
+      {lights ? (
+        <LightsOnList model={model} />
+      ) : (
+        <>
+          <HouseLegend className="mt-2" />
+          <House model={model} onOpen={(finding, opener) => setOpen({ finding, opener, seq: ++openings.current })} />
+        </>
+      )}
       {open &&
         (() => {
           const shown = findings.find((f) => f.id === open.finding.id)!;

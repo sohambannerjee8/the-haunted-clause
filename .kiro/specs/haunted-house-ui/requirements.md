@@ -48,6 +48,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 4. THE app SHALL use only fonts committed to the repository under the SIL Open Font License, with their licence files, loaded through `next/font/local`: Creepster for headings, room names and the band label; Atkinson Hyperlegible for all other text. The browser SHALL request no font from any other origin.
 5. THE app SHALL use only images and art made in this project (inline SVG and CSS) and SHALL load no image, audio or font from another origin.
 6. THE app SHALL NOT use `localStorage`, `sessionStorage`, cookies, IndexedDB or any analytics script. Verified by: `no-storage.test.ts`, which scans `src/` for `localStorage`, `sessionStorage`, `document.cookie` and `indexedDB`; and by `flow.spec.ts`, which after a full sample and pasted-text flow checks that both storages are empty, `document.cookie` is empty, `indexedDB.databases()` is empty, and no request went to a host other than the app's own.
+7. THE footer SHALL contain a link "How it works and source code", underlined, to https://github.com/sohambannerjee8/the-haunted-clause (PLAN_DECISIONS.md C25.7).
 
 ### Requirement 2: Input screen
 
@@ -61,6 +62,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 4. WHEN the user presses Analyze with an empty or whitespace-only textarea, THE app SHALL stay on the input screen, show "Paste a policy or pick a sample first." next to the textarea, and set `aria-invalid="true"` on the textarea with `aria-describedby` pointing to the message.
 5. THE input screen SHALL show three sample cards, mild, average and terrible, each with the fictional company name, a one-line description of how haunted it is, and a button "Open this house".
 6. THE character counter SHALL be announced to assistive technology only through its visible text, and SHALL NOT announce on every keystroke.
+7. THE input screen SHALL show, under the paste box, in the body font and mist colour: "Your text is read in your browser and never stored. The app finds risky clauses and files each one in a room of the house." (C25.1).
 
 ### Requirement 3: Analysis in the browser
 
@@ -87,6 +89,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 6. THE decorative house frame SHALL be hidden from assistive technology (`aria-hidden="true"`) and SHALL carry no information that is not also in text.
 7. THE rooms in one row of the house SHALL be aligned to the top of the row, so a room with many ghosts grows alone and does not stretch the other rooms in its row (PLAN_DECISIONS.md C22.1).
 8. WHEN a room has more than 12 findings, THE room SHALL draw its 12 most severe (ties going to the earlier finding), in input order, and a button "+N more" (N being the number not drawn) that expands the room in place to every finding and changes to "Show fewer", which collapses it again; the button SHALL carry `aria-expanded`, and the room's accessible name and visible count SHALL still count every finding. Lights on mode SHALL list every finding (C22.2).
+9. THE house view SHALL show, between the "Inside the house" heading and the house, in the body font and mist colour, the legend "Each ghost is one clause. 0 looks fine · 1 mild concern · 2 real concern · 3 serious concern." and the note "Quiet means no risky clause of this kind was found. It doesn't prove the policy is safe." (C25.3, C25.4).
 
 ### Requirement 5: Ghosts and wisps
 
@@ -114,6 +117,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 5. THE panel SHALL render every text as plain text, never as HTML.
 6. WHEN the user presses Escape or the panel's "Close" button, THE app SHALL close the panel and return focus to the ghost or wisp that opened it.
 7. WHILE the panel is open, focus SHALL stay inside it, and the rest of the page SHALL be inert.
+8. THE panel SHALL explain its source badge in visible text next to it: "From the app's built-in rules" for a rule reading, "Rewritten by the AI medium" for the medium's reading (C25.6).
 
 ### Requirement 7: Haunt Score
 
@@ -124,7 +128,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 1. THE house view SHALL show the Haunt Score as a whole number and its band label, in the form "<score> · <band>", with no "/100" suffix.
 2. THE Haunt Score SHALL equal the clause-analyzer `hauntScore` of the findings currently shown, including severities raised by the medium.
 3. WHEN the score changes (after a new analysis or after the medium's reading arrives), THE app SHALL announce "Haunt Score <score>, <band>" once in a polite live region.
-4. THE house view SHALL always show, directly under the Haunt Score panel, in the body font and mist colour at 16 px or larger, the line "Scores run from 0 to 97, the most haunted a policy can be: 0–24 Mostly quiet · 25–49 Uneasy · 50–74 Haunted · 75+ Run.", with the current score's band in bold and marked `aria-current="true"`, so the highlight is not colour alone (PLAN_DECISIONS.md C24).
+4. THE house view SHALL always show, directly under the Haunt Score panel, in the body font and mist colour at 16 px or larger, the line "Scores run from 0 to 97, the most haunted a policy can be: 0–24 Mostly quiet · 25–49 Uneasy · 50–74 Haunted · 75+ Run.", with the current score's band in bold, marked `aria-current="true"` and followed by the visible text "(this policy)", so the highlight is not colour alone (PLAN_DECISIONS.md C24, C25.2).
 
 ### Requirement 8: Lights on mode
 
@@ -137,7 +141,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 3. THE Lights on list SHALL contain exactly the same findings, with the same severities and texts, as the house.
 4. THE Lights on list SHALL contain no ghost art, no animation and no decorative images.
 5. WHEN the user switches modes, focus SHALL stay on the toggle button.
-6. THE Lights on list SHALL show the same score scale line as R7.4, with the same band highlighted, at the top of the list: after the "Not legal advice" notice and before the first room (C24).
+6. THE Lights on list SHALL show at the top, after the "Not legal advice" notice and before the first room, the same score scale line as R7.4 with the same band highlighted, then the legend and Quiet note of R4.9 (C24, C25.8).
 
 ### Requirement 9: Keyboard navigation (PLAN_DECISIONS.md C1.8)
 
@@ -209,6 +213,7 @@ Sources: PLAN.md sections 2, 3, Phase 4 and Phase 5; PLAN_DECISIONS.md C1.2, C1.
 6. WHEN the result has `source: "rules"`, THE app SHALL keep the rule reading and show a short message for the reason: `rate-limited` "The medium needs a rest. Try again in a minute."; `timeout` "The medium took too long. Showing the rule reading."; any other reason "The medium is silent right now. Showing the rule reading."; and SHALL re-enable the button except after `no-key`.
 7. THE request body SHALL contain only the text of flagged clauses (llm-explainer R13); THE app SHALL never send the request automatically.
 8. THE docs/DEPLOY.md file SHALL state that `llmAvailable` is read when the page is built, so adding, changing or removing `GEMINI_API_KEY` on Vercel needs a redeploy before the opt-in button appears or disappears. Verified by: llm-explainer `scripts/docs.test.mts`.
+9. THE opt-in panel's first sentence SHALL be "The medium is an AI that rewrites these readings in plainer words.", followed by the existing privacy notice (OPT_IN_NOTICE) and terms link (C25.5).
 
 ### Requirement 15: Samples
 

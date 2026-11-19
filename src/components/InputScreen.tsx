@@ -1,5 +1,6 @@
 // The input screen's paste box (haunted-house-ui R2, R16.1, R16.6).
 import type { ClipboardEvent } from "react";
+import { INPUT_NOTE } from "../lib/ui/copy";
 
 export const MAX_CHARS = 50_000;
 export type InputNotice = "empty" | "cut" | "too-long";
@@ -61,6 +62,7 @@ export function InputScreen({
           Analyze
         </button>
       </div>
+      <p className="mt-2 text-base text-mist">{INPUT_NOTE}</p>
       {empty && (
         <p id="policy-error" className="mt-2 font-bold text-candle">
           Paste a policy or pick a sample first.
